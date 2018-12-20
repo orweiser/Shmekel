@@ -14,33 +14,32 @@ def get_base_identifier(data, key):
     return np.array([1])
 
 
-class SMMA(Feature):
-    def __init__(self, time_series=None, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
-        """
-        use this method to define the parameters of the feature
-        """
+def smooth_moving_avg(data_seq, period):
+    data_seq = np.flip(data_seq)
+    smma = np.ndarray(np.size(data_seq) - period + 1)
+    smma[0] = np.mean(data_seq[:period])
 
-        self.time_delay = period - 1  # change it according to the feature as described in class Feature
-        self.is_numerical = 1  # boolean. change it according to the feature as described in class Feature
+    for idx in range(period, np.size(data_seq)):
+        smma[idx - period + 1] = (1 - 1/period)*smma[idx - period] + (1/period)*data_seq[idx]
 
-        # here you can define more parameters that "_compute_feature" might need to use
-        self.time_series = time_series
-        self.period = period
+    smma = np.flip(smma)
+    return smma
 
-        # the following line must be included
-        super(SMMA, self).__init__(data=data, normalization_type=normalization_type)
-
-    def _compute_feature(self, data):
-        serie = np.flip(self.time_series)
-        smma = np.ndarray(np.size(self.time_series) - self.time_delay + 1)
-        smma[0] = np.mean(serie[None:self.period])
-
-        for idx in range(self.period, np.size(serie) + 1):
-            smma[idx - self.period + 1] = (1 - 1/self.period)*smma[idx - self.period] + (1/self.period)*serie[idx]
-
-        smma = np.flip(smma)
-        return smma
-
+# class SMMA(Feature):
+#     def __init__(self, time_series=None, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
+#         """
+#         use this method to define the parameters of the feature
+#         """
+#
+#         self.time_delay = period - 1  # change it according to the feature as described in class Feature
+#         self.is_numerical = 1  # boolean. change it according to the feature as described in class Feature
+#
+#         # here you can define more parameters that "_compute_feature" might need to use
+#         self.time_series = time_series
+#         self.period = period
+#
+#         # the following line must be included
+#         super(SMMA, self).__init__(data=data, normalization_type=normalization_type)
 
 class RSI(Feature):
     def __init__(self, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
