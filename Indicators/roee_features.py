@@ -235,5 +235,34 @@ class ADX(Feature):
         return adx
 
 
+class CCI(Feature):
+
+    def __init__(self, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
+        """
+        use this method to define the parameters of the feature
+        """
+
+        self.time_delay = period - 1  # change it according to the feature as described in class Feature
+        self.is_numerical = 1  # boolean. change it according to the feature as described in class Feature
+
+        # here you can define more parameters that "_compute_feature" might need to use
+        self.period = period
+        # the following line must be included
+        super(CCI, self).__init__(data=data, normalization_type=normalization_type)
+
+    def _compute_feature(self, data):
+        close = get_base_identifier(data, 'close')
+        low = get_base_identifier(data, 'low')
+        high = get_base_identifier(data, 'high')
+
+        typical_price = (high + low + close) / 3
+        sma = smooth_moving_avg(typical_price, self.period)
+        mean_abs_val = np.mean(np.abs(typical_price - np.mean(typical_price)))
+
+        cci = (typical_price[:np.size(sma)] - sma)/(0.015*mean_abs_val)
+
+        return cci
+
+
 
 
