@@ -25,6 +25,7 @@ def smooth_moving_avg(data_seq, period):
     smma = np.flip(smma)
     return smma
 
+# consider changing smma to class instead of a function
 # class SMMA(Feature):
 #     def __init__(self, time_series=None, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
 #         """
@@ -60,7 +61,7 @@ class RSI(Feature):
 
     def _compute_feature(self, data):
         close = get_base_identifier(data, 'close')
-        dif = np.diff(close)
+        dif = -np.diff(close)
         u = np.maximum(dif, 0)
         d = np.maximum(-dif, 0)
 
@@ -165,7 +166,7 @@ class Stochastic(Feature):
         return K[0], (K[0] + K[1] + K[2])/3
 
 
-class BollingerBands(Feature): # returns 2 degenerate fetures
+class BollingerBands(Feature):  # returns 2 degenerate fetures
 
     def __init__(self, smoothing_period=20, number_of_SD=2, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
         """
@@ -198,14 +199,14 @@ class BollingerBands(Feature): # returns 2 degenerate fetures
         return moving_avg + self.number_of_SD*std, moving_avg - self.number_of_SD*std
 
 
-class ADX(Feature): # returns 2 degenerate fetures
+class ADX(Feature):
 
     def __init__(self, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
         """
         use this method to define the parameters of the feature
         """
 
-        self.time_delay = period  # change it according to the feature as described in class Feature
+        self.time_delay = 2*period - 1  # change it according to the feature as described in class Feature
         self.is_numerical = 1  # boolean. change it according to the feature as described in class Feature
 
         # here you can define more parameters that "_compute_feature" might need to use
@@ -218,12 +219,21 @@ class ADX(Feature): # returns 2 degenerate fetures
         low = get_base_identifier(data, 'low')
         high = get_base_identifier(data, 'high')
 
-        typical_price = (high + low + close)/3
+        up_move = -np.diff(high)
+        down_move = np.diff(low)
 
-        for idx in range(0, np.size(typical_price) - self.period):
-            moving_avg = np.mean(typical_price[idx:(idx+self.period)])
-            std = np.std(typical_price[idx:(idx + self.period)])
+        true_range = np.amax(np.array([high[:-1] - low[:-1], np.abs(high[:-1] - close[1:]), np.abs(low[:-1] - close[1:])]), axis=0)
+        avg_true_range = smooth_moving_avg(true_range, self.period)
 
-        return moving_avg + self.number_of_SD*std, moving_avg - self.number_of_SD*std
+        dm_plus = up_move * (up_move > 0) * (up_move > down_move) / avg_true_range
+        dm_minus = down_move * (down_move > 0) * (down_move > up_move) / avg_true_range
+
+        di_plus = smooth_moving_avg(dm_plus, self.period)
+        di_minus = smooth_moving_avg(dm_minus, self.period)
+        adx = 100 * smooth_moving_avg(np.abs((di_plus - di_minus) / (di_plus + di_minus)), self.period)
+
+        return adx
+
+
 
 
