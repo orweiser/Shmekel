@@ -41,13 +41,14 @@ def smooth_moving_avg(data_seq, period):
 #         # the following line must be included
 #         super(SMMA, self).__init__(data=data, normalization_type=normalization_type)
 
+
 class RSI(Feature):
     def __init__(self, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
         """
         use this method to define the parameters of the feature
         """
 
-        self.time_delay = period + 1  # change it according to the feature as described in class Feature
+        self.time_delay = period   # change it according to the feature as described in class Feature
         self.is_numerical = 1  # boolean. change it according to the feature as described in class Feature
 
         # here you can define more parameters that "_compute_feature" might need to use
@@ -59,21 +60,15 @@ class RSI(Feature):
 
     def _compute_feature(self, data):
         close = get_base_identifier(data, 'close')
-        close = np.flip(close)
         dif = np.diff(close)
-        U = np.maximum(dif, 0)
-        D = np.maximum(-dif, 0)
+        u = np.maximum(dif, 0)
+        d = np.maximum(-dif, 0)
 
-        SMMAU = np.mean(U[None:self.period])
-        SMMAD = np.mean(D[None:self.period])
+        smmau = smooth_moving_avg(u, self.period)
+        smmad = smooth_moving_avg(d, self.period)
 
-        for idx in range(self.period, np.size(U)+1):
-            SMMAU = np.append(SMMAU, (1 - 1/self.period)*SMMAU[-1] + (1/self.period)*U[idx])
-            SMMAD = np.append(SMMAD, (1 - 1/self.period)*SMMAD[-1] + (1/self.period)*D[idx])
-
-        rs = SMMAU / (SMMAD + self.epsilon)
+        rs = smmau / (smmad + self.epsilon)  # adding epsilon for numerical purposes
         rsi = 100 - 100 / (1 + rs)
-        rsi = np.flip(rsi)
         return rsi
 
 
