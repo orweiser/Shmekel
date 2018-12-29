@@ -84,6 +84,18 @@ def _generator(x, batch_size, labels=None, randomize=True, noise_level=None):
 
 def get_data_generators(dataset='mnist', with_labels=True, batch_size=128, noise_level=None, do_normalization=True,
                         normalization_params=None, num_classes=10, randomize=True):
+    """
+    creates two data generators - train and validation.
+    :param dataset: dataset's name, one of: 'mnist', 'cifar10', 'fashion_mnist'
+    :param with_labels: boolean. if true generators creates both input and output samples
+    :param batch_size:
+    :param noise_level: noise level to add to data
+    :param do_normalization: boolean
+    :param normalization_params: None or a dictionary
+    :param num_classes: number of output classes
+    :param randomize: boolean
+    :return: a tuple of two generators: train, val
+    """
     (train_x, train_y), (val_x, val_y) = load_dataset(dataset)
 
     if do_normalization:
