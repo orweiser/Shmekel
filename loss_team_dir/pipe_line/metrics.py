@@ -3,9 +3,9 @@ from tensorflow import where
 from keras.metrics import categorical_accuracy
 
 
-def get_metrics(loss_name='categorical_crossentropy'):
+def get_metrics(without_uncertainty=False):
     metrics = ['acc', total_sharpness]
-    if loss_name != 'categorical_crossentropy':
+    if not without_uncertainty:
         metrics += [
             uncertain_fraction,
             certain_predictions_acc,

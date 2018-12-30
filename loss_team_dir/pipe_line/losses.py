@@ -1,7 +1,10 @@
 import keras.backend as K
 
 
-def get_loss(loss_name='categorical_crossentropy', hyper_parameters=1, minimize=True):
+def get_loss(loss_name='categorical_crossentropy', hyper_parameters=1, minimize=True, without_uncertainty=False):
+    if without_uncertainty and loss_name == 'prediction_dependent':
+        raise Exception('without uncertainty is not defined with prediction_dependent loss')
+
     if loss_name == 'categorical_crossentropy':
         return 'categorical_crossentropy'
 
@@ -9,10 +12,10 @@ def get_loss(loss_name='categorical_crossentropy', hyper_parameters=1, minimize=
         return PredictionDependentLoss(weights=hyper_parameters, flip_sign=not minimize)
 
     elif loss_name == 'linear_reinforce':
-        return LinearReinforce(rewards=hyper_parameters, minus=minimize)
+        return LinearReinforce(rewards=hyper_parameters, minus=minimize, without_uncertainty=without_uncertainty)
 
     elif loss_name == 'log_reinforce':
-        return LogReinforce(rewards=hyper_parameters, minus=minimize)
+        return LogReinforce(rewards=hyper_parameters, minus=minimize, without_uncertainty=without_uncertainty)
 
     else:
         raise Exception('unexpected loss_name. got ' + loss_name)
@@ -59,9 +62,10 @@ class PredictionDependentLoss:
 
 
 class __ReinforceLosses:
-    def __init__(self, rewards=(-1, 0), minus=True):
+    def __init__(self, rewards=(-1, 0), minus=True, without_uncertainty=False):
         self.rewards = self.__rewards(rewards)
         self.minus = minus
+        self.without_uncertainty = without_uncertainty
 
     def __rewards(self, rewards):
         if type(rewards) is int:
@@ -70,6 +74,8 @@ class __ReinforceLosses:
         if len(rewards) == 1:
             return 1, rewards[0], 0
         elif len(rewards) == 2:
+            if self.without_uncertainty:
+                return rewards[0], rewards[1], 0
             return 1, rewards[0], rewards[1]
         else:
             return [reward for reward in rewards]
@@ -88,14 +94,18 @@ class LinearReinforce(__ReinforceLosses):
 
     def _expected_rewards(self, y_true, y_pred):
         correct_prob = K.sum(y_true * y_pred, axis=-1)
-        uncertain_prob = y_pred[:, -1]
+        uncertain_prob = y_pred[:, -1] if not self.without_uncertainty else 0
         error_prob = 1 - (correct_prob + uncertain_prob)
 
         expected_rewards = [
             self.rewards[0] * correct_prob,
             self.rewards[1] * error_prob,
-            self.rewards[2] * uncertain_prob
         ]
+
+        if not self.without_uncertainty:
+            expected_rewards.append(
+                self.rewards[2] * uncertain_prob
+            )
 
         return expected_rewards
 
@@ -108,13 +118,17 @@ class LogReinforce(__ReinforceLosses):
         epsilon = K.epsilon()
 
         correct_prob = K.sum(y_true * y_pred, axis=-1)
-        uncertain_prob = y_pred[:, -1]
+        uncertain_prob = y_pred[:, -1] if not self.without_uncertainty else 0
         error_prob = 1 - (correct_prob + uncertain_prob)
 
         expected_rewards = [
             self.rewards[0] * K.log(K.clip(correct_prob, min_value=epsilon, max_value=1 - epsilon)),
             self.rewards[1] * K.log(K.clip(error_prob, min_value=epsilon, max_value=1 - epsilon)),
-            self.rewards[2] * K.log(K.clip(uncertain_prob, min_value=epsilon, max_value=1 - epsilon)),
         ]
+
+        if not self.without_uncertainty:
+            expected_rewards.append(
+                self.rewards[2] * K.log(K.clip(uncertain_prob, min_value=epsilon, max_value=1 - epsilon))
+            )
 
         return expected_rewards

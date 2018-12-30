@@ -20,7 +20,8 @@ _default_model_params = {
 _default_loss_params = {
     'loss_name': 'categorical_crossentropy',
     'hyper_parameters': 1,
-    'minimize': True
+    'minimize': True,
+    'without_uncertainty': False
 }
 
 
@@ -47,7 +48,7 @@ def compile_model(model, **loss_kwargs):
     optimizer = 'adam'
 
     loss = get_loss(**loss_kwargs)
-    metrics = get_metrics(loss_name=loss_kwargs['loss_name'])
+    metrics = get_metrics(without_uncertainty=loss_kwargs['without_uncertainty'])
 
     model.compile(optimizer, loss=loss, metrics=metrics)
 
@@ -65,9 +66,16 @@ def get_exp_name(loss_params, noise_level, model_name):
         noise_level = 0
     noise_level = str(noise_level)
 
-    loss_name, loss_weights = [loss_params[k] for k in ['loss_name', 'hyper_parameters']]
+    loss_name, loss_weights, without_uncertainty = [loss_params[k] for k in [
+        'loss_name', 'hyper_parameters', 'without_uncertainty']]
 
-    return model_name + '_loss_' + loss_name + '_' + str(loss_weights) + '_noise_level_' + noise_level
+    name = 'model_' + model_name
+    name += '-loss_' + loss_name + '_' + str(loss_weights)
+    if without_uncertainty:
+        name += '_without_uncertainty'
+    name += '-noise_level_' + noise_level
+
+    return name
 
 
 def get_model_name(**model_params):
@@ -85,10 +93,10 @@ def get_model_name(**model_params):
 
 
 def adjust_params(loss_params, model_params):
-    if loss_params['loss_name'] != 'categorical_crossentropy':
-        model_params['output_shape'] = (11,)
-    else:
+    if loss_params['without_uncertainty']:
         model_params['output_shape'] = (10,)
+    else:
+        model_params['output_shape'] = (11,)
 
 
 def experiment(model_params=None, loss_params=None, noise_level=None, dataset='mnist',
@@ -122,6 +130,7 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
     model = get_model(**model_kwargs)
     exp = get_exp_name(loss_kwargs, noise_level, model_name=model.name)
     print('Starting experiment:', exp)
+    print('model_shapes: input', model.input_shape, ', output', model.output_shape)
 
     compile_model(model, **loss_kwargs)
 
