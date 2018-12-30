@@ -35,7 +35,7 @@ def get_model(**model_params):
     return fully_connected(**model_params)
 
 
-def compile_model(model, *loss_args, **loss_kwargs):
+def compile_model(model, **loss_kwargs):
     """
     compiles a model according to specific loss.
     a wrapper around model.compile that automatically adds relevant metrics and loss tensors
@@ -46,8 +46,8 @@ def compile_model(model, *loss_args, **loss_kwargs):
     """
     optimizer = 'adam'
 
-    loss = get_loss(*loss_args, **loss_kwargs)
-    metrics = get_metrics()
+    loss = get_loss(**loss_kwargs)
+    metrics = get_metrics(loss_name=loss_kwargs['loss_name'])
 
     model.compile(optimizer, loss=loss, metrics=metrics)
 
@@ -88,7 +88,7 @@ def adjust_params(loss_params, model_params):
     if loss_params['loss_name'] != 'categorical_crossentropy':
         model_params['output_shape'] = (11,)
     else:
-        model_params['num_classes'] = (10,)
+        model_params['output_shape'] = (10,)
 
 
 def experiment(model_params=None, loss_params=None, noise_level=None, dataset='mnist',
