@@ -7,33 +7,47 @@ from .models import fully_connected
 from .losses import get_loss
 from .metrics import get_metrics
 from .callbacks import get_callbacks
+import os
+import pickle
 
 
-_experiments_dir = ''  # todo: add a folder for test results that is ignored by git
+_experiments_dir = os.path.abspath(os.path.join(os.path.curdir, os.path.pardir, 'Shmekel_loss_results'))
+name_sep = '--'
 
 _default_model_params = {
+    'model_type': 'fully_connected',
     'depth': 1,
     'width': 32,
     'base_activation': 'relu',
     'output_activation': 'softmax'
 }
 _default_loss_params = {
-    'loss_name': 'categorical_crossentropy',
+    'loss': 'categorical_crossentropy',
     'hyper_parameters': 1,
     'minimize': True,
     'without_uncertainty': False
 }
 
 
-def get_model(**model_params):
+def __str_2_num(s):
+    x = float(s)
+    if x == round(x):
+        x = round(x)
+    return x
+
+
+def get_model(model_type=None, **model_params):
     """
     a function that returns a keras model according to some params.
     to be implemented
     :param model_params:
     :return:
     """
-    # todo: implement
-    return fully_connected(**model_params)
+    if model_type is None or model_type == 'fully_connected':
+        return fully_connected(**model_params)
+
+    else:
+        raise Exception('only fully_connected model type os supported')
 
 
 def compile_model(model, **loss_kwargs):
@@ -53,10 +67,9 @@ def compile_model(model, **loss_kwargs):
     model.compile(optimizer, loss=loss, metrics=metrics)
 
 
-def get_exp_name(loss_params, noise_level, model_name):
+def get_exp_name(model_params, loss_params, noise_level, name_sep=name_sep):
     """
     name an experiment according to the hyper parameters.
-    todo: decide on names and hyper-parameters to consider
     :param loss_name:
     :param noise_level:
     :param model_name:
@@ -66,30 +79,76 @@ def get_exp_name(loss_params, noise_level, model_name):
         noise_level = 0
     noise_level = str(noise_level)
 
-    loss_name, loss_weights, without_uncertainty = [loss_params[k] for k in [
-        'loss_name', 'hyper_parameters', 'without_uncertainty']]
+    model_name = get_model_name(**model_params)
+    loss_name = get_loss_name(**loss_params)
 
     name = 'model_' + model_name
-    name += '-loss_' + loss_name + '_' + str(loss_weights)
-    if without_uncertainty:
-        name += '_without_uncertainty'
-    name += '-noise_level_' + noise_level
+    name += name_sep + 'loss_' + loss_name
+    name += name_sep + 'noise_level_' + noise_level
 
     return name
+
+
+def _exp_name_to_params(exp_name, name_sep=name_sep):
+    model, loss, noise = exp_name.split(name_sep)
+    model_params = _model_name_to_params(model.split('model_')[-1])
+    loss_params = _loss_name_to_params(loss.split('loss_')[-1])
+    noise_level = __str_2_num(noise.split('noise_level_')[-1])
+
+    return model_params, loss_params, noise_level
 
 
 def get_model_name(**model_params):
     """
     names a model according to it's parameters
-    # todo: decide on better model names
     :param model_params:
     :return:
     """
     if 'name' in model_params.keys():
         return model_params['name']
 
-    return 'fully_connected_depth_' + str(model_params['depth']) + \
+    return model_params['model_type'] + '_depth_' + str(model_params['depth']) + \
            '_width_' + str(model_params['width'])
+
+
+def _model_name_to_params(model_name):
+    model_type = model_name.split('_depth')[0]
+    depth = int(model_name.split('_depth_')[1].split('_width_')[0])
+    width = int(model_name.split('_width_')[1])
+
+    return {
+        'model_type': model_type, 'depth': depth, 'width': width
+    }
+
+
+def get_loss_name(**loss_params):
+    if 'name'in loss_params.keys():
+        return loss_params['name']
+
+    name = loss_params['loss'] + '_weights_' + str(loss_params['hyper_parameters'])
+    if loss_params['without_uncertainty']:
+        name += '_without_uncertainty'
+
+    return name
+
+
+def _loss_name_to_params(loss_name):
+    without_uncertainty = loss_name.endswith('_without_uncertainty')
+    loss = loss_name.split('_weights_')[0]
+    hyper_parameters = loss_name.split('_weights_')[1].split('_without_uncertainty')[0]
+
+    if hyper_parameters[0] == '(':
+        hyper_parameters = hyper_parameters[1:-1]
+        hyper_parameters = hyper_parameters.replace(' ', '')
+        hyper_parameters = tuple([__str_2_num(x) for x in hyper_parameters.split(',')])
+
+
+
+    return {
+        'loss': loss,
+        'hyper_parameters': hyper_parameters,
+        'without_uncertainty': without_uncertainty
+    }
 
 
 def adjust_params(loss_params, model_params):
@@ -128,7 +187,7 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
     adjust_params(loss_kwargs, model_kwargs)
 
     model = get_model(**model_kwargs)
-    exp = get_exp_name(loss_kwargs, noise_level, model_name=model.name)
+    exp = get_exp_name(model_kwargs, loss_kwargs, noise_level)
     print('Starting experiment:', exp)
     print('model_shapes: input', model.input_shape, ', output', model.output_shape)
 
@@ -150,8 +209,20 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
                             validation_data=val_gen, validation_steps=validation_steps)
 
     if save_history or save_weights or save_dir:
-        # exp_dir = save_dir or os.path.join(_experiments_dir, exp)
-        # todo: handle the whole saving part
-        pass
+        exp_dir = save_dir or os.path.join(_experiments_dir, exp)
+        if not os.path.exists(exp_dir):
+            os.makedirs(exp_dir)
+
+        if save_weights:
+            weights_path = os.path.join(exp_dir, 'weights.h5')
+            model.save_weights(weights_path)
+            print('weights saved at:', weights_path)
+
+        if save_history:
+            history_path = os.path.join(exp_dir, 'history.h5')
+
+            with open(history_path, 'wb') as f:
+                pickle.dump(h.history, f)
+            print('history saved at:', history_path)
 
     return h
