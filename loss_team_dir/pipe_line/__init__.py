@@ -67,7 +67,7 @@ def compile_model(model, **loss_kwargs):
     model.compile(optimizer, loss=loss, metrics=metrics)
 
 
-def get_exp_name(model_params, loss_params, noise_level, name_sep=name_sep):
+def get_exp_name(dataset_name, model_params, loss_params, noise_level, name_sep=name_sep):
     """
     name an experiment according to the hyper parameters.
     :param loss_name:
@@ -82,7 +82,8 @@ def get_exp_name(model_params, loss_params, noise_level, name_sep=name_sep):
     model_name = get_model_name(**model_params)
     loss_name = get_loss_name(**loss_params)
 
-    name = 'model_' + model_name
+    name = dataset_name
+    name += name_sep + 'model_' + model_name
     name += name_sep + 'loss_' + loss_name
     name += name_sep + 'noise_level_' + noise_level
 
@@ -90,7 +91,7 @@ def get_exp_name(model_params, loss_params, noise_level, name_sep=name_sep):
 
 
 def _exp_name_to_params(exp_name, name_sep=name_sep):
-    model, loss, noise = exp_name.split(name_sep)
+    dataset, model, loss, noise = exp_name.split(name_sep)
     model_params = _model_name_to_params(model.split('model_')[-1])
     loss_params = _loss_name_to_params(loss.split('loss_')[-1])
     noise_level = __str_2_num(noise.split('noise_level_')[-1])
@@ -187,7 +188,7 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
     adjust_params(loss_kwargs, model_kwargs)
 
     model = get_model(**model_kwargs)
-    exp = get_exp_name(model_kwargs, loss_kwargs, noise_level)
+    exp = get_exp_name(dataset, model_kwargs, loss_kwargs, noise_level)
     print('Starting experiment:', exp)
     print('model_shapes: input', model.input_shape, ', output', model.output_shape)
 
