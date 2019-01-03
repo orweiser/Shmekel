@@ -11,7 +11,19 @@ import os
 import pickle
 
 
-_experiments_dir = os.path.abspath(os.path.join(os.path.curdir, os.path.pardir, 'Shmekel_loss_results'))
+def __experiments_dir():
+    if os.path.exists(os.path.abspath(os.path.join(os.path.curdir, os.path.pardir, 'loss_results_path.txt'))):
+        with open(os.path.abspath(os.path.join(os.path.curdir, os.path.pardir, 'loss_results_path.txt')), 'r') as f:
+            a = [i for i in f][0]
+        return a
+
+    else:
+        raise Exception('please create the file:',
+                        os.path.abspath(os.path.join(os.path.curdir, os.path.pardir, 'loss_results_path.txt')),
+                        'with the results folder path in it.')
+
+
+_experiments_dir = __experiments_dir()
 name_sep = '--'
 num_dig = 2
 
