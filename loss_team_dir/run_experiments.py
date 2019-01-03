@@ -71,6 +71,6 @@ for noise_level in noise_range:
 
                 experiment(loss_params=loss_params, noise_level=noise_level, dataset=dataset_name,
                            save_history=True, save_weights=False,
-                           batch_size=1024, epochs=30, clear=False)
+                           batch_size=1024, epochs=50, clear=False)
 
                 print('\n')
