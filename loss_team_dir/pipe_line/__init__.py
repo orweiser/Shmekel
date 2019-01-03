@@ -13,6 +13,7 @@ import pickle
 
 _experiments_dir = os.path.abspath(os.path.join(os.path.curdir, os.path.pardir, 'Shmekel_loss_results'))
 name_sep = '--'
+num_dig = 2
 
 _default_model_params = {
     'model_type': 'fully_connected',
@@ -67,7 +68,7 @@ def compile_model(model, **loss_kwargs):
     model.compile(optimizer, loss=loss, metrics=metrics)
 
 
-def get_exp_name(dataset_name, model_params, loss_params, noise_level, name_sep=name_sep):
+def get_exp_name(dataset_name, noise_level, loss_params=_default_loss_params, model_params=_default_model_params, name_sep=name_sep):
     """
     name an experiment according to the hyper parameters.
     :param loss_name:
@@ -77,7 +78,6 @@ def get_exp_name(dataset_name, model_params, loss_params, noise_level, name_sep=
     """
     if noise_level is None:
         noise_level = 0
-    noise_level = str(noise_level)
 
     model_name = get_model_name(**model_params)
     loss_name = get_loss_name(**loss_params)
@@ -85,7 +85,7 @@ def get_exp_name(dataset_name, model_params, loss_params, noise_level, name_sep=
     name = dataset_name
     name += name_sep + 'model_' + model_name
     name += name_sep + 'loss_' + loss_name
-    name += name_sep + 'noise_level_' + noise_level
+    name += name_sep + 'noise_level_' + str(round(noise_level, num_dig))
 
     return name
 
@@ -126,7 +126,12 @@ def get_loss_name(**loss_params):
     if 'name'in loss_params.keys():
         return loss_params['name']
 
-    name = loss_params['loss'] + '_weights_' + str(loss_params['hyper_parameters'])
+    if type(loss_params['hyper_parameters']) is tuple:
+        rounded_parameters = tuple([round(x, num_dig) for x in loss_params['hyper_parameters']])
+    else:
+        rounded_parameters = round(loss_params['hyper_parameters'], num_dig)
+
+    name = loss_params['loss'] + '_weights_' + str(rounded_parameters)
     if loss_params['without_uncertainty']:
         name += '_without_uncertainty'
 
@@ -161,7 +166,7 @@ def adjust_params(loss_params, model_params):
 
 def experiment(model_params=None, loss_params=None, noise_level=None, dataset='mnist',
                save_history=True, save_weights=False, save_dir=None,
-               batch_size=1024, epochs=50):
+               batch_size=1024, epochs=50, clear=False):
     """
 
     :param model_params:
@@ -188,8 +193,9 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
     adjust_params(loss_kwargs, model_kwargs)
 
     model = get_model(**model_kwargs)
-    exp = get_exp_name(dataset, model_kwargs, loss_kwargs, noise_level)
-    print('Starting experiment:', exp)
+    exp = get_exp_name(dataset_name=dataset, noise_level=noise_level,
+                       loss_params=loss_kwargs, model_params=model_kwargs)
+
     print('model_shapes: input', model.input_shape, ', output', model.output_shape)
 
     compile_model(model, **loss_kwargs)
@@ -225,5 +231,9 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
             with open(history_path, 'wb') as f:
                 pickle.dump(h.history, f)
             print('history saved at:', history_path)
+
+    if clear:
+        from keras.backend import clear_session
+        clear_session()
 
     return h

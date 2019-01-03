@@ -17,6 +17,9 @@ def get_loss(loss='categorical_crossentropy', hyper_parameters=1, minimize=True,
     elif loss == 'log_reinforce':
         return LogReinforce(rewards=hyper_parameters, minus=minimize, without_uncertainty=without_uncertainty)
 
+    # elif loss == 'log_linear_reinforce':
+    #     return LogLinearReinforce(rewards=hyper_parameters, minus=minimize, without_uncertainty=without_uncertainty)
+
     else:
         raise Exception('unexpected loss_name. got ' + loss)
 
@@ -132,3 +135,28 @@ class LogReinforce(__ReinforceLosses):
             )
 
         return expected_rewards
+
+
+# class LogLinearReinforce(__ReinforceLosses):
+#     def __init__(self, *args, **kwargs):
+#         super(LogLinearReinforce, self).__init__(*args, **kwargs)
+#
+#     def _expected_rewards(self, y_true, y_pred):
+#         epsilon = K.epsilon()
+#
+#         correct_prob = K.sum(y_true * y_pred, axis=-1)
+#         uncertain_prob = y_pred[:, -1] if not self.without_uncertainty else 0
+#         error_prob = 1 - (correct_prob + uncertain_prob)
+#
+#         expected_rewards = [
+#             self.rewards[0] * correct_prob * K.log(K.clip(correct_prob, min_value=epsilon, max_value=1 - epsilon)),
+#             self.rewards[1] * error_prob * K.log(K.clip(error_prob, min_value=epsilon, max_value=1 - epsilon)),
+#         ]
+#
+#         if not self.without_uncertainty:
+#             expected_rewards.append(
+#                 self.rewards[2] * uncertain_prob * K.log(K.clip(uncertain_prob, min_value=epsilon, max_value=1 - epsilon))
+#             )
+#
+#         return expected_rewards
+

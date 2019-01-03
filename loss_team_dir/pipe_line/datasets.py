@@ -47,7 +47,7 @@ def ind_generator(max_ind, randomize=True):
             yield i
 
 
-def add_noise_to_sample(x, expectation=0, sigma=1):
+def add_noise_to_array(x, expectation=0, sigma=1):
     x += np.random.normal(expectation, sigma, x.shape)
 
 
@@ -65,16 +65,19 @@ def _generator(x, batch_size, labels=None, randomize=True, noise_level=None):
         if labels is not None:
             batch_labels = np.zeros((batch_size,) + labels.shape[1:])
 
+        ind_list = []
         for batch_i, ind in enumerate(ind_gen):
-            batch_x[batch_i] = x[ind]
-            if noise_level is not None:
-                add_noise_to_sample(batch_x[batch_i], sigma=noise_level)
-
-            if labels is not None:
-                batch_labels[batch_i] = labels[ind]
-
+            ind_list.append(ind)
             if batch_i >= (batch_size - 1):
                 break
+        ind_list = np.array(ind_list)
+
+        batch_x[:] = x[ind_list]
+        if noise_level:
+            add_noise_to_array(batch_x, sigma=noise_level)
+
+        if labels is not None:
+            batch_labels[:] = labels[ind_list]
 
         if labels is None:
             yield batch_x
