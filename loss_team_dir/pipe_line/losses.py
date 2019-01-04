@@ -25,6 +25,12 @@ def get_loss(loss='categorical_crossentropy', hyper_parameters=1, minimize=True,
 
 
 class PredictionDependentLoss:
+    """
+    loss number 3 on the board
+
+    if p is the prediction, y is the true label, ~ is uncertain and l is the categorical loss, than:
+    loss = (p != ~) * l(y) + a * (p == ~) * l(y) + b * (p != y) * l(~)
+    """
     def __init__(self, weights=(-1, 0), flip_sign=False):
         self.weights = self.__weights(weights)
         self.flip_sign = flip_sign
@@ -65,6 +71,9 @@ class PredictionDependentLoss:
 
 
 class __ReinforceLosses:
+    """
+    A parent class for reinforce losses
+    """
     def __init__(self, rewards=(-1, 0), minus=True, without_uncertainty=False):
         self.rewards = self.__rewards(rewards)
         self.minus = minus
@@ -92,6 +101,12 @@ class __ReinforceLosses:
 
 
 class LinearReinforce(__ReinforceLosses):
+    """
+    reinforce loss as it is, without applying log() on the predictions.
+
+    if ~ is the uncertainty class, p is the distribution output of the model and y is the true class, than:
+    loss = p[y] + a * sum(p[i != y && i != ~]) + b * p[~]
+    """
     def __init__(self, *args, **kwargs):
         super(LinearReinforce, self).__init__(*args, **kwargs)
 
@@ -114,6 +129,12 @@ class LinearReinforce(__ReinforceLosses):
 
 
 class LogReinforce(__ReinforceLosses):
+    """
+    reinforce loss after applying log() on the predictions.
+
+    if ~ is the uncertainty class, p is the distribution output of the model and y is the true class, than:
+    loss = log(p[y]) + a * log(sum(p[i != y && i != ~])) + b * log(p[~])
+    """
     def __init__(self, *args, **kwargs):
         super(LogReinforce, self).__init__(*args, **kwargs)
 
