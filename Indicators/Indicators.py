@@ -332,6 +332,33 @@ def smooth_moving_avg(data_seq, period):
     return smma
 
 
+def data_time_scale(stock_name, stock_type='Stocks', scale=7, time_delay=0):
+    """
+    This function convert daily stock data to different time scale data.
+    :param stock_type: 'ETFs' or 'Stocks'
+    :param stock_name: just the name (without any suffix)
+    :param scale: integer- time scale of the candle
+    :param time_delay: integer- define the last day of the first period (last day=scale+time_delay)
+                       taking values between 0 and scale-1
+    :return: stock data as numpy array based on time scale
+
+    """
+    daily=np.load(stock_type+'_np/'+stock_name.split('.')[0]+'.us.txt.npy')
+    N=(np.shape(daily)[0])/scale
+    Nit=int(N)-int(time_delay>(N%scale))
+    new_data=np.zeros((Nit,5))
+    for i in range(Nit):
+        i_s=i*scale+time_delay
+        open=daily[i_s,0]
+        high=np.max(daily[i_s:i_s+scale,1])
+        low=np.min(daily[i_s:i_s+scale,2])
+        close=daily[i_s+scale-1,3]
+        volume=np.sum(daily[i_s:i_s+scale,4])
+        new_data[i,:]=[open,high,low,close,volume]
+
+    return new_data
+
+
 class momentum_indicator(Feature):
     def __init__(self, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
         """
