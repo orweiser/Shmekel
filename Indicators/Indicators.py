@@ -141,7 +141,6 @@ class Stock:
         self.features = feature_list if type(feature_list) is list else [feature_list]
         self.normalization_types = normalization_types if type(normalization_types) is list \
             else [normalization_types] * len(self.features)
-
         self.built = False
         self.feature_matrix = None
         self.temporal_delay = None
@@ -151,14 +150,10 @@ class Stock:
         """
         loads the data if self.data is None, else it returns self.data
         """
+        
         if self.data is None:
             stock = self.stock_tckt
-            if self.validation:
-                # @TODO: load stock validation data
-                pass
-            else:
-                # todo: load stock train data
-                pass
+            self.data=np.load('../Data/Stocks_np/' + stock.split('.')[0] + '.us.txt.npy')
         return self.data
 
     def build(self):
