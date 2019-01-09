@@ -35,12 +35,16 @@ def _categorical_crossentropy_loop():
 
 
 noise_range = [5 * i / resolution for i in range(resolution)]
+
 usr = input('enter your first name please..')
-noise_range = {
+noise_range_dict = {
     'dror': noise_range[:4],
     'roee': noise_range[4:7],
     'eden': noise_range[7:10],
-}[usr]
+}
+noise_range_dict['gal'] = [noise_range_dict[name][-1] for name in ['eden', 'roee', 'dror']]
+noise_range = noise_range_dict[usr]
+
 print('user noise range:', noise_range)
 
 for noise_level in noise_range:
