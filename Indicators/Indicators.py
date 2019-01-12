@@ -356,7 +356,7 @@ class RSI(Feature):
         data columns represent'Open', 'High', 'Low', 'Close', 'Volume'
                                 0       1       2       3         4     
         """
-        close = data[:,3]
+        close = data[:, 3]
         dif = -np.diff(close)
         u = np.maximum(dif, 0)
         d = np.maximum(-dif, 0)
@@ -389,25 +389,25 @@ class ADL(Feature):
         data columns represent'Open', 'High', 'Low', 'Close', 'Volume'
                                 0       1       2       3         4     
         """
-        close, low, high, volume = data[:,3], data[:,2], data[:,1], data[:,4]
+        close, low, high, volume = data[:, 3], data[:, 2], data[:, 1], data[:, 4]
 
         AD = volume*(2 * close - low - high)/(high - low)
         # AD = volume*(2 * close + (-low) + (-high))/(high + (-low))
 
-        return AD[0]
+        return AD
 
 
 class MFI(Feature):
-    def __init__(self, days, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
+    def __init__(self, period=14, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
         """
         use this method to define the parameters of the feature
         """
 
-        self.time_delay = days  # change it according to the feature as described in class Feature
+        self.time_delay = period  # change it according to the feature as described in class Feature
         self.is_numerical = 1  # boolean. change it according to the feature as described in class Feature
 
         # here you can define more parameters that "_compute_feature" might need to use
-        self.days = days
+        self.period = period
         # the following line must be included
         super(MFI, self).__init__(data=data, normalization_type=normalization_type)
 
@@ -425,7 +425,7 @@ class MFI(Feature):
         positive_money_flow = np.zeros(1)
         negative_money_flow = np.zeros(1)
 
-        for idx in range(self.days):
+        for idx in range(self.period):
 
             if typical_price[idx] > typical_price[idx+1]:
                 positive_money_flow += money_flow[idx]

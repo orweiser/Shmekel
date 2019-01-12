@@ -52,7 +52,7 @@ def __file_to_dict(fname):
     return log
 
 
-def __file_to_np_array(fname, reverse=False, return_dates=False, pattern=('Open', 'High', 'Low', 'Close')):
+def __file_to_np_array(fname, reverse=False, return_dates=False, pattern=('Open', 'High', 'Low', 'Close', 'Volume')):
     f_dict = __file_to_dict(fname)
     if not f_dict:
         return None
