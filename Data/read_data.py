@@ -4,7 +4,7 @@ This file contains functions that will help you create the numpy data set and re
 Make sure this file is in the same folder wit the folders 'Stocks' and 'ETFs' or go over the code to fix it.
 
 The numpy arrays have shape (num_time_stemps, 4)
-    each time stamp is a vector of 4 values: ('Open', 'High', 'Low', 'Close')
+    each time stamp is a vector of 4 values: ('Open', 'High', 'Low', 'Close', 'Volume')
 
 ***Do the following only once!!!***
     create the numpy data set by running the command 'create_numpy_dataset()'.
