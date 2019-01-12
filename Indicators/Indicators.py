@@ -1,4 +1,8 @@
 import numpy as np
+from numpy import ndarray
+from data import load_stock
+from shmekel_config import get_config
+from copy import deepcopy as copy
 
 
 """
@@ -20,6 +24,9 @@ last thing, note that in Stock.build i try to define self.temporal_size, once yo
     make sure to finish the definition there
     
 """
+
+
+feature_axis = get_config()['feature_axis']
 
 
 def normalize(feature, normalization_type=None):
@@ -48,7 +55,7 @@ class Feature:
     The code might require some corrections and adaptations, but in general it needs not to be changed
 
     """
-    def __init__(self, data=None, normalization_type=None, time_delay=0, is_numerical=None):
+    def __init__(self, normalization_type=None, time_delay=0, num_features=1, is_numerical=True):
         """
         :param data: None or a pointer to the stock data
 
@@ -65,14 +72,10 @@ class Feature:
                     example we could define a feature to indicate the day of the week via 1-hot
                     representation - more on that in another time
         """
-        self.data = data
         self.normalization_type = normalization_type
         self.is_numerical = is_numerical
         self.time_delay = time_delay
-
-    def __call__(self, *args, **kwargs):
-        """Don't mind it, for later use"""
-        self.__init__(*args, **kwargs)
+        self.num_features = num_features
 
     def _compute_feature(self, data):
         """
@@ -84,10 +87,11 @@ class Feature:
 
         :param data:
         :return:
+        :rtype: ndarray
         """
         pass
 
-    def get_feature(self, temporal_delay=0, normalization_type=None):
+    def get_feature(self, data, temporal_delay=0, normalization_type=None):
         """
         compute feature on self.data
 
@@ -105,15 +109,17 @@ class Feature:
         if temporal_delay and (temporal_delay < self.time_delay):
             raise Exception('while using method "get_feature" temporal_delay can not be smaller than self.time_delay')
 
-        if self.data is None:
-            return None
-
-        feature = self._compute_feature(self.data)
-
+        feature = self._compute_feature(data)
         feature = normalize(feature, normalization_type=normalization_type)
+
+        if len(feature.shape) > 1 and feature_axis:
+            feature = np.swapaxes(feature, 0, feature_axis)
 
         if temporal_delay > self.time_delay:
             feature = feature[:-(temporal_delay - self.time_delay)]
+
+        if len(feature.shape) > 1 and feature_axis:
+            feature = np.swapaxes(feature, 0, feature_axis)
 
         return feature
 
@@ -125,7 +131,7 @@ class Stock:
         1. implement the method "load_data"
         2. define self.temporal_size in method "build"
     """
-    def __init__(self, stock_tckt, data=None, feature_list=None, normalization_types=None, validation=False):
+    def __init__(self, stock_tckt, data=None, feature_list=None):
         """
         :param stock_tckt: just the name of the stock or whatever identifier you decide is best
         :param data: optional if "load_data" is implemented.
@@ -136,77 +142,78 @@ class Stock:
         :param validation: boolean. if true, method "load_data" will load validation data instead of train data
         """
         self.stock_tckt = stock_tckt
-        self.data = data
-        self.validation = validation
         self.features = feature_list if type(feature_list) is list else [feature_list]
-        self.normalization_types = normalization_types if type(normalization_types) is list \
-            else [normalization_types] * len(self.features)
 
-        self.built = False
-        self.feature_matrix = None
-        self.temporal_delay = None
-        self.temporal_size = None
+        # property holders
+        self._data = data
+        self._feature_matrix = None
+        self._numerical_feature_list = None
+        self._not_numerical_feature_list = None
+        self._temporal_delay = None
+        self._temporal_size = None
 
-    def load_data(self):
+    def reset_properties(self, reset_data=True):
+        if reset_data:
+            self.__init__(stock_tckt=self.stock_tckt, feature_list=self.features)
+        else:
+            self.__init__(stock_tckt=self.stock_tckt, feature_list=self.features, data=self._data)
+
+    def load_data(self, override=False):
         """
         loads the data if self.data is None, else it returns self.data
         """
-        if self.data is None:
+        if self._data is None or override:
             stock = self.stock_tckt
-            if self.validation:
-                # @TODO: load stock validation data
-                pass
-            else:
-                # todo: load stock train data
-                pass
-        return self.data
+            self._data = load_stock(stock)
+        return self._data
 
-    def build(self):
-        """
-        loads the data and create feature instances
-        """
-        if self.built:
-            return
-        data = self.load_data()
-        self.features = [feature(data=data, normalization_type=n_type)
-                         for feature, n_type in zip(self.features, self.normalization_types)]
-        self.temporal_delay = max([feature.time_delay for feature in self.features])
-        self.temporal_size = data   # todo: change this parameter to equal the number of samples minus temporal delay
-        self.built = True
+    def __set_data(self, value):
+        self._data = value
 
-    def get_features_as_list(self, only_numerical_features=False, only_not_numerical_features=False, align=False):
-        """
-        this method outputs a list of features as numpy arrays
-        NOTE: unless :param align: is True, those features are not necessarily the same size
+    data = property(load_data, __set_data)
 
-        :param only_numerical_features: return only features that are numerical
-        :param only_not_numerical_features: return only features that are not numerical
-        :param align: if True, returns numpy arrays of the same temporal size
-        :return: a list of numpy arrays
-        """
-        if only_numerical_features and only_not_numerical_features:
-            raise Exception('at least one of the parameters only_not_as_matrix and only_as_matrix_features'
-                            'must be False.')
-        self.build()
+    @property
+    def temporal_delay(self):
+        if self._temporal_delay is None:
+            self._temporal_delay = max([feature.time_delay for feature in self.features])
+        return self._temporal_delay
 
-        temporal_delay = 0 if not align else self.temporal_delay
+    @property
+    def temporal_size(self):
+        if self._temporal_size is None:
+            self._temporal_size = len(self.data[1]) - self.temporal_delay
+        return self._temporal_size
 
-        if only_not_numerical_features:
-            return [feature.get_feature(temporal_delay=temporal_delay) for feature in self.features if not feature.is_numerical]
-        if only_numerical_features:
-            return [feature.get_feature(temporal_delay=temporal_delay) for feature in self.features if feature.is_numerical]
-        return [feature.get_feature(temporal_delay=temporal_delay) for feature in self.features]
+    @property
+    def feature_matrix(self):
+        if self._feature_matrix is None:
+            f_list = copy(self.numerical_feature_list)
+            for i, f in enumerate(f_list):
+                if len(f.shape) == 1:
+                    f = f[np.newaxis, :]
+                    if feature_axis:
+                        f = np.swapaxes(f, 0, feature_axis)
 
-    def get_features_as_matrix(self, override=False):
-        """
-        returns the full feature matrix of the stock
-        :param override: if True, past values are overridden
-        :return: a numpy 2-D array
-        """
-        if override or self.feature_matrix is None:
-            self.feature_matrix = np.stack(self.get_features_as_list(only_numerical_features=True, align=True))
+                    f_list[i] = f
 
-        return self.feature_matrix
+            self._feature_matrix = np.concatenate(f_list, axis=feature_axis)
+        return self._feature_matrix
+
+    def __get_features(self, numerical=True):
+        f_list = [feature for feature in self.features if feature.is_numerical is numerical]
+        return [f.get_feature(data=self.data, temporal_delay=self.temporal_delay) for f in f_list]
+
+    @property
+    def numerical_feature_list(self):
+        if not self._numerical_feature_list:
+            self._numerical_feature_list = self.__get_features(numerical=True)
+        return self._numerical_feature_list
+
+    @property
+    def not_numerical_feature_list(self):
+        if not self._not_numerical_feature_list:
+            self._not_numerical_feature_list = self.__get_features(numerical=False)
+        return self._not_numerical_feature_list
 
     def slice(self, t_start, t_end=None, num_time_samples=None):
         """
@@ -222,7 +229,7 @@ class Stock:
         if num_time_samples:
             t_end = t_start + num_time_samples
 
-        return self.get_features_as_matrix()[t_start:t_end]
+        return self.feature_matrix[t_start:t_end]
 
 
 # class StockList:

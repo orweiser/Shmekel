@@ -1,4 +1,4 @@
-from Dstruct import *
+from .Indicators import *
 
 import numpy as np
 
