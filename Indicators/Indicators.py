@@ -5,28 +5,36 @@ from shmekel_config import get_config
 from copy import deepcopy as copy
 
 
-"""
-Hi, in this file we define the general classes of Features and Stocks.
-for now, please ignore the StockList class.
-
-in implementing the features, your main focus will be on defining subclasses of Feature. 
-the real must do is to redefine the "_compute_feature" method.
-go to the end of the file for pseudo-example.
-
-Stock.load_data must be implemented. Rotem said it might be easier to directly download data each time.
-    check it out and decide on the best way to load data.
-    note that there need to be some notion of train and validation sets
-
-we need to decide on normalization methods. if you get to it, do implement it
-but if not it's ok because it should not be feature specific
-    
-last thing, note that in Stock.build i try to define self.temporal_size, once you do load the data in some pattern,
-    make sure to finish the definition there
-    
-"""
-
-
 feature_axis = get_config()['feature_axis']
+pattern = get_config()['pattern']
+
+
+def _get_basic_feature(candles, key, keep_dims=False):
+    """
+    pulls out a basic feature from candle array.
+    the candle array is a 2-D with basic features as High or Open
+    the pattern of features is decided in shmekel_config, as is the feature_axis
+
+    the main idea here, is that given a candle, use this function to pull out a specific field.
+
+    :type candles: ndarray | tuple
+    :param candles: a 2-D numpy array
+
+    :param key: one of Open, Close, High, Low, Volume
+     :type key: str
+    :return:
+    """
+
+    if type(candles) is tuple:
+        candles = candles[0]
+
+    candles = np.swapaxes(candles, 0, feature_axis)
+    f = candles[pattern.index(key)]
+
+    if keep_dims:
+        f = np.swapaxes(f[np.newaxis, :], 0, feature_axis)
+
+    return f
 
 
 def normalize(feature, normalization_type=None):
@@ -49,23 +57,24 @@ def normalize(feature, normalization_type=None):
 
 class Feature:
     """
-    this is the general class of features
-    !!! it is NOT a specific feature. specific features will be subclasses of this class !!!
-
-    The code might require some corrections and adaptations, but in general it needs not to be changed
-
+        this is a basic feature class and you need not to touch it
+        however, do take the time and effort to understand its structure and parameters
+        to see how to implement a specific feature, go to the feature example at the end
     """
     def __init__(self, normalization_type=None, time_delay=0, num_features=1, is_numerical=True):
         """
-        :param data: None or a pointer to the stock data
-
         :param normalization_type:
 
-        :param time_delay: an integer that specifies the number of past samples needed to compute
-                    the an entry .note that if N samples are required, then the output feature
+        :type time_delay: int
+        :param time_delay: the number of past samples needed to compute
+                    an entry. note that if (N + 1) samples are required, than the output feature
                     vector is N samples shorter than the original data
 
-        :param is_numerical: a boolean value. True if the feature is numerical and False otherwise.
+        :type num_features: int
+        :param num_features:
+
+        :type is_numerical: bool
+        :param is_numerical: True if the feature is numerical and False otherwise.
                     for example, "date" is a non-numerical feature because the usual adding and
                     multiplication does not make sense.
                     However, we might want a different variation on "Date" that is numerical, for
@@ -84,9 +93,6 @@ class Feature:
             "_compute_feature" definitions.
 
         ****This method must be overridden by children classes****
-
-        :param data:
-        :return:
         :rtype: ndarray
         """
         pass
@@ -95,7 +101,7 @@ class Feature:
         """
         compute feature on self.data
 
-        ****This method should generally be inherited by children classes****
+        This method should be inherited by children classes, do ***not*** override!
 
         :param temporal_delay: an integer.
             if temporal_delay and (temporal_delay < self.time_delay):
@@ -104,7 +110,9 @@ class Feature:
                 drop the oldest (temporal_delay - self.time_delay) values in  the feature
 
         :param normalization_type: normalization type as explained in the method "normalize".
-        :return: a numpy array of shape (Stock_num_samples - time delay, feature size)
+        :return: a numpy array of shape:
+                (Stock_num_samples - time_delay, feature size) if feature_axis is 0
+                (feature_size, Stock_num_samples - time_delay) if feature_axis is -1
         """
         if temporal_delay and (temporal_delay < self.time_delay):
             raise Exception('while using method "get_feature" temporal_delay can not be smaller than self.time_delay')
@@ -112,13 +120,13 @@ class Feature:
         feature = self._compute_feature(data)
         feature = normalize(feature, normalization_type=normalization_type)
 
-        if len(feature.shape) > 1 and feature_axis:
+        if self.is_numerical and len(feature.shape) > 1 and feature_axis:
             feature = np.swapaxes(feature, 0, feature_axis)
 
         if temporal_delay > self.time_delay:
             feature = feature[:-(temporal_delay - self.time_delay)]
 
-        if len(feature.shape) > 1 and feature_axis:
+        if self.is_numerical and len(feature.shape) > 1 and feature_axis:
             feature = np.swapaxes(feature, 0, feature_axis)
 
         return feature
@@ -126,21 +134,16 @@ class Feature:
 
 class Stock:
     """
-    this class represents a stock with it's features, holds the data and the computations
-    you need to de two things here:
-        1. implement the method "load_data"
-        2. define self.temporal_size in method "build"
+    this class represents a stock with it's features
+    it holds the data and the computations
     """
     def __init__(self, stock_tckt, data=None, feature_list=None):
         """
-        :param stock_tckt: just the name of the stock or whatever identifier you decide is best
-        :param data: optional if "load_data" is implemented.
-        :param feature_list: list of features (Feature subclasses) to compute for the stock
-        :param normalization_types: the normalization types to use on each feature.
-            if normalization_types is a list, it should be the same length as feature_list.
-            else, it is used on all features
-        :param validation: boolean. if true, method "load_data" will load validation data instead of train data
+        :param stock_tckt: just the name of the stock
+        :param data: optional. if not given, it loads data automatically
+        :param feature_list: list of features (Feature subclasses instances) to compute for the stock
         """
+
         self.stock_tckt = stock_tckt
         self.features = feature_list if type(feature_list) is list else [feature_list]
 
@@ -151,6 +154,9 @@ class Stock:
         self._not_numerical_feature_list = None
         self._temporal_delay = None
         self._temporal_size = None
+
+    def set_feature_list(self, feature_list):
+        self.__init__(stock_tckt=self.stock_tckt, data=self.data, feature_list=feature_list)
 
     def reset_properties(self, reset_data=True):
         if reset_data:
@@ -218,7 +224,7 @@ class Stock:
     def slice(self, t_start, t_end=None, num_time_samples=None):
         """
         computes a slice of the full feature matrix
-        :param t_start: start time index
+        :param t_start: start time index.
         :param t_end: optional: end time index. if not specified, t_end = t_start + num_time_samples
         :param num_time_samples: optional
         :return: a numpy 2-D array
@@ -229,50 +235,11 @@ class Stock:
         if num_time_samples:
             t_end = t_start + num_time_samples
 
-        return self.feature_matrix[t_start:t_end]
+        m = np.swapaxes(self.feature_matrix, 0, feature_axis)
+        m = m[t_start:t_end]
+        m = np.swapaxes(m, 0, feature_axis)
 
-
-# class StockList:
-#     """
-#     NOTE: this class is not yet thought of. ignore it for now.
-#     """
-#     def __init__(self, stock_tckt_list, features_list, normalization_types=None):
-#         def L(x):
-#             if type(x) is list:
-#                 return copy(x)
-#             else:
-#                 return [copy(x) for _ in range(num_features)]
-#
-#         num_features = 1 if type(features_list) is not list else len(features_list)
-#
-#         self.stock_tckt_list = L(stock_tckt_list)
-#         self.normalization_types = L(normalization_types)
-#         self.feature_list = L(features_list)
-#
-#         for f in self.feature_list:
-#             if not issubclass(f, Feature):
-#                 raise Exception('all features in feature_list must be a subclass of Feature')
-#
-#         self.built = False
-#         self.stock_list = None
-#
-#     def build(self):
-#         if self.built:
-#             return
-#
-#         self.stock_list = []
-#         for tckt in self.stock_tckt_list:
-#             self.stock_list.append(
-#                 Stock(stock_tckt=tckt, feature_list=self.feature_list, normalization_types=self.normalization_types)
-#             )
-#
-#         self.built = True
-#
-#     def generator(self, batch_size=512, time_length=32, randomize=True):
-#         pass
-
-
-"""Down here we define the features"""
+        return m
 
 
 class __feature_example__(Feature):
@@ -280,37 +247,82 @@ class __feature_example__(Feature):
     this is an example on how to create a feature subclass.
     use this green space to describe the feature for those of us who are not familiar
     """
-    def __init__(self, data=None, normalization_type=None):  # DO NOT CHANGE THE DECLARATION
-        """
-        use this method to define the parameters of the feature
-        """
+    def __init__(self, arg1=3, arg2=2, arg3=None, **kwargs):
+        # be sure to start this method with the "super" call because it has some defaults that you might
+        # want to override later
+        super(__feature_example__, self).__init__(**kwargs)
 
+        # once we defined the defaults through the "super" call, we can override those we want to override:
+        self.is_numerical = True  # change it according to the feature as described in class Feature
         self.time_delay = 0  # change it according to the feature as described in class Feature
-        self.is_numerical = None  # change it according to the feature as described in class Feature
+        self.num_features = 2  # change it according to the feature as described in class Feature
 
-        # here you can define more parameters that "_compute_feature" might need to use
-        self.param1 = None
-        self.param2 = None
+        # down here you can define more parameters that "_compute_feature" might need to use
+
+        # here we define params that are given as arguments
+        self.arg1 = arg1
+        self.arg2 = arg2
         # ...
-        self.paramN = None
+        self.arg3 = arg3
 
-        # the following line must be included
-        super(__feature_example__, self).__init__(data=data, normalization_type=normalization_type,
-                                                  time_delay=self.time_delay, is_numerical=self.is_numerical)
+        # and here we define params that are *not* given as arguments
+        self.param1 = 1
+        self.param2 = 15
+        # ...
+        self.paramN = 42
 
     def _compute_feature(self, data):
         """
         That's the core method of the feature. It MUST be re-defined for every feature
-
         define the function to output the feature as numpy array from the data
 
-        :param data:
+        this an example feature that computes powers of 'High' and 'Close'
+        according to arguments specified by the user
+            it computes 'Close' to the power of self.arg2 and 'High' to the self.arg1 power
+
+        :param data: a tuple that holds a numpy array to represent a candle and a list of dates.
+            the numpy array is 2-D, with one axis for time and another
+            for the basic features (Open, High, Low, Close, Volume)
+                                    *** note that we might decide to change this pattern,
+                                        so make sure not to use it explicitly, but only via the
+                                        _get_basic_feature() function as seen below
+
+            the feature axis is defined in the shmekel_config file
+
+            if feature_axis is 0, than the shape of the array is (5, time)
+            if it is -1, than (time, 5).
+            the _get_basic_feature() function covers that part as well
+        :type data: tuple
+
         :return: a numpy array
+            the array should be one of the following:
+                if self.num_features == 1:
+                    either a 1-D array of length Time,
+                    or:
+                        a 2-D array, where one axis has size Time and the other size 1.
+                        if feature_axis is 0, the shape is (1, Time)
+                        if feature_axis is -1, the shape is (Time, 1)
+
+                else:   (self.num_features > 1)
+                    if you have num_features > 1, it means you compute more than one feature,
+                    therefore your array should be 2-D
+
+                    if feature_axis is 0, the shape is (self.num_features, Time)
+                    if feature_axis is -1, the shape is (Time, self.num_features)
+        :rtype: ndarray
         """
 
         # if you defined some extra parameters, you can access them as follows:
-        param1 = self.param1    # and so on...
+        high_power = self.arg1
+        close_power = self.arg2
 
-        f = data ** 2  # just some calculations to create the feature
+        candle, dates = data  # that is the shape of the data we get
 
-        return f
+        # here were pulling the relevant fields out of "candle"
+        # without implicitly decide on a pattern for candles or the value of feature_axis
+        high = _get_basic_feature(candle, 'High')
+        close = _get_basic_feature(candle, 'Close')
+
+        # computation of the features and stacking over the feature_axis axis.
+        output_array = np.stack([high ** high_power, close ** close_power], axis=feature_axis)
+        return output_array

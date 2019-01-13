@@ -56,7 +56,7 @@ def load_stock(tckt, stock_type='Stocks'):
     if not log:
         return log
 
-    a = np.concatenate([log[key] for key in pattern], axis=feature_axis)
+    a = np.stack([log[key] for key in pattern], axis=feature_axis)
 
     return a, log['Date']
 

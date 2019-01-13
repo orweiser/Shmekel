@@ -6,10 +6,10 @@ import warnings
 default_config = {
     'stock_types': ('ETFs', 'Stocks'),
     'pattern': ('Open', 'High', 'Low', 'Close', 'Volume'),
-    'feature_axis': 0,
+    'feature_axis': -1,
     'stock_data_file_ending': '_list.pickle'
 }
-user_paths_config = {
+user_config = {
     'data_path': None,
     'shmekel_drive_path': None
 }
@@ -38,7 +38,7 @@ def get_line(key, value):
 
 
 def write_config(config=None):
-    config = config or {**default_config, **user_paths_config}
+    config = config or {**default_config, **user_config}
     with open(config_path, 'w') as f:
         for key, item in config.items():
             f.write(get_line(key, item))
@@ -79,7 +79,14 @@ def get_config():
             warning = '\nconfiguration field: "' + key + '" is empty.\nPlease fill in details in config file at:\n' + config_path
             warnings.warn(warning, Warning)
 
-    config['feature_axis'] = int(config['feature_axis'][0])
+    config['feature_axis'] = int(config['feature_axis'])
+
+    for key in default_config.keys():
+        if config[key] != default_config[key]:
+            warning = '\nconfiguration field: "' + key + '" is ' + str(config[key]) + \
+                      ', but default is ' + str(default_config[key]) + '.\n' + \
+                      'consider changing it back'
+            warnings.warn(warning, Warning)
 
     time.sleep(0.1)
     return config
