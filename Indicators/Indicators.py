@@ -216,7 +216,7 @@ class Stock:
         return self._numerical_feature_list
 
     @property
-    def not_numerical_feature_list(self):
+    def non_numerical_feature_list(self):
         if not self._not_numerical_feature_list:
             self._not_numerical_feature_list = self.__get_features(numerical=False)
         return self._not_numerical_feature_list

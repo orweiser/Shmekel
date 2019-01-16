@@ -2,17 +2,17 @@ from data import get_data_info
 import numpy as np
 
 
-stocks_info = get_data_info()
+all_stocks_info = get_data_info()
 # stock_info is now a list of tuples as:
 # (stock_name, number_of_samples, path of the file)
 
 # we can now use the info to load a random stock with more than 3000 samples:
 #   first, lets discard all the stocks with less than 3000 samples:
-stocks_info = [s for s in stocks_info if s[1] > 3000]
-print('dropped all the stocks with less than 3000 samples. left with', len(stocks_info), 'stocks.')
+all_stocks_info = [s for s in all_stocks_info if s[1] > 3000]
+print('dropped all the stocks with less than 3000 samples. left with', len(all_stocks_info), 'stocks.')
 
 #   now lets choose a stock at random
-stock_info = stocks_info[np.random.randint(len(stocks_info))]
+stock_info = all_stocks_info[np.random.randint(len(all_stocks_info))]
 print('chose:', stock_info)
 
 
@@ -21,9 +21,9 @@ from Indicators import *
 stock = Stock(stock_tckt=stock_info[0])
 
 # to access the stock data, just subscript it
-data, dates = stock.data
+numerical_data, dates = stock.data
 # data is a 2-D numpy array with the values of Open High Low Close Volume, and dates is a list of dates
-print('data shape:', data.shape, '\ndates length:', len(dates))
+print('numerical data shape:', numerical_data.shape, '\ndates length:', len(dates))
 
 
 # to compute features, we need to define the stock with the features we want
@@ -54,7 +54,7 @@ feature_list = [High(), DateTuple(), Candle(with_volume=True), Candle(with_volum
 stock.set_feature_list(feature_list)
 
 # we still have all the numerical features from before, but now we also have:
-not_numerical_feature_list = stock.not_numerical_feature_list
+not_numerical_feature_list = stock.non_numerical_feature_list
 print('there is', len(not_numerical_feature_list), 'non numerical features')
 # we only have 1 non numerical feature - date_tuple
 date_tuple = not_numerical_feature_list[0]
