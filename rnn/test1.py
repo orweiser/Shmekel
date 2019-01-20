@@ -30,24 +30,23 @@ for i in range(len(x)):
 ##
 input_size = x_train.shape[1]
 output_size = 5  # candle size
-layer1_size = 6  # 256
+layer1_size = 64  # 256
 gru_size = 256
 
 # x_train = np.reshape(x_train, (x_train.shape[0], 1, x_train.shape[1]))
 # x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
 
 model = Sequential()
-model.add(Dense(layer1_size, activation='relu', input_dim=input_size))
-# model.summary()
-# model.add(layers.Flatten())
-# model.summary()
-# model.add(layers.Reshape([2900, 6, 1]))  # (x_train.shape[0], x_train.shape[1], 1)
-model.add(GRU(input_dim=layer1_size, output_dim=gru_size, activation='tanh', return_sequences=False))
-model.add(Dense(output_size, activation='relu', input_dim=gru_size))
+model.add(Dense(units=layer1_size, activation='relu'))
+model.add(GRU(units=10, activation='tanh', recurrent_activation='hard_sigmoid', return_sequences=True))
+model.add(GRU(units=10, activation='tanh', recurrent_activation='hard_sigmoid', return_sequences=True))
+#model.add(Dense(output_size, activation='relu'))
+
+model.build((None, d_train, output_size))
 model.compile(optimizer='rmsprop',
               loss='mse',
               metrics=['accuracy'])
-
+model.summary()
 print('Start training...')
-model.fit(x_train, Google.data[-(d_train+d_test):-d_test, :], epochs=100, batch_size=32)
+#model.fit(x_train, Google.data[-(d_train+d_test):-d_test, :], epochs=100, batch_size=32)
 print('Done training!')
