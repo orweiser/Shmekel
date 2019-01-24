@@ -1,4 +1,4 @@
-from .Indicators import Feature, _get_basic_feature, pattern
+from .Feature import Feature, pattern
 import numpy
 
 
@@ -18,14 +18,18 @@ class CandleDerivatives(Feature):
         self.is_numerical = True
         self.time_delay = self._deriv_order
         self.with_volume = with_volume
-        self._num_basic = len(pattern) - 1*(not with_volume)
+        self._num_basic = int(len(pattern) - 1*(not with_volume))
         self.num_features = self._num_basic * deriv_order
 
     def _compute_feature(self, data):
         data_mat = data[0]
-        out_mat = numpy.zeros(data_mat.shape[0],
-                              self.num_features)
-        for i in range(self._deriv_order):
+        print(data_mat.shape[0])
+        out_mat = numpy.zeros([data_mat.shape[0], self.num_features])
+        for i in range(1, self._deriv_order + 1):
             deriv_mat = data_mat[:-1] - data_mat[1:]
-            out_mat[:-(i+1), i*self._num_basic: (i+1) * self._num_basic] = deriv_mat
+            out_mat[:-i, (i-1)*self._num_basic: i * self._num_basic] = deriv_mat
             data_mat = deriv_mat
+
+        return out_mat[:-self._deriv_order]
+
+
