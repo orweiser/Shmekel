@@ -1,5 +1,5 @@
 import numpy as np
-from ShmekelCore import Feature, Math
+from ShmekelCore import Feature
 
 
 class MFI(Feature):
@@ -9,10 +9,8 @@ class MFI(Feature):
         """
         super(MFI, self).__init__(**kwargs)
 
-        self.time_delay = days  # change it according to the feature as described in class Feature
-        self.is_numerical = 1  # boolean. change it according to the feature as described in class Feature
+        self.time_delay = days
 
-        # here you can define more parameters that "_compute_feature" might need to use
         self._days = days
 
     def _compute_feature(self, data):

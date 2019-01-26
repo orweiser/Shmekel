@@ -26,6 +26,7 @@ class CandleDerivatives(Feature):
         data_mat = data[0]
         out_mat = numpy.zeros([data_mat.shape[0], self.num_features])
         for i in range(1, self._deriv_order + 1):
+            # TODO: think about using numpy.diff or numpy.gradient
             deriv_mat = data_mat[:-1] - data_mat[1:]
             out_mat[:-i, (i-1)*self._num_basic: i * self._num_basic] = deriv_mat
             data_mat = deriv_mat

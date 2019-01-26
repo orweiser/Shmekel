@@ -3,13 +3,13 @@ from ShmekelCore import Feature, Math
 
 
 class RSI(Feature):
-    def __init__(self, time_delay=14, **kwargs):
+    def __init__(self, period=14, **kwargs):
         """
         use this method to define the parameters of the feature
         """
         super(RSI, self).__init__(**kwargs)
 
-        self.time_delay = time_delay
+        self.time_delay = period
         self.is_numerical = True
 
     def _compute_feature(self, data):
