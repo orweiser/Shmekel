@@ -1,4 +1,4 @@
-from .Feature import Feature, pattern
+from ShmekelCore import Feature
 import numpy
 
 
@@ -15,15 +15,15 @@ class CandleDerivatives(Feature):
         super(CandleDerivatives, self).__init__(**kwargs)
 
         self._deriv_order = deriv_order
+        self._num_basic = int(len(self._pattern) - 1*(not with_volume))
+
         self.is_numerical = True
         self.time_delay = self._deriv_order
         self.with_volume = with_volume
-        self._num_basic = int(len(pattern) - 1*(not with_volume))
-        self.num_features = self._num_basic * deriv_order
+        self.num_features = self._num_basic * self._deriv_order
 
     def _compute_feature(self, data):
         data_mat = data[0]
-        print(data_mat.shape[0])
         out_mat = numpy.zeros([data_mat.shape[0], self.num_features])
         for i in range(1, self._deriv_order + 1):
             deriv_mat = data_mat[:-1] - data_mat[1:]

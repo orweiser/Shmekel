@@ -1,0 +1,1 @@
+from .ShmekelConfig import *
