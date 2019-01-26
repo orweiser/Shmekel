@@ -3,7 +3,7 @@ from ShmekelCore import Feature, Math
 
 
 class ADL(Feature):
-    def __init__(self, **kwargs):  # DO NOT CHANGE THE DECLARATION
+    def __init__(self, **kwargs):
         """
         use this method to define the parameters of the feature
         """
