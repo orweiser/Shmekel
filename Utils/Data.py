@@ -20,7 +20,6 @@ class DataReader:
                   str(self.data_path) + '\nPlease fill in details at: ' + config_path
             raise Exception(msg)
 
-
     def tckt_to_file_path(self, tckt, stock_type='Stocks'):
         def assert_tckt(tckt):
             """
@@ -33,10 +32,8 @@ class DataReader:
 
         return os.path.join(self.data_path, stock_type, assert_tckt(tckt) + '.us.txt')
 
-
     def get_list_path(self, stock_type='Stocks'):
         return os.path.join(self.data_path, stock_type + self.stock_data_file_ending)
-
 
     def __file_to_dict(self ,fname):
         content = _read_a_file(fname)
@@ -52,7 +49,6 @@ class DataReader:
                 else:
                     log[key].append(float(val))
         return log
-
 
     def load_stock(self, tckt, stock_type='Stocks'):
         if stock_type not in self.stock_types:

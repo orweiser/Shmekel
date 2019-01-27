@@ -92,7 +92,7 @@ def get_config(config_path):
                       'consider changing it back'
             warnings.warn(warning, Warning)
 
-    time.sleep(0.1)
+    time.sleep(0.1)  # why is this?
     return config
 
 
