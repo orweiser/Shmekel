@@ -52,6 +52,9 @@ def _read_a_file(fname):
 
 
 def get_config(config_path):
+    if not os.path.isfile(config_path):
+        raise Exception("There is now file in the location given %s" % config_path)
+
     config = {}
     for line in _read_a_file(config_path):
         if not len(line):
@@ -76,7 +79,8 @@ def get_config(config_path):
 
     for key, item in config.items():
         if not item:
-            warning = '\nconfiguration field: "' + key + '" is empty.\nPlease fill in details in config file at:\n' + config_path
+            warning = '\nconfiguration field: "' + key + '" is empty.\nPlease fill in details in config file at:\n' + \
+                       config_path
             warnings.warn(warning, Warning)
 
     config['feature_axis'] = int(config['feature_axis'])
