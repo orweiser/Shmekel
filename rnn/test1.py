@@ -39,7 +39,7 @@ gru_size = 256
 model = Sequential()
 model.add(Dense(units=layer1_size, activation='relu'))
 model.add(GRU(units=10, activation='tanh', recurrent_activation='hard_sigmoid', return_sequences=True))
-model.add(GRU(units=10, activation='tanh', recurrent_activation='hard_sigmoid', return_sequences=True))
+model.add(GRU(units=10, activation='tanh', recurrent_activation='hard_sigmoid', return_sequences=False))
 #model.add(Dense(output_size, activation='relu'))
 
 model.build((None, d_train, output_size))
@@ -48,5 +48,5 @@ model.compile(optimizer='rmsprop',
               metrics=['accuracy'])
 model.summary()
 print('Start training...')
-#model.fit(x_train, Google.data[-(d_train+d_test):-d_test, :], epochs=100, batch_size=32)
+model.fit(x_train, Google.data[-(d_train+d_test):-d_test, :], epochs=100, batch_size=32)
 print('Done training!')
