@@ -1,5 +1,5 @@
 from .results import Results
-from .losses.loss import Loss
+from .losses import get as get_loss
 from .data import Data
 from .trainer import Trainer
 from .models.model import Model
@@ -34,7 +34,8 @@ class Experiment:
     def name(self):
         if self._name is not None:
             return self._name
-        raise NotImplementedError()
+        # todo: implement
+        return 'exp_try'
 
     @property
     def status(self):
@@ -48,7 +49,7 @@ class Experiment:
         """
         if self._model is not None:
             return self._model
-        raise NotImplementedError()
+        self._model = Model(experiment=self, **self.model_config)
 
     @property
     def trainer(self):
@@ -56,8 +57,6 @@ class Experiment:
         :rtype: Trainer
         :return:
         """
-        if not self.train_config:
-            pass  # todo
         self._trainer = self._trainer or Trainer(experiment=self, **self.train_config)
         return self._trainer
 
@@ -67,12 +66,14 @@ class Experiment:
         :rtype: Loss
         :return:
         """
-        self._loss = self._loss or Loss(experiment=self, **self.loss_config)
+        self._loss = self._loss or get_loss(experiment=self, **self.loss_config)
         return self._loss
 
     @property
     def metrics(self):
-        raise NotImplementedError()
+        # todo:
+        #  raise NotImplementedError()
+        return None
 
     @property
     def data(self):
@@ -85,9 +86,9 @@ class Experiment:
 
     @property
     def history(self):
-        if self._history is not None:
-            return self._history
-        raise NotImplementedError()
+        if self._history is None:
+            self._history = self.results.history
+        return self.history
 
     @property
     def results(self):
@@ -110,7 +111,7 @@ class Experiment:
         :rtype: list
         :return:
         """
-        raise NotImplementedError()
+        return self.model.callbacks + self.metrics.callbacks + self.loss.callbacks + self.data.callbacks
 
     def backup(self, save_weights: bool=False, save_history: bool=True):
         self.fill_configs()

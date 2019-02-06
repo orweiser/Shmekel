@@ -1,4 +1,3 @@
-from .experiment import *
 
 
 def load_experiment_by_path():

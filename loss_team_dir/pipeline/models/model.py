@@ -15,7 +15,7 @@ class Model(KerasModel):
             d = self._building_function()
             return [d[key] for key in ['inputs', 'outputs']]
 
-        super(Model, self).__init__(*get_layers(), name=self.name)
+        super(Model, self).__init__(*get_layers(), name=self.generate_name())
 
     @property
     def config(self):
@@ -25,18 +25,22 @@ class Model(KerasModel):
     def config(self, value):
         raise RuntimeError('resetting a Models config is not allowed')
 
-    @property
-    def name(self):
+    def generate_name(self):
         """:rtype: str"""
-        raise NotImplementedError
+        # todo: implement
+        return 'model_try'
 
     @property
     def default_config(self):
         """:rtype: dict"""
-        raise NotImplementedError()
+        # todo: implement
+        return {}
 
     @property
     def _building_function(self):
-        return lambda: {}
+        if self.config['model'] == 'fully_connected':
+            from .models import fully_connected
+            return fully_connected
+
 
 
