@@ -178,7 +178,7 @@ def adjust_params(loss_params, model_params):
 
 def experiment(model_params=None, loss_params=None, noise_level=None, dataset='mnist',
                save_history=True, save_weights=False, save_dir=None,
-               batch_size=1024, epochs=50, clear=False):
+               batch_size=1024, epochs=50, clear=False, return_model=False):
     """
 
     :param model_params:
@@ -193,6 +193,9 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
     :param noise_level: either None or a positive float that is the std of the noise (gaussian zero-mean)
     :return: a keras history module
     """
+
+    if return_model and clear:
+        raise Exception("Can't clear session when return_model is True")
 
     loss_kwargs = copy(_default_loss_params)
     loss_kwargs.update(loss_params or {})
@@ -247,5 +250,8 @@ def experiment(model_params=None, loss_params=None, noise_level=None, dataset='m
     if clear:
         from keras.backend import clear_session
         clear_session()
+
+    if return_model:
+        return h, model
 
     return h

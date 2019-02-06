@@ -1,8 +1,8 @@
 from .results import Results
-from .loss import Loss
+from .losses.loss import Loss
 from .data import Data
 from .trainer import Trainer
-from keras import Model
+from .models.model import Model
 
 
 class Experiment:
@@ -113,7 +113,14 @@ class Experiment:
         raise NotImplementedError()
 
     def backup(self, save_weights: bool=False, save_history: bool=True):
+        self.fill_configs()
         raise NotImplementedError()
+
+    def fill_configs(self):
+        self.train_config = self.trainer.config
+        self.loss_config = self.loss.config
+        self.data_config = self.data.config
+        self.model_config = self.model.config
 
     def erase(self):
         raise NotImplementedError()

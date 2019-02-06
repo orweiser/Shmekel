@@ -5,6 +5,10 @@ class Trainer:
     def __init__(self, experiment: Experiment, optimizer='adam', noise=None, batch_size=1024, epochs=50,
                  callbacks=None, include_experiment_callbacks=True, verbose=2,
                  steps_per_epoch=None, validation_steps=None, **params):
+        self.config = {**dict(optimizer='adam', noise=None, batch_size=1024, epochs=50,
+                              callbacks=None, include_experiment_callbacks=True, verbose=2,
+                              steps_per_epoch=None, validation_steps=None),
+                       **params}
         self.experiment = experiment
         self.optimizer = optimizer
         self._history = None
@@ -61,4 +65,3 @@ class Trainer:
                                             callbacks=self.callbacks,
                                             validation_data=val_gen, validation_steps=validation_steps)
 
-dict

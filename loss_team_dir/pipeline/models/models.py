@@ -55,7 +55,6 @@ def fully_connected(dataset_name='mnist', depth=1, width=32, base_activation='re
     if len(output_shape) > 1:
         x = Reshape(output_shape)(x)
 
-    return Model(input_layer, x, name=name)
-
+    return dict(inputs=input_layer, outputs=x)
 
 
