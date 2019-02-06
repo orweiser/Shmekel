@@ -1,13 +1,13 @@
-from .experiment import Experiment
-
-
 class Results:
-    def __init__(self, experiment: Experiment=None, history: dict=None):
+    def __init__(self, experiment=None, history: dict=None):
         self.experiment = experiment
-        self.history = history
+
+        self.history = None
+        if any((history, experiment)):
+            self.history = history or experiment.history
 
     def get_single_epoch(self, epoch=-1):
-        num_epochs = self.history.values()[0].__len__()
+        num_epochs = [len(v) for v in self.history.values()][0]
         if epoch >= num_epochs:
             raise ValueError("max epoch is", num_epochs - 1, "got", epoch)
         if epoch < 0:
@@ -20,7 +20,7 @@ class Results:
         def get(x):
             if type(x) is str:
                 return self.history[x]
-            if type(x) in int:
+            if type(x) is int:
                 self.get_single_epoch(x)
             if type(x) is slice:
                 epoch_list = []
