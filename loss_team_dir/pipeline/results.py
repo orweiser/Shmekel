@@ -3,11 +3,17 @@ import matplotlib.pyplot as plt
 
 class Results:
     def __init__(self, experiment=None, history: dict = None):
+        assert any((experiment, history))
         self.experiment = experiment
 
-        self.history = None
-        if any((history, experiment)):
-            self.history = history or experiment.history
+        self._history = history
+
+    @property
+    def history(self):
+        if self._history is None:
+            path = self.experiment.backup_dir
+            # todo: load
+        return self._history
 
     def get_single_epoch(self, epoch=-1):
         num_epochs = [len(v) for v in self.history.values()][0]
