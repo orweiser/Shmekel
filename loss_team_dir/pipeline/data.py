@@ -112,6 +112,10 @@ class Data:
     def visualize_sample(self, index):
         raise NotImplementedError()
 
+    @property
+    def callbacks(self):
+        return []
+
 
 def normalize(x, **normalization_params):
     # todo: add options

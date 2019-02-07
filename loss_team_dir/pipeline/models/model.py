@@ -42,5 +42,8 @@ class Model(KerasModel):
             from .models import fully_connected
             return fully_connected
 
-
+    @property
+    def callbacks(self):
+        # todo: implement
+        return []
 

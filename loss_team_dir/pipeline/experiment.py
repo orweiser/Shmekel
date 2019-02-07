@@ -7,8 +7,8 @@ from .models.model import Model
 
 class Experiment:
     def __init__(self, model_config=None, loss_config=None, data_config=None, train_config=None, name=None):
-        self.model_config = model_config or {}
-        self.loss_config = loss_config or {}
+        self.model_config = model_config or {'model': 'fully_connected'}
+        self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
         self.data_config = data_config or {}
         self.train_config = train_config or {}
 
@@ -47,9 +47,10 @@ class Experiment:
         :rtype: Model
         :return:
         """
-        if self._model is not None:
-            return self._model
-        self._model = Model(experiment=self, **self.model_config)
+        if self._model is None:
+            self._model = Model(experiment=self, **self.model_config)
+
+        return self._model
 
     @property
     def trainer(self):
@@ -73,7 +74,7 @@ class Experiment:
     def metrics(self):
         # todo:
         #  raise NotImplementedError()
-        return None
+        return ['acc']
 
     @property
     def data(self):
@@ -87,8 +88,8 @@ class Experiment:
     @property
     def history(self):
         if self._history is None:
-            self._history = self.results.history
-        return self.history
+            self._history = self.results._history or self.trainer._history.history
+        return self._history
 
     @property
     def results(self):
@@ -96,9 +97,7 @@ class Experiment:
         :rtype: Results
         :return:
         """
-        self._results = self.results or Results(experiment=self, history=self.history)
-
-        return self._results
+        return Results(experiment=self, history=self._history or self.trainer._history.history)
 
     @property
     def backup_dir(self):
@@ -111,7 +110,10 @@ class Experiment:
         :rtype: list
         :return:
         """
-        return self.model.callbacks + self.metrics.callbacks + self.loss.callbacks + self.data.callbacks
+        callbacks = []
+        for obj in [self.loss, self.data, self.model]:
+            callbacks.extend(obj.callbacks)
+        return callbacks
 
     def backup(self, save_weights: bool=False, save_history: bool=True):
         self.fill_configs()
