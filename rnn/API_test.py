@@ -9,30 +9,18 @@ from Utils.Data import *
 
 # weiser your code uses the old data code and requires
 stocks_info = DataReader('../Shmekel_config.txt').get_data_info()
-print('stock_info:', stocks_info)
 stocks_info = [s for s in stocks_info if s[1] > 3000]
-print('stock_info:', stocks_info)
 stock_info = stocks_info[np.random.randint(len(stocks_info))]
-feature_list = [Candle()]
-print('stock_info:', stock_info)
+feature_list = [High(), Low(), Volume()]
 stock = Stock(stock_tckt=stock_info[0], feature_list=feature_list)
-print('stock:', stock.feature_matrix)
 
-"""
-features = [Ind.RSI, Ind.ADL, Ind.CCI, Ind.momentum_indicator, Ind.AccumDest, Ind.VWAP]
-input_len = len(features)
-Google = Ind.Stock("googl", None, features)
-Google.load_data()
-data = np.zeros((3000, input_len, 1))
-temp = Google.get_features_as_list(False, False, True)
-for i, feature in enumerate(temp):
-    data[:,i,:] = feature[-3000:].reshape((3000,1))
-    """
 labels = []
 finalData = []
-tempData = stock.data[0]
-yesterday = tempData[0][3]
-for i, today in enumerate(tempData[1:]):
+cnd = stock.data[0]
+yesterday = cnd[0][3]
+features_data = np.vstack(stock.numerical_feature_list)
+time_batch = 7
+for i, today in enumerate(cnd[1:]):
     if today[3] > yesterday * 1.01:
         labels.append(1)
     elif today[3] < yesterday * 0.99:
@@ -40,10 +28,11 @@ for i, today in enumerate(tempData[1:]):
     else:
         labels.append(0)
     yesterday = today[3]
-    finalData.append(tempData[i:i+7])
+    finalData.append(features_data[:, i:i+time_batch])
 
 finalData = np.stack(finalData[:-5])
-daily_input = Input(shape=(7, 5), dtype='float', name='daily_input')
+daily_shape = [feature_list.__len__(), time_batch]
+daily_input = Input(shape=daily_shape, dtype='float', name='daily_input')
 # weekly_input = Input(shape=(input_len, 1), dtype='float', name='weekly_input')
 
 xd = TimeDistributed(Dense(units=64, activation='relu'))(daily_input)
@@ -60,7 +49,7 @@ main_output = Dense(1, activation='tanh', name='main_output')(x)
 
 # model = Model(inputs=[daily_input, weekly_input], outputs=main_output)
 model = Model(inputs=daily_input, outputs=main_output)
-model.compile(optimizer='rmsprop',
+model.compile(optimizer='adam',
               loss='mse', metrics=['acc'])
 
 model.summary()
