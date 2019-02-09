@@ -1,0 +1,42 @@
+from Utils.Data import *
+from os import listdir
+from Indicators import *
+
+def model_fitting_data(num_of_samples, time_batch, s_list, f_list=None):
+
+    data_path = '../Shmekel_config.txt'
+    stocks_info = DataReader(data_path).get_data_info()
+    stocks_info = [s for s in stocks_info if s[0] in s_list]
+    for s in stocks_info:
+        if s[0]<num_of_samples:
+            raise ValueError( s[1] + 'stock number of samples is smaller than num_of_samples' )
+
+    if f_list is None:
+        indicators_path = '../FeatureSpace'
+        f_list = [f[:-3] for f in listdir(indicators_path) if f.endswith('.py')]
+        f_list.remove('__init__')
+
+    up_threshold = 1.01
+    down_threshold = 0.99
+    labels = []
+    finalData = []
+    for i,s in enumerate(stocks_info)
+        stock = Stock(stock_tckt=s[0], feature_list=f_list)
+        cnd = stock.data[0]
+        yesterday = cnd[0][3]
+        features_data = np.vstack(stock.numerical_feature_list).transpose()
+        for i, today in enumerate(cnd[1:]):
+            if today[3] > yesterday * up_threshold:
+                labels.append(1)
+            elif today[3] < yesterday * down_threshold:
+                labels.append(-1)
+            else:
+                labels.append(0)
+            yesterday = today[3]
+            finalData.append(features_data[i:i + time_batch, :])
+        finalData = finalData[:-(time_batch-2)]
+        finalLabels = labels[time_batch - 2:]
+
+    finalData = np.stack(finalData)
+
+    return finalData, finalLabels
