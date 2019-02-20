@@ -105,4 +105,11 @@ def create_crossentropy_labels(stocks, time_batch, up_threshold, down_threshold)
     return final_labels
 
 
+def min_max_normalization(data):
+
+    dmax = np.amax(np.amax(data, axis=0), axis=1, keepdims=True)
+    dmin = np.amax(np.amax(data, axis=0), axis=1, keepdims=True)
+    data = np.divide(data-dmin, dmax-dmin)
+    return data
+
 x, y = model_fitting_data(3000, time_batch=16, s_list=['a', 'aa', 'blbbl'], f_list=None, labels_type='tanh')
