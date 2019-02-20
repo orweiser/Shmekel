@@ -1,10 +1,12 @@
 from keras.layers import Input, LSTM, Dense, TimeDistributed, concatenate
 from keras.models import Model
 # from keras.utils.vis_utils import plot_model
-#from FeatureSpace.AD import *
-#from FeatureSpace.ADL import *
+# from FeatureSpace.AD import *
+# from FeatureSpace.ADL import *
+
 from Indicators import *
 from Utils.Data import *
+
 
 upThreshold = 1.01
 downThreshold = 0.99
@@ -16,12 +18,13 @@ stock_info = stocks_info[0]
 feature_list = [High(), Low()]
 stock = Stock(stock_tckt=stock_info[0], feature_list=feature_list)
 
+
 labels = []
 finalData = []
 cnd = stock.data[0]
 yesterday = cnd[0][3]
 features_data = np.vstack(stock.numerical_feature_list).transpose()
-for i, today in enumerate(cnd[1:]):
+for i, today in enumerate(cnd):
     if today[3] > yesterday * upThreshold:
         labels.append(1)
     elif today[3] < yesterday * downThreshold:
@@ -31,8 +34,8 @@ for i, today in enumerate(cnd[1:]):
     yesterday = today[3]
     finalData.append(features_data[i:i + time_batch, :])
 
-finalData = np.stack(finalData[:-(time_batch-2)])
-finalLabels = labels[time_batch-2:]
+finalData = np.stack(finalData[:-time_batch])
+finalLabels = labels[time_batch:]
 
 daily_shape = [time_batch, feature_list.__len__()]
 daily_input = Input(shape=daily_shape, dtype='float', name='daily_input')
@@ -55,6 +58,6 @@ model.compile(optimizer='adam',
 
 model.summary()
 
-model.fit(finalData, finalLabels, validation_split=0.1, verbose=1, epochs=10)
+model.fit(finalData, finalLabels, validation_split=0.1, verbose=2, epochs=10)
 
 # plot_model(model, to_file='model.png')
