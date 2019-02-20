@@ -7,7 +7,8 @@ from .models.model import Model
 
 class Experiment:
     def __init__(self, model_config=None, loss_config=None, data_config=None, train_config=None, name=None):
-        self.model_config = model_config or {'model': 'fully_connected'}
+        self.model_config = model_config or {'model': 'lstm'}
+        print("Experiment self.model_config: ", self.model_config)
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
         self.data_config = data_config or {}
         self.train_config = train_config or {}
@@ -28,7 +29,7 @@ class Experiment:
         print('\nStarting experiment:', self.name, '\n')
         self.trainer.fit()
         self._history = self.trainer.history
-        self.backup(**kwargs)
+        # self.backup(**kwargs)
 
     @property
     def name(self):

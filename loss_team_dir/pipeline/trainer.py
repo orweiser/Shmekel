@@ -4,10 +4,10 @@ import numpy as np
 class Trainer:
     def __init__(self, experiment, optimizer='adam', noise=None, batch_size=1024,
                  callbacks=None, include_experiment_callbacks=True, randomize=True,
-                 steps_per_epoch=None, validation_steps=None, **params):
+                 steps_per_epoch=None, validation_steps=None, epochs=10, **params):
         self.config = {**dict(optimizer=optimizer, noise=noise, batch_size=batch_size,
                               callbacks=callbacks, include_experiment_callbacks=include_experiment_callbacks,
-                              steps_per_epoch=steps_per_epoch, validation_steps=validation_steps),
+                              steps_per_epoch=steps_per_epoch, validation_steps=validation_steps, epochs=epochs),
                        **params}
         self.experiment = experiment
         self.optimizer = optimizer
@@ -18,11 +18,12 @@ class Trainer:
         self.steps_per_epoch = steps_per_epoch
         self.validation_steps = validation_steps
 
+        self.epochs = epochs
         self.batch_size = batch_size
-        if not include_experiment_callbacks:
-            self.callbacks = callbacks
-        else:
+        if include_experiment_callbacks:
             self.callbacks = experiment.get_exp_callbacks() + (callbacks or [])
+        else:
+            self.callbacks = callbacks
 
         self.params = params or {}
         # todo: warn about extra params
@@ -95,6 +96,6 @@ class Trainer:
         validation_steps = self.validation_steps or (data.val_size // batch_size)
 
         self._history = model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch,
-                                            callbacks=self.callbacks,
+                                            callbacks=self.callbacks, verbose=2, epochs=self.epochs,
                                             validation_data=val_gen, validation_steps=validation_steps, **self.params)
 

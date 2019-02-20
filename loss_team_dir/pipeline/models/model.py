@@ -5,6 +5,7 @@ from copy import deepcopy as copy
 class Model(KerasModel):
     def __init__(self, experiment=None, model='fully_connected', output_activation='softmax', input_shape=None,
                  **params):
+        print("Model model: ", model)
         self._config = self.default_config
         self._config.update({
             **dict(model=model, output_activation=output_activation, input_shape=input_shape, ), **params
@@ -38,9 +39,13 @@ class Model(KerasModel):
 
     @property
     def _building_function(self):
+        print("model in _building_function: ", self.config['model'])
         if self.config['model'] == 'fully_connected':
             from .models import fully_connected
             return fully_connected
+        if self.config['model'] == 'lstm':
+            from .models import lstm
+            return lstm
 
     @property
     def callbacks(self):

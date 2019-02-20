@@ -1,5 +1,6 @@
 from loss_team_dir.pipe_line import experiment, get_exp_name
 from loss_team_dir.pipe_line.analysis import get_saved_experiments_names_paths
+from loss_team_dir.pipeline.experiment import Experiment
 
 
 dataset_name = 'mnist'
@@ -36,14 +37,14 @@ def _categorical_crossentropy_loop():
 
 noise_range = [5 * i / resolution for i in range(resolution)]
 
-usr = input('enter your first name please..')
+# usr = input('enter your first name please..')
 noise_range_dict = {
     'dror': noise_range[:4],
     'roee': noise_range[4:7],
     'eden': noise_range[7:10],
 }
 noise_range_dict['gal'] = [noise_range_dict[name][-1] for name in ['eden', 'roee', 'dror']]
-noise_range = noise_range_dict[usr]
+noise_range = noise_range_dict['dror']
 
 print('user noise range:', noise_range)
 
@@ -71,10 +72,12 @@ for noise_level in noise_range:
                 if exp_name in saved_experiments:
                     print('Skipping experiment:', exp_name)
                     continue
-                print('Starting experiment:', exp_name, '-' * 50, sep='\n')
+                print('Starting experiment lalala:', exp_name, '-' * 50, sep='\n')
+                # experiment(loss_params=loss_params, noise_level=noise_level, dataset=dataset_name,
+                #            save_history=True, save_weights=False,
+                #            batch_size=1024, epochs=50, clear=False)
 
-                experiment(loss_params=loss_params, noise_level=noise_level, dataset=dataset_name,
-                           save_history=True, save_weights=False,
-                           batch_size=1024, epochs=50, clear=False)
+                experiment = Experiment()
+                experiment.run()
 
                 print('\n')
