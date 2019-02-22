@@ -35,7 +35,7 @@ class Trainer:
             for i in f(num_samples):
                 yield i
 
-    def batch_generator(self, data=None, batch_size=1024, use_raw_data=False, mode='train', randomize=None):
+    def batch_generator(self, data=None, batch_size=1024, use_raw_data=True, mode='train', randomize=None):
         if randomize is None:
             randomize = self.randomize
 
@@ -96,6 +96,6 @@ class Trainer:
         validation_steps = self.validation_steps or (data.val_size // batch_size)
 
         self._history = model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch,
-                                            callbacks=self.callbacks, verbose=2, epochs=self.epochs,
+                                            callbacks=self.callbacks, epochs=self.epochs,
                                             validation_data=val_gen, validation_steps=validation_steps, **self.params)
 
