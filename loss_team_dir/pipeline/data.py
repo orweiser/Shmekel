@@ -29,6 +29,8 @@ class Data:
         if self._raw_dataset is None:
             from keras.datasets import mnist
             self._raw_dataset = mnist.load_data()
+            self._raw_dataset[0][0][:] = self._raw_dataset[0][0][:]/255
+
         return self._raw_dataset
 
     def process_outputs(self, label):
