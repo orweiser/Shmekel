@@ -8,6 +8,7 @@ config_path = r"C:\Or\Projects\Shmekel_config.txt"
 config = get_config(config_path)
 
 data_reader = DataReader(config_path)
+data_reader.create_data_lists()
 
 stocks_info = data_reader.get_data_info()
 # stock_info is now a list of tuples as:
