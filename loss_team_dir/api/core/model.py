@@ -28,8 +28,7 @@ class Model(KerasModel):
     def callbacks(self):
         return []
 
-    def get_default_config(self):
-        """:rtype: dict"""
+    def get_default_config(self) -> dict:
         # todo: implement
         return {}
 
