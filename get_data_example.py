@@ -1,8 +1,15 @@
-from data import get_data_info
+from Utils.Data import DataReader
+from ShmekelCore.CalcModels import Stock
+from FeatureSpace.BasicFeatures import *
+from Utils.ShmekelConfig import *
 import numpy as np
 
+config_path = r"C:\Or\Projects\Shmekel_config.txt"
+config = get_config(config_path)
 
-stocks_info = get_data_info()
+data_reader = DataReader(config_path)
+
+stocks_info = data_reader.get_data_info()
 # stock_info is now a list of tuples as:
 # (stock_name, number_of_samples, path of the file)
 
@@ -18,7 +25,7 @@ print('chose:', stock_info)
 
 # we can now define a stock:
 from Indicators import *
-stock = Stock(stock_tckt=stock_info[0])
+stock = Stock(stock_tckt=stock_info[0], data=data_reader.load_stock(stock_info[0]), feature_axis=data_reader.feature_axis)
 
 # to access the stock data, just subscript it
 data, dates = stock.data
@@ -31,7 +38,7 @@ print('data shape:', data.shape, '\ndates length:', len(dates))
 #   for the sake of the example, lets say we want the following features, even though they are degenerate:
 feature_list = [High(), Candle(with_volume=True), Candle(with_volume=False)]
 
-stock = Stock(stock_tckt=stock_info[0], feature_list=feature_list)
+stock = Stock(stock_tckt=stock_info[0], data=data_reader.load_stock(stock_info[0]), feature_list=feature_list)
 # or we could have just do the following:
 stock.set_feature_list(feature_list)
 

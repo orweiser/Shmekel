@@ -4,8 +4,8 @@ import numpy as np
 # feature_axis = get_config()['feature_axis']
 # pattern = get_config()['pattern']
 
-default_pattern = ('Open', 'High', 'Low', 'Close', 'Volume')
-default_feature_axis = -1
+# default_pattern = ('Open', 'High', 'Low', 'Close', 'Volume')
+# default_feature_axis = -1
 
 
 def normalize(feature, normalization_type=None):
@@ -32,7 +32,7 @@ class Feature:
         however, do take the time and effort to understand its structure and parameters
         to see how to implement a specific feature, go to the feature example at the end
     """
-    def __init__(self, pattern=default_pattern, feature_axis=default_feature_axis, normalization_type=None,
+    def __init__(self, pattern=('Open', 'High', 'Low', 'Close', 'Volume'), feature_axis=-1, normalization_type=None,
                  time_delay=0, num_features=1, is_numerical=True):
         """
         :param pattern: the pattern of the candle data inserted ('High', 'Low'...), as defined in the config file

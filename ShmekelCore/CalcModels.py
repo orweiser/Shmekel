@@ -1,10 +1,5 @@
-from data import load_stock
 from copy import deepcopy as copy
 import numpy as np
-from shmekel_config import get_config
-
-
-feature_axis = get_config()['feature_axis']
 
 
 class Stock:
@@ -12,7 +7,7 @@ class Stock:
     this class represents a stock with it's features
     it holds the data and the computations
     """
-    def __init__(self, stock_tckt, data=None, feature_list=None):
+    def __init__(self, stock_tckt, data, feature_axis=None, feature_list=None):
         """
         :param stock_tckt: just the name of the stock
         :param data: optional. if not given, it loads data automatically
@@ -23,6 +18,7 @@ class Stock:
         self.features = feature_list if type(feature_list) is list else [feature_list]
 
         # property holders
+        self._feature_axis = feature_axis if feature_axis else -1
         self._data = data
         self._feature_matrix = None
         self._numerical_feature_list = None
@@ -39,19 +35,16 @@ class Stock:
         else:
             self.__init__(stock_tckt=self.stock_tckt, feature_list=self.features, data=self._data)
 
-    def load_data(self, override=False):
+    def __get_data(self):
         """
         loads the data if self.data is None, else it returns self.data
         """
-        if self._data is None or override:
-            stock = self.stock_tckt
-            self._data = load_stock(stock)
         return self._data
 
     def __set_data(self, value):
         self._data = value
 
-    data = property(load_data, __set_data)
+    data = property(__get_data, __set_data)
 
     @property
     def temporal_delay(self):
@@ -72,12 +65,12 @@ class Stock:
             for i, f in enumerate(f_list):
                 if len(f.shape) == 1:
                     f = f[np.newaxis, :]
-                    if feature_axis:
-                        f = np.swapaxes(f, 0, feature_axis)
+                    if self._feature_axis:
+                        f = np.swapaxes(f, 0, self._feature_axis)
 
                     f_list[i] = f
 
-            self._feature_matrix = np.concatenate(f_list, axis=feature_axis)
+            self._feature_matrix = np.concatenate(f_list, axis=self._feature_axis)
         return self._feature_matrix
 
     def __get_features(self, numerical=True):
@@ -110,8 +103,8 @@ class Stock:
         if num_time_samples:
             t_end = t_start + num_time_samples
 
-        m = np.swapaxes(self.feature_matrix, 0, feature_axis)
+        m = np.swapaxes(self.feature_matrix, 0, self._feature_axis)
         m = m[t_start:t_end]
-        m = np.swapaxes(m, 0, feature_axis)
+        m = np.swapaxes(m, 0, self._feature_axis)
 
         return m

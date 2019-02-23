@@ -35,7 +35,7 @@ class DataReader:
     def get_list_path(self, stock_type='Stocks'):
         return os.path.join(self.data_path, stock_type + self.stock_data_file_ending)
 
-    def __file_to_dict(self ,fname):
+    def __file_to_dict(self, fname):
         content = _read_a_file(fname)
         if not content:
             return False

@@ -3,8 +3,8 @@ import numpy as np
 
 
 class Candle(Feature):
-    def __init__(self, pattern, feature_axis, with_volume=True, **kwargs):
-        super(Candle, self).__init__(pattern, feature_axis, **kwargs)
+    def __init__(self, with_volume=True, **kwargs):
+        super(Candle, self).__init__(**kwargs)
 
         self.is_numerical = True
         self.time_delay = 0
