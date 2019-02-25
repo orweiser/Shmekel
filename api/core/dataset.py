@@ -1,21 +1,45 @@
 from copy import deepcopy as copy
 
-"""
-to implement:
-        
-"""
 
-
-class Dataset:
+class BaseDataset:
     """
     Abstract class for datasets.
 
     subclasses should implement the following abstract methods:
-        init
         __get_item__
         __len__
         __str__
+    """
+    def __getitem__(self, index):
+        raise NotImplementedError()
+
+    def __len__(self) -> int:
+        """
+        the number of samples in the dataset.
+        method __getitem__() should support any index between 0 and the output of __len__()_
+        """
+        raise NotImplementedError()
+
+    def __str__(self) -> str:
+        """
+        should return a string with the name of the subclass, including some parameters
+                                from config to distinguish between instances
+        """
+        raise NotImplementedError()
+
+
+class Dataset(BaseDataset):
+    """
+    Abstract class for datasets to use during train.
+
+    subclasses should implement the following abstract methods:
+        init
+        __get_item__ -> returns an input-output pair
+        __len__
+        __str__
         get_default_config
+
+        val_mode -> returns a boolean. can not be changed after an instance was created
     """
     def __init__(self, experiment=None, **params):
         """
@@ -50,13 +74,6 @@ class Dataset:
         """
         raise NotImplementedError()
 
-    def get_default_config(self) -> dict:
-        """
-        :return: a default configuration dictionary.
-            typically it should contain all the keywords from init
-        """
-        raise NotImplementedError()
-
     def __getitem__(self, index) -> dict:
         """
         get the index'th sample of the dataset.
@@ -78,18 +95,24 @@ class Dataset:
         """
         raise NotImplementedError()
 
-    def __len__(self) -> int:
+    def get_default_config(self) -> dict:
         """
-        the number of samples in the dataset.
-        method __getitem__() should support any index between 0 and the output of __len__()_
+        :return: a default configuration dictionary.
+            typically it should contain all the keywords from init
         """
         raise NotImplementedError()
 
-    def __str__(self) -> str:
+    @property
+    def val_mode(self) -> bool:
         """
-        should return a string with the name of the
+        when True, get items returns sample from validation set
+                __len__() return the size of the validation set
         """
         raise NotImplementedError()
+
+    @val_mode.setter
+    def val_mode(self, value):
+        raise AssertionError('Asserting validation mode after initialization is forbidden ')
 
     # todo: optional methods and properties
     #  train / val split
