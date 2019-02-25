@@ -16,8 +16,8 @@ class Loss:
 
     def __call__(self, y_true, y_pred):
         if self.with_uncertainty:
-            if y_true.outpu
-        self.tensor_loss = self.loss_function(y_true, y_pred)
+            if y_true.output:
+                self.tensor_loss = self.loss_function(y_true, y_pred)
         return self.tensor_loss
 
     @property
