@@ -6,8 +6,8 @@ class Model(KerasModel):
     def __init__(self, experiment=None, **params):
         self.experiment = experiment
 
-        self._config = copy(self.get_default_config())
-        self._config.update(dict(experiment=experiment, **copy(params)))
+        self.config = copy(self.get_default_config())
+        self.config.update(dict(experiment=experiment, **copy(params)))
 
         self.init(**params)
 

@@ -4,16 +4,7 @@ from keras import Input
 import numpy as np
 
 
-# def save_args(obj, defaults, kwargs):
-def save_args(obj, defaults, kwargs):
-    for k, v in defaults.items():
-        if k in kwargs:
-            v = kwargs[k]
-        setattr(obj, k, v)
-
-
 class FullyConnected(Model):
-
     # define types to prevent IDE warnings
     output_activation: str
     batch_norm_before_output: bool
@@ -24,10 +15,23 @@ class FullyConnected(Model):
     width: int
     depth: int
     name: str
-    dataset_name: str
+    _input_shape: tuple
+    _output_shape: tuple
 
-    def init(self, **kwargs):
-            save_args(self, self.get_default_config(), kwargs)
+    def init(self, depth=1, width=32, base_activation='relu', skip_connections=False, batch_normalization=False,
+             batch_norm_after_activation=True, batch_norm_before_output=False, input_shape=(28, 28),
+             output_shape=(10,), output_activation='softmax', name=None):
+        self.depth = depth
+        self.width = width
+        self.base_activation = base_activation
+        self.skip_connections = skip_connections
+        self.batch_normalization = batch_normalization
+        self.batch_norm_after_activation = batch_norm_after_activation
+        self.batch_norm_before_output = batch_norm_before_output
+        self._input_shape = input_shape
+        self._output_shape = output_shape
+        self.output_activation = output_activation
+        self.name = name
 
     def get_inputs_outputs(self):
         def add_layer(input_tensor, is_last_hidden_layer=False):
@@ -44,8 +48,8 @@ class FullyConnected(Model):
 
             return output_tensor
 
-        input_shape = self.input_shape or {'mnist': (28, 28)}[self.dataset_name]
-        output_shape = self.output_shape or {'mnist': (10,)}[self.dataset_name]
+        input_shape = self._input_shape
+        output_shape = self._output_shape
 
         input_layer = Input(input_shape)
         if len(input_shape) > 1:
@@ -63,12 +67,17 @@ class FullyConnected(Model):
         if len(output_shape) > 1:
             output_layer = Reshape(output_shape)(output_layer)
 
-        return dict(inputs=input_layer, outputs=output_layer)
+        return input_layer, output_layer
 
     def get_default_config(self):
-        return {'dataset_name': 'mnist', 'depth': 1, 'width': 32, 'base_activation': 'relu', 'skip_connections': False,
-                'batch_normalization': False, 'batch_norm_after_activation': True, 'batch_norm_before_output': False,
-                'input_shape': None, 'output_shape': None, 'output_activation': 'softmax', 'name': None}
+        return dict(
+            depth=1, width=32, base_activation='relu', skip_connections=False, batch_normalization=False,
+            batch_norm_after_activation=True, batch_norm_before_output=False, input_shape=(28, 28),
+            output_shape=(10,), output_activation='softmax', name=None
+        )
 
     def __str__(self):
-        return 'Fully Connected' + self.dataset_name
+        s = 'fully_connected-'
+        for key in ['depth', 'width']:
+            s += key + '_' + str(self.config[key]) + '-'
+        return s[:-1]
