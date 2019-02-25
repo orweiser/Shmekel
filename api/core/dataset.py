@@ -114,6 +114,16 @@ class Dataset(BaseDataset):
     def val_mode(self, value):
         raise AssertionError('Asserting validation mode after initialization is forbidden ')
 
+    @property
+    def input_shape(self) -> tuple:
+        """returns the shape of sample inputs"""
+        raise NotImplementedError()
+
+    @property
+    def output_shape(self) -> tuple:
+        """returns the shape of sample outputs"""
+        raise NotImplementedError()
+
     # todo: optional methods and properties
     #  train / val split
     #  raw data / processed data split

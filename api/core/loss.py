@@ -1,4 +1,6 @@
 from copy import deepcopy as copy
+from keras.losses import get
+'categorical_crossentropy'
 
 
 class Loss:
