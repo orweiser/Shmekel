@@ -33,7 +33,7 @@ class FullyConnected(Model):
         self.output_activation = output_activation
         self.name = name
 
-    def get_inputs_outputs(self):
+    def get_input_output_tensors(self):
         def add_layer(input_tensor, is_last_hidden_layer=False):
             output_tensor = Dense(self.width)(input_tensor)
             if (not self.batch_normalization) or (is_last_hidden_layer and not self.batch_norm_before_output):

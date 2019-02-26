@@ -11,6 +11,10 @@ class BaseDataset:
         __str__
     """
     def __getitem__(self, index):
+        """
+        a method to get dataset items by index
+        it should support every index in range(len(self))
+        """
         raise NotImplementedError()
 
     def __len__(self) -> int:
@@ -22,8 +26,8 @@ class BaseDataset:
 
     def __str__(self) -> str:
         """
-        should return a string with the name of the subclass, including some parameters
-                                from config to distinguish between instances
+        should return a string with the name of the subclass,
+        including some parameters from config to distinguish between instances
         """
         raise NotImplementedError()
 
@@ -32,12 +36,15 @@ class Dataset(BaseDataset):
     """
     Abstract class for datasets to use during train.
 
-    subclasses should implement the following abstract methods:
+    subclasses should implement the following methods:
         init
         __get_item__ -> returns an input-output pair
         __len__
         __str__
         get_default_config
+
+        input_shape
+        output_shape
 
         val_mode -> returns a boolean. can not be changed after an instance was created
     """
@@ -52,8 +59,8 @@ class Dataset(BaseDataset):
         """
         self.experiment = experiment
 
-        self._config = copy(self.get_default_config())
-        self._config.update(dict(experiment=experiment, **copy(params)))
+        self.config = copy(self.get_default_config())
+        self.config.update(dict(experiment=experiment, **copy(params)))
 
         self.init(**params)
 
@@ -105,13 +112,34 @@ class Dataset(BaseDataset):
     @property
     def val_mode(self) -> bool:
         """
-        when True, get items returns sample from validation set
+        when True, __getitem__ returns sample from validation set
                 __len__() return the size of the validation set
+
+        this property should be taken care of inside the init method,
+            possibly as follows:
+
+                def init(self, ..., val_mode, ...)
+                    ...
+                    self._val_mode = val_mode
+
+                @property
+                def val_mode(self) -> bool:
+                    return self._val_mode
+
         """
         raise NotImplementedError()
 
     @val_mode.setter
     def val_mode(self, value):
+        """
+        by design, setting val_mode on and off is forbidden
+        the correct methodology is to have to instances of the same dataset,
+        one with val_mode = True and the other with False
+
+        possibly as follows:
+            train_dataset = DatasetSubclass(..., val_mode=False, ...)
+            val_dataset = DatasetSubclass(..., val_mode=True, ...)
+        """
         raise AssertionError('Asserting validation mode after initialization is forbidden ')
 
     @property
@@ -126,6 +154,5 @@ class Dataset(BaseDataset):
 
     # todo: optional methods and properties
     #  train / val split
-    #  raw data / processed data split
     #  similar to above: process / deprocess methods
-    #  method to get specific items by date or stock name etc.
+    #  methods: get_item_by_date / get_item_by_stock, etc.

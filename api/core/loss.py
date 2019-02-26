@@ -1,6 +1,4 @@
 from copy import deepcopy as copy
-from keras.losses import get
-'categorical_crossentropy'
 
 
 class Loss:
@@ -12,6 +10,9 @@ class Loss:
         get_default_config
         __str__
         loss
+
+    optional methods to implement for advanced training techniques:
+        loss_weights
         callbacks
     """
     def __init__(self, experiment=None, **params):
@@ -25,8 +26,8 @@ class Loss:
         """
         self.experiment = experiment
 
-        self._config = copy(self.get_default_config())
-        self._config.update(dict(experiment=experiment, **copy(params)))
+        self.config = copy(self.get_default_config())
+        self.config.update(dict(experiment=experiment, **copy(params)))
 
         self.init(**params)
 
@@ -74,7 +75,7 @@ class Loss:
 
     def __call__(self, y_true, y_pred):
         """
-
+        a wrapper around loss, do not inherit this method
         """
         self.y_true_tensor = y_true
         self.y_pred_tensor = y_pred
@@ -84,6 +85,11 @@ class Loss:
         return self.loss_tensor
 
     @property
+    def loss_weights(self) -> (dict, None):
+        """for later use of multiple losses"""
+        return None
+
+    @property
     def callbacks(self):
-        # todo
+        """for later use of advanced training schemes"""
         return []

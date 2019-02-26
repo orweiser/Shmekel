@@ -9,7 +9,7 @@ class KerasLoss(Loss):
         self.loss_identifier = loss
 
     def get_default_config(self) -> dict:
-        return dict(loss_identifier=str(self))
+        return dict(loss='categorical_crossentropy')
 
     def __str__(self) -> str:
         if isinstance(self.loss_identifier, str):
