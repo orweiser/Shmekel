@@ -10,7 +10,7 @@ def get_handler(handler='DefaultLocal', **kwargs):
         return DefaultLocal(handler='DefaultLocal', **kwargs)
 
     if handler == 'DefaultLossGroup':
-        return DefaultLocal(handler='DefaultLossGroup', **kwargs)
+        return DefaultLossGroup(handler='DefaultLossGroup', **kwargs)
 
 
 class BaseBackupHandler(Callback):
@@ -66,6 +66,11 @@ class BaseBackupHandler(Callback):
         return os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path,
                             "snapshot_EPOCH.h5".replace('EPOCH', str(epoch)))
 
+    def last_snapshot_epoch(self):
+        for i in range(self.experiment.train_config['epochs'], 0, -1):
+            if os.path.exists(self.get_snapshot_path(i)):
+                return i
+
     def dump_snapshot(self, model, epoch: int):
         raise NotImplementedError()
 
@@ -84,6 +89,11 @@ class BaseBackupHandler(Callback):
         return os.path.join(self.exp_absolute_path, self.histories_dir_relative_path,
                             "history_EPOCH.h5".replace('EPOCH', str(epoch)))
 
+    def last_history_epoch(self):
+        for i in range(self.experiment.train_config['epochs'], 0, -1):
+            if os.path.exists(self.get_history_path(i)):
+                return i
+
     def dump_history(self, history: dict, epoch: int):
         raise NotImplementedError()
 
@@ -92,7 +102,14 @@ class BaseBackupHandler(Callback):
 
     """ Callback methods: """
     def on_train_begin(self, logs=None):
-        self.train_logs = {}
+        self.train_logs = None
+        if 'initial_epoch' in self.experiment.train_config.keys():
+            epoch = self.experiment.train_config['initial_epoch']
+            if os.path.exists(self.get_history_path(epoch)):
+                self.train_logs = self.load_history(epoch)
+            # todo: handle other cases
+
+        self.train_logs = self.train_logs or {}
 
     def on_epoch_end(self, epoch, logs=None):
         epoch = epoch + 1
@@ -144,7 +161,7 @@ class NullHandler(BaseBackupHandler):
 
 
 class DefaultLocal(BaseBackupHandler):
-    from shutil import rmtree
+    import shutil
     import pickle
 
     def __init__(self, **kwargs):
@@ -152,7 +169,7 @@ class DefaultLocal(BaseBackupHandler):
 
     @property
     def res_dir_absolute_path(self):
-        return os.path.abspath(os.path.join(os.path.pardir, self.project, 'Shmekel_Results'))
+        return os.path.abspath(os.path.join(os.path.pardir, 'Shmekel_Results'))
 
     def dump_snapshot(self, model, epoch: int):
         if not os.path.exists(os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path)):
@@ -182,7 +199,8 @@ class DefaultLocal(BaseBackupHandler):
         return h
 
     def erase(self):
-        self.rmtree(self.exp_absolute_path)
+        path = str(self.exp_absolute_path)
+        self.shutil.rmtree(path)
 
 
 class DefaultLossGroup(BaseBackupHandler):

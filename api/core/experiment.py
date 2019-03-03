@@ -20,7 +20,7 @@ class Experiment:
         self.train_dataset_config = train_dataset_config or {'dataset': 'MNIST', 'val_mode': False}
         self.val_dataset_config = val_dataset_config or {'dataset': 'MNIST', 'val_mode': True}
         self.train_config = train_config or {}
-        self.backup_config = backup_config or dict(handler='NullHandler')
+        self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
 
         # property classes declarations
         self._model = None
@@ -71,35 +71,47 @@ class Experiment:
         s += 'Val Dataset: ' + str(self.val_dataset) + '\n'
 
         s += '\nStatus: ' + self.status + '\n'
-        if self.results:
-            s += '\nResults: ' + str(self.results) + '\n'
 
         print(s)
 
+        if self.results:
+            print('Results: ')
+            self.results.summary()
+
     """ Controllers: """
 
-    def run(self):
-        print('\nStarting experiment:', self, '\n')
+    def start(self, prefix='Starting '):
+        print('\n' + prefix + ' experiment:', self, '\n')
         self._fill_configs()
         self.trainer.fit()
-        print('\nTraining Done.\nResults:')
-        self.results.summary()
+        print('\nTraining Done.')
 
-    def resume(self):
+    def run(self):
         status = self.status
         if status is 'done':
-            print('Experiment is done, no need to resume.')
+            print('Experiment is done.')
+
+        elif status is 'initialized':
+            self.start()
+
+        elif status.startswith('finished'):
+            snap_i = self.backup_handler.last_snapshot_epoch()
+
+            self.train_config.setdefault('initial_epoch', snap_i)
+            _ = self.history
+            self._trainer = None
+            self.backup_handler.load_snapshot(self.model, snap_i)
+
+            self.start(prefix='Resuming')
+            self._history = self.backup_handler.train_logs
+            _ = self.train_config.pop('initial_epoch')
+            self._trainer = None
+
+        else:
+            print('unexpected status:', status)
             return
 
-        if status is 'initialized':
-            self.run()
-            return
-
-        if status.startswith('finished'):
-            # todo: load model snapshot and continue training
-            return
-
-        print('can not resume experiment with status:', status)
+        self.results.summary()
 
     def erase(self, force=False):
         if not force:
@@ -189,7 +201,10 @@ class Experiment:
             if self.trainer._history:
                 self._history = self.trainer._history.history
             else:
-                self._history = self.backup_handler.load_history(-1)
+                i = self.backup_handler.last_history_epoch()
+                if i:
+                    self._history = self.backup_handler.load_history(i)
+
         return self._history
 
     @property

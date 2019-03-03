@@ -28,7 +28,6 @@ class Trainer:
             self.callbacks = experiment.callbacks + (callbacks or [])
 
         self.params = params or {}
-        # todo: warn about extra params
         # todo: add augmentations
 
     @property
