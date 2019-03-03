@@ -15,11 +15,13 @@ class Loss:
         loss_weights
         callbacks
     """
-    def __init__(self, experiment=None, **params):
+    def __init__(self, loss, experiment=None, **params):
         """
         a constructor method.
         replaced by init() in subclasses.
 
+        :type loss: str
+        :param loss: a string identifier of Loss subclass
         :param experiment: optional. an Experiment instance
         :param params: holds all the key-word arguments except for "experiment"
                 those key-words are passed to the init() method
@@ -27,7 +29,7 @@ class Loss:
         self.experiment = experiment
 
         self.config = copy(self.get_default_config())
-        self.config.update(dict(experiment=experiment, **copy(params)))
+        self.config.update(dict(loss=loss, **copy(params)))
 
         self.init(**params)
 

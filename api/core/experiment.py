@@ -3,23 +3,24 @@ from ..datasets import get as get_dataset
 from ..losses import get as get_loss
 from .results import Results
 from .trainer import Trainer
-from .backup_handler import BackupHandler
+from .backup_handler import get_handler
 
 
 class Experiment:
     """
 
     """
-    def __init__(self,
+    def __init__(self, name='default_exp',
                  model_config=None, loss_config=None,
                  train_dataset_config=None, val_dataset_config=None,
                  train_config=None, backup_config=None):
+        self.name = name
         self.model_config = model_config or {'model': 'FullyConnected'}
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
         self.train_dataset_config = train_dataset_config or {'dataset': 'MNIST', 'val_mode': False}
         self.val_dataset_config = val_dataset_config or {'dataset': 'MNIST', 'val_mode': True}
         self.train_config = train_config or {}
-        self.backup_config = backup_config or dict(project='default_project')
+        self.backup_config = backup_config or dict(handler='NullHandler')
 
         # property classes declarations
         self._model = None
@@ -31,25 +32,25 @@ class Experiment:
         self._backup_handler = None
 
         # properties declarations
-        self._name = None
         self._history = None
         self._backup_dir = None
         self._callbacks = None
 
+        self._fill_configs()
+
     """ Summary methods: """
 
-    @property
     def __str__(self):
-        # todo: implement
-        return 'exp_try'
+        return self.name
 
     @property
     def status(self):
+        self._fill_configs()
         if not self.results:
             return 'initialized'
         else:
             num_trained_epochs = self.results.num_epochs
-            num_declared_epochs = 1 if 'epochs' not in self.train_config.keys() else self.train_config['epochs']
+            num_declared_epochs = self.train_config['epochs']
 
             if num_trained_epochs == num_declared_epochs:
                 return 'done'
@@ -73,15 +74,16 @@ class Experiment:
         if self.results:
             s += '\nResults: ' + str(self.results) + '\n'
 
-        return s
+        print(s)
 
     """ Controllers: """
 
     def run(self):
         print('\nStarting experiment:', self, '\n')
+        self._fill_configs()
         self.trainer.fit()
-        self._history = self.trainer.history
-        self.backup()
+        print('\nTraining Done.\nResults:')
+        self.results.summary()
 
     def resume(self):
         status = self.status
@@ -150,7 +152,7 @@ class Experiment:
     @property
     def backup_handler(self):
         if self._backup_handler is None:
-            self._backup_handler = BackupHandler(experiment=self, **self.backup_config)
+            self._backup_handler = get_handler(experiment=self, **self.backup_config)
         return self._backup_handler
 
     """ Configurations: """
@@ -166,7 +168,8 @@ class Experiment:
     @property
     def config(self):
         self._fill_configs()
-        return dict(model_config=self.model_config,
+        return dict(name=self.name,
+                    model_config=self.model_config,
                     loss_config=self.loss_config,
                     train_dataset_config=self.train_dataset_config,
                     val_dataset_config=self.val_dataset_config,
@@ -183,7 +186,10 @@ class Experiment:
     @property
     def history(self) -> dict:
         if self._history is None:
-            self._history = self.results._history or self.trainer._history.history
+            if self.trainer._history:
+                self._history = self.trainer._history.history
+            else:
+                self._history = self.backup_handler.load_history(-1)
         return self._history
 
     @property
@@ -199,7 +205,7 @@ class Experiment:
 
     """ Paths property and methods. might be moved to a Project class in the future """
     def backup(self):
-        self._fill_configs()
-        raise NotImplementedError()
+        self.backup_handler.dump_history(self.history or {}, epoch=-1)
+        self.backup_handler.dump_snapshot(self.model, epoch=-1)
 
 

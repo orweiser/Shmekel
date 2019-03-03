@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy as copy
 
 
 def ind_generator(num_samples, randomize=True):
@@ -34,4 +35,5 @@ def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None):
             if i == (batch_size - 1):
                 break
 
-        yield batch_x, batch_y
+        # todo: add augmentation support
+        yield copy(batch_x), copy(batch_y)

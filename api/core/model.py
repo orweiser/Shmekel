@@ -15,10 +15,13 @@ class Model(KerasModel):
     optional methods for advanced training schemes:
         callbacks
     """
-    def __init__(self, experiment=None, **params):
+    def __init__(self, model, experiment=None, **params):
         """
         a constructor method.
         replaced by init() in subclasses.
+
+        :type model: str
+        :param model: a string identifier of Model subclass
 
         :param experiment: optional. an Experiment instance
         :param params: holds all the key-word arguments except for "experiment"
@@ -27,7 +30,7 @@ class Model(KerasModel):
         self.experiment = experiment
 
         self.config = copy(self.get_default_config())
-        self.config.update(dict(experiment=experiment, **copy(params)))
+        self.config.update(dict(model=model, **copy(params)))
 
         self.init(**params)
 

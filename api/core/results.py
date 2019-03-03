@@ -45,7 +45,7 @@ class Results:
     @property
     def history(self):
         if self._history is None:
-            self._history = self.experiment.backup_handler.load_history(epoch=-1)
+            self._history = self.experiment.history
 
         return self._history
 
@@ -99,7 +99,9 @@ class Results:
 
         out = []
         for i in item:
-            if type(i) in [str, int, slice]:
+            if isinstance(i, (np.int, np.int32, np.int64)):
+                i = int(i)
+            if isinstance(i, (str, int, slice)):
                 out.append(get(i))
             else:
                 raise TypeError('unexpected item type. got: ' + str(type(i)))

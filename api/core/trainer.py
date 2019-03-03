@@ -7,9 +7,12 @@ class Trainer:
                  callbacks=None, include_experiment_callbacks=True, randomize=True,
                  steps_per_epoch=None, validation_steps=None, **params):
 
-        self.config = {**dict(experiment=experiment, optimizer=optimizer, batch_size=batch_size, randomize=randomize,
+        if 'epochs' not in params:
+            params['epochs'] = 5
+        self.config = {**dict(optimizer=optimizer, batch_size=batch_size, randomize=randomize,
                               callbacks=callbacks, include_experiment_callbacks=include_experiment_callbacks,
                               steps_per_epoch=steps_per_epoch, validation_steps=validation_steps), **params}
+
         self.experiment = experiment
         self.optimizer = optimizer
         self._history = None

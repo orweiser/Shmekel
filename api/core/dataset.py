@@ -48,10 +48,13 @@ class Dataset(BaseDataset):
 
         val_mode -> returns a boolean. can not be changed after an instance was created
     """
-    def __init__(self, experiment=None, **params):
+    def __init__(self, dataset, experiment=None, **params):
         """
         a constructor method.
         replaced by init() in subclasses.
+
+        :type dataset: str
+        :param dataset: a string identifier of Dataset subclass
 
         :param experiment: optional. an Experiment instance
         :param params: holds all the key-word arguments except for "experiment"
@@ -60,7 +63,7 @@ class Dataset(BaseDataset):
         self.experiment = experiment
 
         self.config = copy(self.get_default_config())
-        self.config.update(dict(experiment=experiment, **copy(params)))
+        self.config.update(dict(dataset=dataset, **copy(params)))
 
         self.init(**params)
 
