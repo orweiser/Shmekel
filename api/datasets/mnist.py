@@ -60,7 +60,7 @@ class MNIST(Dataset):
         return (self.num_classes,)
 
     def __len__(self) -> int:
-        return 10000 if self.val_mode else 60000
+        return (1000 if self.val_mode else 6000) * self.num_classes
 
     def __str__(self) -> str:
         s = 'mnist_'

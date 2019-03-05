@@ -222,5 +222,5 @@ class Experiment:
     def backup(self):
         self.backup_handler.dump_history(self.history or {}, epoch=-1)
         self.backup_handler.dump_snapshot(self.model, epoch=-1)
-
+        # self.backup_handler.dump_config()
 
