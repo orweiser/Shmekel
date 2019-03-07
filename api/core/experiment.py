@@ -86,7 +86,10 @@ class Experiment:
         self.trainer.fit()
         print('\nTraining Done.')
 
-    def run(self):
+    def run(self, backup=True):
+        if backup:
+            self.backup_handler.dump_config(self.config)
+
         status = self.status
         if status is 'done':
             print('Experiment is done.')
@@ -112,6 +115,8 @@ class Experiment:
             return
 
         self.results.summary()
+        if backup:
+            self.backup()
 
     def erase(self, force=False):
         if not force:
@@ -222,5 +227,5 @@ class Experiment:
     def backup(self):
         self.backup_handler.dump_history(self.history or {}, epoch=-1)
         self.backup_handler.dump_snapshot(self.model, epoch=-1)
-        # self.backup_handler.dump_config()
+        self.backup_handler.dump_config(self.config)
 

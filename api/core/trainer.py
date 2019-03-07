@@ -1,15 +1,16 @@
+from api.utils.augmentations import AugmentationList
 from api.utils.data_utils import batch_generator
 
 
 class Trainer:
     def __init__(self, experiment=None,
-                 optimizer='adam', batch_size=1024,
+                 optimizer='adam', batch_size=1024, epochs=5, augmentations=None,
                  callbacks=None, include_experiment_callbacks=True, randomize=True,
                  steps_per_epoch=None, validation_steps=None, **params):
 
-        if 'epochs' not in params:
-            params['epochs'] = 5
+        params['epochs'] = epochs
         self.config = {**dict(optimizer=optimizer, batch_size=batch_size, randomize=randomize,
+                              augmentations=augmentations,
                               callbacks=callbacks, include_experiment_callbacks=include_experiment_callbacks,
                               steps_per_epoch=steps_per_epoch, validation_steps=validation_steps), **params}
 
@@ -28,7 +29,14 @@ class Trainer:
             self.callbacks = experiment.callbacks + (callbacks or [])
 
         self.params = params or {}
-        # todo: add augmentations
+        self.user_augmentations = augmentations
+        self._augmentations = None
+
+    @property
+    def augmentations(self):
+        if self._augmentations is None:
+            self._augmentations = AugmentationList(self.user_augmentations or [])
+        return self._augmentations
 
     @property
     def history(self):
@@ -54,8 +62,10 @@ class Trainer:
         # todo: a compile method, either in Model or in Experiment
         model.compile(self.optimizer, loss, metrics, loss_weights=loss.loss_weights)
 
-        train_gen = batch_generator(train_dataset, batch_size=batch_size, randomize=self.randomize)
-        val_gen = batch_generator(val_dataset, batch_size=batch_size, randomize=self.randomize)
+        train_gen = batch_generator(train_dataset, batch_size=batch_size, randomize=self.randomize,
+                                    augmentations=self.augmentations)
+        val_gen = batch_generator(val_dataset, batch_size=batch_size, randomize=self.randomize,
+                                  augmentations=self.augmentations)
 
         steps_per_epoch = self.steps_per_epoch or (len(train_dataset) // batch_size)
         validation_steps = self.validation_steps or (len(val_dataset) // batch_size)

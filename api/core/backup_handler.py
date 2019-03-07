@@ -47,7 +47,7 @@ class BaseBackupHandler(Callback):
     def get_config_path(self):
         return os.path.join(self.exp_absolute_path, "config.json")
 
-    def dump_config(self):
+    def dump_config(self, config: dict):
         raise NotImplementedError()
 
     @staticmethod
@@ -61,7 +61,7 @@ class BaseBackupHandler(Callback):
 
     def get_snapshot_path(self, epoch: int):
         if epoch < 0:
-            epoch = self.experiment.train_config['epoch'] + epoch + 1
+            epoch = self.experiment.train_config['epochs'] + epoch + 1
 
         return os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path,
                             "snapshot_EPOCH.h5".replace('EPOCH', str(epoch)))
@@ -133,7 +133,7 @@ class BaseBackupHandler(Callback):
 
 class NullHandler(BaseBackupHandler):
 
-    def dump_config(self):
+    def dump_config(self, config: dict):
         pass
 
     @staticmethod
@@ -163,6 +163,8 @@ class NullHandler(BaseBackupHandler):
 class DefaultLocal(BaseBackupHandler):
     import shutil
     import pickle
+    import json
+    import io
 
     def __init__(self, **kwargs):
         super(DefaultLocal, self).__init__(**kwargs)
@@ -202,8 +204,34 @@ class DefaultLocal(BaseBackupHandler):
         path = str(self.exp_absolute_path)
         self.shutil.rmtree(path)
 
+    def dump_config(self, config: dict):
+        path = self.get_config_path()
+        dir_path = path.rsplit(os.path.sep, 1)[0]
+
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+
+        with self.io.open(path, 'w', encoding='utf8') as outfile:
+            outfile.write(self.json.dumps(config, indent=4, sort_keys=True,
+                                          separators=(',', ': '), ensure_ascii=False))
+
+    @staticmethod
+    def load_config(path):
+        import json
+        with open(path, 'r') as f:
+            data = f.read()
+            c = json.loads(data)
+        return c
+
 
 class DefaultLossGroup(BaseBackupHandler):
+    def dump_config(self, config: dict):
+        pass
+
+    @staticmethod
+    def load_config(path):
+        pass
+
     from shutil import rmtree
     import pickle
 

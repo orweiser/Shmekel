@@ -9,7 +9,7 @@ def ind_generator(num_samples, randomize=True):
             yield i
 
 
-def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None):
+def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None, augmentations=None):
     # todo: add support for multiple inputs / outputs
     # todo: add augmentations support
 
@@ -35,5 +35,7 @@ def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None):
             if i == (batch_size - 1):
                 break
 
-        # todo: add augmentation support
+        if augmentations:
+            batch_x, batch_y = augmentations(batch_x, batch_y)
+
         yield copy(batch_x), copy(batch_y)
