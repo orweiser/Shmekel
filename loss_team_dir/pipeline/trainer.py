@@ -4,7 +4,7 @@ import numpy as np
 class Trainer:
     def __init__(self, experiment, optimizer='adam', noise=None, batch_size=1024,
                  callbacks=None, include_experiment_callbacks=True, randomize=True,
-                 steps_per_epoch=None, validation_steps=None, epochs=10, **params):
+                 steps_per_epoch=None, validation_steps=None, epochs=1, **params):
         self.config = {**dict(optimizer=optimizer, noise=noise, batch_size=batch_size,
                               callbacks=callbacks, include_experiment_callbacks=include_experiment_callbacks,
                               steps_per_epoch=steps_per_epoch, validation_steps=validation_steps, epochs=epochs),
@@ -35,7 +35,7 @@ class Trainer:
             for i in f(num_samples):
                 yield i
 
-    def batch_generator(self, data=None, batch_size=1024, use_raw_data=True, mode='train', randomize=None):
+    def batch_generator(self, data=None, batch_size=2048, use_raw_data=True, mode='train', randomize=None):
         if randomize is None:
             randomize = self.randomize
 
