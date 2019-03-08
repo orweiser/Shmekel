@@ -1,7 +1,8 @@
-from loss_team_dir.pipe_line import experiment, get_exp_name
-from loss_team_dir.pipe_line.analysis import get_saved_experiments_names_paths
+# from loss_team_dir.pipe_line import experiment, get_exp_name
+# from loss_team_dir.pipe_line.analysis import get_saved_experiments_names_paths
 from loss_team_dir.pipeline.experiment import Experiment
-
+import datetime
+import h5py
 
 dataset_name = 'mnist'
 resolution = 10
@@ -34,50 +35,59 @@ def _reinforce_loop(without_uncertainty=False):
 def _categorical_crossentropy_loop():
     yield 1
 
+# file_path = 'C:\\Shmekel\\local repository\\Shmekel\\Results\\sdfsdf2.hdf5'
+# cp_callback = tf.keras.callbacks.ModelCheckpoint(file_path,
+#                                                  save_weights_only=False,
+#                                                  verbose=1)
+experiment = Experiment()
+# experiment.model.save(file_path)
+# f = h5py.File(file_path, 'r+')
+experiment.run()
+experiment.save_model()
 
-noise_range = [5 * i / resolution for i in range(resolution)]
 
-# usr = input('enter your first name please..')
-noise_range_dict = {
-    'dror': noise_range[:4],
-    'roee': noise_range[4:7],
-    'eden': noise_range[7:10],
-}
-noise_range_dict['gal'] = [noise_range_dict[name][-1] for name in ['eden', 'roee', 'dror']]
-noise_range = noise_range_dict['dror']
 
-print('user noise range:', noise_range)
-
-for noise_level in noise_range:
-    for loss in [
-        'categorical_crossentropy', 'prediction_dependent', 'log_reinforce', 'linear_reinforce'
-    ]:
-        for flag in [False, True]:
-            if flag and loss == 'prediction_dependent':
-                continue
-            gen = {
-                'categorical_crossentropy': _categorical_crossentropy_loop(),
-                'prediction_dependent': _prediction_dependent_loop(without_uncertainty=flag),
-                'log_reinforce': _reinforce_loop(without_uncertainty=flag),
-                'linear_reinforce': _reinforce_loop(without_uncertainty=flag),
-            }[loss]
-            for y in gen:
-                loss_params = {
-                    'loss': loss, 'hyper_parameters': y, 'without_uncertainty': flag
-                }
-
-                saved_experiments, _ = get_saved_experiments_names_paths()
-                exp_name = get_exp_name(dataset_name=dataset_name, noise_level=noise_level, loss_params=loss_params)
-
-                if exp_name in saved_experiments:
-                    print('Skipping experiment:', exp_name)
-                    continue
-                print('Starting experiment lalala:', exp_name, '-' * 50, sep='\n')
-                # experiment(loss_params=loss_params, noise_level=noise_level, dataset=dataset_name,
-                #            save_history=True, save_weights=False,
-                #            batch_size=1024, epochs=50, clear=False)
-
-                experiment = Experiment()
-                experiment.run()
-
-                print('\n')
+#
+# noise_range = [5 * i / resolution for i in range(resolution)]
+#
+# # usr = input('enter your first name please..')
+# noise_range_dict = {
+#     'dror': noise_range[:4],
+#     'roee': noise_range[4:7],
+#     'eden': noise_range[7:10],
+# }
+# noise_range_dict['gal'] = [noise_range_dict[name][-1] for name in ['eden', 'roee', 'dror']]
+# noise_range = noise_range_dict['dror']
+#
+# print('user noise range:', noise_range)
+#
+# for noise_level in noise_range:
+#     for loss in [
+#         'categorical_crossentropy', 'prediction_dependent', 'log_reinforce', 'linear_reinforce'
+#     ]:
+#         for flag in [False, True]:
+#             if flag and loss == 'prediction_dependent':
+#                 continue
+#             gen = {
+#                 'categorical_crossentropy': _categorical_crossentropy_loop(),
+#                 'prediction_dependent': _prediction_dependent_loop(without_uncertainty=flag),
+#                 'log_reinforce': _reinforce_loop(without_uncertainty=flag),
+#                 'linear_reinforce': _reinforce_loop(without_uncertainty=flag),
+#             }[loss]
+#             for y in gen:
+#                 loss_params = {
+#                     'loss': loss, 'hyper_parameters': y, 'without_uncertainty': flag
+#                 }
+#
+#                 saved_experiments, _ = get_saved_experiments_names_paths()
+#                 exp_name = get_exp_name(dataset_name=dataset_name, noise_level=noise_level, loss_params=loss_params)
+#
+#                 if exp_name in saved_experiments:
+#                     print('Skipping experiment:', exp_name)
+#                     continue
+#                 print('Starting experiment lalala:', exp_name, '-' * 50, sep='\n')
+#                 # experiment(loss_params=loss_params, noise_level=noise_level, dataset=dataset_name,
+#                 #            save_history=True, save_weights=False,
+#                 #            batch_size=1024, epochs=50, clear=False)
+#
+#                 print('\n')
