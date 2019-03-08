@@ -6,12 +6,15 @@ from .models.model import Model
 
 
 class Experiment:
-    def __init__(self, model_config=None, loss_config=None, data_config=None, train_config=None, name=None):
+    def __init__(self, model_config=None, loss_config=None, data_config=None,
+                 train_config=None, name=None, callback=None):
         self.model_config = model_config or {'model': 'lstm'}
-        print("Experiment self.model_config: ", self.model_config)
         self.loss_config = loss_config or {'loss': 'sparse_categorical_crossentropy'}
         self.data_config = data_config or {}
         self.train_config = train_config or {}
+        self.callback = callback
+
+
 
         # property classes declarations
         self._model = None
@@ -129,5 +132,13 @@ class Experiment:
     def erase(self):
         raise NotImplementedError()
 
+    def save_model(self, model_flag=True, weights_flag=True, path_name='', model_name='model'):
 
-
+        weights_name = model_name + 'weights'
+        model_json = self._model.to_json()
+        if model_flag:
+            with open(model_name + path_name + ".json", "w") as json_file:
+                json_file.write(model_json)
+        if weights_flag:
+            self._model.save_weights(weights_name + ".h5")
+        print("Saved model to disk")
