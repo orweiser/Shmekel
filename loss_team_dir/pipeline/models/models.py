@@ -1,4 +1,4 @@
-from keras.layers import Dense, Flatten, Activation, BatchNormalization, Add, Reshape, LSTM
+from keras.layers import Dense, Flatten, Activation, BatchNormalization, Add, Reshape, LSTM, Dropout, LeakyReLU, TimeDistributed
 from keras import Model, Input
 import numpy as np
 
@@ -57,7 +57,7 @@ def fully_connected(dataset_name='mnist', depth=1, width=32, base_activation='re
 
     return dict(inputs=input_layer, outputs=x)
 
-def lstm(dataset_name='mnist', depth=1, units=64, base_activation='sigmoid', skip_connections=False,
+def lstm(dataset_name='mnist', depth=1, units=128, base_activation='sigmoid', skip_connections=False,
                     batch_normalization=False, batch_norm_after_activation=True, batch_norm_before_output=False,
                     input_shape=None, output_shape=None, output_activation='softmax', name=None):
     """
@@ -76,31 +76,26 @@ def lstm(dataset_name='mnist', depth=1, units=64, base_activation='sigmoid', ski
     :param name: model's name
     :return: a keras model
     """
-    def add_layer(x, is_last_hidden_layer=False):
-        x = Dense(units)(x)
-        if (not batch_normalization) or (is_last_hidden_layer and not batch_norm_before_output):
-            return Activation(base_activation)(x)
 
-        if not batch_norm_after_activation:
-            x = BatchNormalization()(x)
-            x = Activation(base_activation)(x)
-        else:
-            x = Activation(base_activation)(x)
-            x = BatchNormalization()(x)
-
-        return x
     print("LSTM!")
     input_shape = input_shape or {'mnist': (28, 28)}[dataset_name]
     output_shape = output_shape or {'mnist': (10,)}[dataset_name]
 
     input_layer = Input(input_shape)
 
-    x = LSTM(units)(input_layer)
+    # x = TimeDistributed(Dense(32, activation='relu'))(input_layer)
+    x = LSTM(units, return_sequences=False)(input_layer)
+    # x = Dropout(rate=0.2)(x)
+    # x = LSTM(units, activation='relu')(x)
+    # x = Dropout(rate=0.2)(x)
+    x = Dense(32, activation='relu')(x)
+    x = Dropout(rate=0.2)(x)
     x = Dense(10, activation=output_activation)(x)
     print("len(output_shape): ", len(output_shape))
     if len(output_shape) > 1:
         x = Reshape(output_shape)(x)
 
-    return dict(inputs=input_layer, outputs=x)
 
+
+    return dict(inputs=input_layer, outputs=x)
 
