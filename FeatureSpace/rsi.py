@@ -1,5 +1,5 @@
 import numpy as np
-from ShmekelCore import Feature, Math
+from ShmekelCore import Feature, math
 
 
 class RSI(Feature):
@@ -18,9 +18,9 @@ class RSI(Feature):
         u = np.maximum(dif, 0)
         d = np.maximum(-dif, 0)
 
-        smmau = Math.smooth_moving_avg(u, self.time_delay)
-        smmad = Math.smooth_moving_avg(d, self.time_delay)
+        smmau = math.smooth_moving_avg(u, self.time_delay)
+        smmad = math.smooth_moving_avg(d, self.time_delay)
 
-        rs = smmau / (smmad + Math.EPS_DOUBLE)  # adding epsilon for numerical purposes
+        rs = smmau / (smmad + math.EPS_DOUBLE)  # adding epsilon for numerical purposes
         rsi = 100 - 100 / (1 + rs)
         return rsi

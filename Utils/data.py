@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import pickle as pkl
-from .ShmekelConfig import _read_a_file, get_config
+from .shmekel_config import _read_a_file, get_config
 
 
 class DataReader:

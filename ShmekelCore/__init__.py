@@ -1,2 +1,2 @@
-from .CalcModels import *
-from .Feature import *
+from .calc_models import *
+from .feature import *

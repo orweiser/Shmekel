@@ -1,5 +1,5 @@
 import numpy as np
-from ShmekelCore import Feature, Math
+from ShmekelCore import Feature, math
 
 
 class ADL(Feature):
@@ -15,7 +15,7 @@ class ADL(Feature):
         high = self._get_basic_feature(data[0], 'high')
         volume = self._get_basic_feature(data[0], 'volume')
 
-        AD = volume*(2 * close - low - high)/(high - low + Math.EPS_DOUBLE)
+        AD = volume*(2 * close - low - high)/(high - low + math.EPS_DOUBLE)
         # AD = volume*(2 * close + (-low) + (-high))/(high + (-low))
 
         return AD  # AD[0]

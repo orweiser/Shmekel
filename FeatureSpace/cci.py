@@ -1,5 +1,5 @@
 import numpy as np
-from ShmekelCore import Feature, Math
+from ShmekelCore import Feature, math
 
 
 class CCI(Feature):
@@ -20,7 +20,7 @@ class CCI(Feature):
         high = self._get_basic_feature(data[0], 'high')
 
         typical_price = (high + low + close) / 3
-        sma = Math.smooth_moving_avg(typical_price, self._period)
+        sma = math.smooth_moving_avg(typical_price, self._period)
         mean_abs_val = np.mean(np.abs(typical_price - np.mean(typical_price)))
 
         cci = (typical_price[:np.size(sma)] - sma)/(0.015*mean_abs_val)

@@ -1,7 +1,7 @@
-from Utils.Data import DataReader
-from ShmekelCore.CalcModels import Stock
-from FeatureSpace.BasicFeatures import *
-from Utils.ShmekelConfig import *
+from Utils.data import DataReader
+from ShmekelCore.calc_models import Stock
+from FeatureSpace.basic_features import *
+from Utils.shmekel_config import *
 import numpy as np
 
 config_path = r"C:\Or\Projects\Shmekel_config.txt"
