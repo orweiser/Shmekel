@@ -55,6 +55,7 @@ class Trainer:
         metrics = exp.metrics
         train_dataset = exp.train_dataset
         val_dataset = exp.val_dataset
+        print('val_dataset: {}'.format(val_dataset))
         model = exp.model
 
         batch_size = self.batch_size
@@ -69,6 +70,11 @@ class Trainer:
 
         steps_per_epoch = self.steps_per_epoch or (len(train_dataset) // batch_size)
         validation_steps = self.validation_steps or (len(val_dataset) // batch_size)
+        print('self.validation_steps: {}'.format(self.validation_steps))
+        print('len(val_dataset): {}'.format(len(val_dataset)))
+        print('batch_size: {}'.format(batch_size))
+        print('validation_steps: {}'.format(validation_steps))
+        print('validation_steps: {}'.format(str(self.params)))
 
         self._history = model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch,
                                             callbacks=self.callbacks,

@@ -15,10 +15,10 @@ class Experiment:
                  train_dataset_config=None, val_dataset_config=None,
                  train_config=None, backup_config=None):
         self.name = name
-        self.model_config = model_config or {'model': 'FullyConnected'}
+        self.model_config = model_config or {'model': 'LSTM'}
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
-        self.train_dataset_config = train_dataset_config or {'dataset': 'MNIST', 'val_mode': False}
-        self.val_dataset_config = val_dataset_config or {'dataset': 'MNIST', 'val_mode': True}
+        self.train_dataset_config = train_dataset_config or {'dataset': 'gen', 'val_mode': False}
+        self.val_dataset_config = val_dataset_config or {'dataset': 'gen', 'val_mode': True}
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
 
@@ -87,10 +87,12 @@ class Experiment:
         print('\nTraining Done.')
 
     def run(self, backup=True):
+        print('running')
         if backup:
             self.backup_handler.dump_config(self.config)
 
         status = self.status
+        print('status:' + str(status))
         if status is 'done':
             print('Experiment is done.')
 
@@ -158,6 +160,7 @@ class Experiment:
     @property
     def val_dataset(self):
         if not self._val_dataset:
+            print('get_dataset: {}'.format(get_dataset(**self.val_dataset_config)))
             self._val_dataset = get_dataset(**self.val_dataset_config)
 
         return self._val_dataset
