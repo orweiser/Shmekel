@@ -10,7 +10,7 @@ def get_exp_from_config(config: dict):
     return Experiment(**config)
 
 
-def get_config_from_path(path, handler=None):
+def load_config(path, handler=None):
     import os
 
     if not os.path.exists(path):
