@@ -77,8 +77,14 @@ let's explore how the model's depth affects the experiment's results
 fc_3 = Experiment(name='fc_3', model_config=dict(model='FullyConnected', depth=3))
 fc_5 = Experiment(name='fc_5', model_config=dict(model='FullyConnected', depth=5))
 
-fc_3.model.summary()
-fc_5.model.summary()
+print(fc_3.model)
+print(fc_5.model)
+
+# >>> fully_connected-depth_3-width_32
+# >>> fully_connected-depth_5-width_32
+
+#since, we've implemented custom fully_connected file that creates fully connected
+#models on demand and we can now run the experiments and view results as described above
 
 we created a Model subclass, named
 
