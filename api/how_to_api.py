@@ -68,11 +68,10 @@ results = my_exp.results
 
 """ 3. customize experiments (exploring hoes...) """
 
-in section 2. we used the default experiment
-here we'll explore how to customize your experiments
+# in section 2. we used the default experiment
+# here you'll learn how to customize your experiments
 
-let's explore how the model's depth affects the experiment's results
-
+# for example, let's explore how the model's depth affects the experiment's results
 
 fc_3 = Experiment(name='fc_3', model_config=dict(model='FullyConnected', depth=3))
 fc_5 = Experiment(name='fc_5', model_config=dict(model='FullyConnected', depth=5))
@@ -83,22 +82,23 @@ print(fc_5.model)
 # >>> fully_connected-depth_3-width_32
 # >>> fully_connected-depth_5-width_32
 
-#since, we've implemented custom fully_connected file that creates fully connected
-#models on demand and we can now run the experiments and view results as described above
+# since we've implemented custom FullyConnected class that creates fully connected
+# models on demand, we can now run the experiments and view results as described above
 
-we created a Model subclass, named
+# to see which models are available, and what parameters they take,
+# got to api/models
+
+# similarly, we could have customized other properties of the experiment
+# found at "api/datasets" and "api/losses"
+
+# to customize the training parameters (number of epochs, batch size etc.),
+# specify your requirements in the "train_config" argument, according to
+# "api/core/trainer", e.g. exp = Experiment(..., train_config=dict(batch_size=1, epochs=30, verbose=2)
+
+""" 4. Creating your own modules """
 
 
-""" 2. The 'core' sub-library: """
-
-""" 3. the Experiment module """
-"""
-the Experiment module is the main module in the API.
-it can be thought of as a container of the experiment's 
-different parts. 
-
- 
-"""
+""" 5. Working with configs """
 
 
 
