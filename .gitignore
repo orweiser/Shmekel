@@ -1,6 +1,3 @@
-*.idea/*
-__pycache__/*
+data/*
+.idea/*
 */__pycache__/*
-*.pickle
-data/ETFs/*
-data/Stocks/*
