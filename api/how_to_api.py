@@ -39,7 +39,7 @@ my_exp.run()
 # >>> Metrics: val_loss val_acc loss acc
 # >>> Number of Epochs: 5
 # >>> Best Epoch:
-# >>> Epoch 4
+# >>> Epoch 5
 # >>> --------------------------------------------------
 # >>> --> val_loss ...................... 0.219
 # >>> --> val_acc ....................... 0.938
@@ -68,10 +68,10 @@ results = my_exp.results
 
 """ 3. customize experiments (exploring hoes...) """
 
-in section 2. we used the default experiment
-here we'll explore how to customize your experiments
+# in section 2. we used the default experiment
+# here we'll explore how to customize your experiments
 
-let's explore how the model's depth affects the experiment's results
+# let's explore how the model's depth affects the experiment's results
 
 
 fc_3 = Experiment(name='fc_3', model_config=dict(model='FullyConnected', depth=3))
@@ -83,10 +83,12 @@ print(fc_5.model)
 # >>> fully_connected-depth_3-width_32
 # >>> fully_connected-depth_5-width_32
 
-#since, we've implemented custom fully_connected file that creates fully connected
-#models on demand and we can now run the experiments and view results as described above
+# since, we've implemented custom fully_connected model we can now run the experiments
+# and view results as described above
 
-we created a Model subclass, named
+# we created a Model subclass, named fully_connected that inherits from Model,
+# with a print function that fits our needs, we could also implement a custom Results
+# class that can do anything that suits us.
 
 
 """ 2. The 'core' sub-library: """
@@ -97,7 +99,19 @@ the Experiment module is the main module in the API.
 it can be thought of as a container of the experiment's 
 different parts. 
 
+its parameters are:
+
+name,
+model_config,
+loss_config,
+train_dataset_config,
+val_dataset_config,
+train_config,
+backup_config,
  
+each parameters affects the appropriate module and can be expanded
+
+
 """
 
 
