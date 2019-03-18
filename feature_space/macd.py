@@ -1,6 +1,6 @@
 import numpy as np
-from ShmekelCore import Feature
-from ShmekelCore.math import exponential_moving_average
+from shmekel_core import Feature
+from shmekel_core.math import exponential_moving_average
 
 
 class MACD(Feature):

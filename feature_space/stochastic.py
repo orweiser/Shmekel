@@ -1,4 +1,4 @@
-from ShmekelCore import Feature
+from shmekel_core import Feature
 import numpy as np
 
 

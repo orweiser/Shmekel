@@ -1,5 +1,5 @@
 import numpy as np
-from ShmekelCore import Feature, math
+from shmekel_core import Feature, math
 
 
 class ADX(Feature):
