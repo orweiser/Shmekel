@@ -53,7 +53,7 @@ def _read_a_file(fname):
 
 def get_config(config_path):
     if not os.path.isfile(config_path):
-        raise Exception("There is now file in the location given %s" % config_path)
+        raise Exception("There is no file in the location given %s" % config_path)
 
     config = {}
     for line in _read_a_file(config_path):

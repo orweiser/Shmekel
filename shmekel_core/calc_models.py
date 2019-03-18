@@ -58,6 +58,9 @@ class Stock:
             self._temporal_size = len(self.data[1]) - self.temporal_delay
         return self._temporal_size
 
+    def __len__(self):
+        return self.temporal_size
+
     @property
     def feature_matrix(self):
         if self._feature_matrix is None:
