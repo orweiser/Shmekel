@@ -15,7 +15,7 @@ class Stock:
         """
 
         self.stock_tckt = stock_tckt
-        self.features = feature_list if type(feature_list) is list else [feature_list]
+        self.features = feature_list if isinstance(feature_list, (list, tuple)) else [feature_list]
 
         # property holders
         self._feature_axis = feature_axis if feature_axis else -1
@@ -23,17 +23,11 @@ class Stock:
         self._feature_matrix = None
         self._numerical_feature_list = None
         self._not_numerical_feature_list = None
-        self._temporal_delay = None
+        self._temporal_delays = None
         self._temporal_size = None
 
     def set_feature_list(self, feature_list):
         self.__init__(stock_tckt=self.stock_tckt, data=self.data, feature_list=feature_list)
-
-    def reset_properties(self, reset_data=True):
-        if reset_data:
-            self.__init__(stock_tckt=self.stock_tckt, feature_list=self.features)
-        else:
-            self.__init__(stock_tckt=self.stock_tckt, feature_list=self.features, data=self._data)
 
     def __get_data(self):
         """
@@ -47,15 +41,26 @@ class Stock:
     data = property(__get_data, __set_data)
 
     @property
-    def temporal_delay(self):
-        if self._temporal_delay is None:
-            self._temporal_delay = max([feature.time_delay for feature in self.features])
-        return self._temporal_delay
+    def temporal_delays(self):
+        if self._temporal_delays is None:
+            time_delays = [feature.time_delay for feature in self.features]
+
+            pos_td = 0
+            if any([td > 0 for td in time_delays]):
+                pos_td = max([td for td in time_delays if td > 0])
+
+            neg_td = 0
+            if any([td < 0 for td in time_delays]):
+                neg_td = max([-td for td in time_delays if td < 0])
+
+            self._temporal_delays = (pos_td, neg_td)
+
+        return self._temporal_delays
 
     @property
     def temporal_size(self):
         if self._temporal_size is None:
-            self._temporal_size = len(self.data[1]) - self.temporal_delay
+            self._temporal_size = len(self.data[1]) - sum(self.temporal_delays)
         return self._temporal_size
 
     def __len__(self):
@@ -78,7 +83,9 @@ class Stock:
 
     def __get_features(self, numerical=True):
         f_list = [feature for feature in self.features if feature.is_numerical is numerical]
-        return [f.get_feature(data=self.data, temporal_delay=self.temporal_delay) for f in f_list]
+        return [f.get_feature(data=self.data,
+                              temporal_delay=self.temporal_delays[0],
+                              neg_temporal_delay=self.temporal_delays[1]) for f in f_list]
 
     @property
     def numerical_feature_list(self):

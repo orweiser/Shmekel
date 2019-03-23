@@ -32,7 +32,7 @@ class Feature:
         however, do take the time and effort to understand its structure and parameters
         to see how to implement a specific feature, go to the feature example at the end
     """
-    def __init__(self, pattern=('Open', 'High', 'Low', 'Close', 'Volume'), feature_axis=-1, normalization_type=None,
+    def __init__(self, pattern=('open', 'high', 'low', 'close', 'volume'), feature_axis=-1, normalization_type=None,
                  time_delay=0, num_features=1, is_numerical=True):
         """
         :param pattern: the pattern of the candle data inserted ('High', 'Low'...), as defined in the config file
@@ -84,7 +84,7 @@ class Feature:
             candles = candles[0]
 
         candles = np.swapaxes(candles, 0, self._feature_axis)
-        f = candles[self._pattern.index(key)]
+        f = candles[self._pattern.index(key.lower())]
 
         if keep_dims:
             f = np.swapaxes(f[np.newaxis, :], 0, self._feature_axis)
@@ -100,9 +100,9 @@ class Feature:
         ****This method must be overridden by children classes****
         :rtype: ndarray
         """
-        pass
+        raise NotImplementedError()
 
-    def get_feature(self, data, temporal_delay=0, normalization_type=None):
+    def get_feature(self, data, temporal_delay=0, neg_temporal_delay=0, normalization_type=None):
         """
         compute feature on self.data
 
@@ -126,12 +126,21 @@ class Feature:
         feature = normalize(feature, normalization_type=normalization_type)
 
         if self.is_numerical and len(feature.shape) > 1 and self._feature_axis:
-            feature = np.swapaxes(feature, 0, self._feature_axis)
+            feature = np.swapaxes(feature, -1, self._feature_axis)
 
-        if temporal_delay > self.time_delay:
-            feature = feature[:-(temporal_delay - self.time_delay)]
+        if self.time_delay > 0:
+            temporal_delay = temporal_delay - self.time_delay * (temporal_delay >= self.time_delay)
+
+        if temporal_delay:
+            feature = feature[temporal_delay:]
+
+        if self.time_delay < 0:
+            neg_temporal_delay = neg_temporal_delay - abs(self.time_delay) * (neg_temporal_delay >= abs(self.time_delay))
+
+        if neg_temporal_delay:
+            feature = feature[neg_temporal_delay:]
 
         if self.is_numerical and len(feature.shape) > 1 and self._feature_axis:
-            feature = np.swapaxes(feature, 0, self._feature_axis)
+            feature = np.swapaxes(feature, -1, self._feature_axis)
 
         return feature
