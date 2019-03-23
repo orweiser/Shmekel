@@ -16,7 +16,7 @@ class Candle(Feature):
             return data[0]
 
         a = np.swapaxes(data[0], 0, self._feature_axis)
-        ind = [i for i in range(len(self._pattern)) if i != self._pattern.index('Volume')]
+        ind = [i for i in range(len(self._pattern)) if i != self._pattern.index('volume')]
         a = a[ind]
 
         a = np.swapaxes(a, 0, self._feature_axis)

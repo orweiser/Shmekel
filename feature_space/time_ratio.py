@@ -10,7 +10,7 @@ class TimeRatio(Feature):
         """
         super(TimeRatio, self).__init__(**kwargs)
         self.time_delay = 1
-        self.num_features = 5 # performed on the entire candle
+        self.num_features = 5  # performed on the entire candle
 
     def _compute_feature(self, data):
         candle = np.zeros((len(data[0]), 5))
