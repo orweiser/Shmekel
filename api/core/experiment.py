@@ -14,11 +14,10 @@ class Experiment:
                  model_config=None, loss_config=None,
                  train_dataset_config=None, val_dataset_config=None,
                  train_config=None, backup_config=None):
-        self.name = name
-        self.model_config = model_config or {'model': 'LSTM'}
+        self.model_config = model_config or {'model': 'FullyConnected'}
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
-        self.train_dataset_config = train_dataset_config or {'dataset': 'gen', 'val_mode': False}
-        self.val_dataset_config = val_dataset_config or {'dataset': 'gen', 'val_mode': True}
+        self.train_dataset_config = train_dataset_config or {'dataset': 'MNIST', 'val_mode': False}
+        self.val_dataset_config = val_dataset_config or {'dataset': 'MNIST', 'val_mode': True}
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
 
