@@ -22,6 +22,12 @@ class Experiment:
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
 
+        # todo: have 'project' be a field of experiment instead of backup_handler
+
+        # todo: load existing config by experiment name?
+        self.__name = name
+        self._name = None
+
         # property classes declarations
         self._model = None
         self._results = None
@@ -39,6 +45,13 @@ class Experiment:
         self._fill_configs()
 
     """ Summary methods: """
+
+    @property
+    def name(self):
+        if self._name is None:
+            # todo: assert that if there exists an experiment with the same name, than they have the same config
+            self._name = self.__name
+        return self._name
 
     def __str__(self):
         return self.name
@@ -150,6 +163,8 @@ class Experiment:
 
         return self._loss
 
+    # todo: add support for multiple datasets
+
     @property
     def train_dataset(self):
         if not self._train_dataset:
@@ -231,4 +246,11 @@ class Experiment:
         self.backup_handler.dump_history(self.history or {}, epoch=-1)
         self.backup_handler.dump_snapshot(self.model, epoch=-1)
         self.backup_handler.dump_config(self.config)
+
+    """ Methods yet to be implemented: """
+    def compute_shapes(self):
+        """ computes the input and output shapes (considering augmentations) """
+        raise NotImplementedError()
+
+
 

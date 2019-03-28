@@ -2,6 +2,9 @@ from api.utils.augmentations import AugmentationList
 from api.utils.data_utils import batch_generator
 
 
+""" WELCOME TO THE TRAINER!!! """
+
+
 class Trainer:
     def __init__(self, experiment=None,
                  optimizer='adam', batch_size=1024, epochs=5, augmentations=None,

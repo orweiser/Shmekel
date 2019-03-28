@@ -1,29 +1,6 @@
 import keras.backend as K
 
 
-def get_loss(loss='categorical_crossentropy', hyper_parameters=1, minimize=True, without_uncertainty=False):
-    if without_uncertainty and loss == 'prediction_dependent':
-        raise Exception('without uncertainty is not defined with prediction_dependent loss')
-
-    if loss == 'categorical_crossentropy':
-        return 'categorical_crossentropy'
-
-    elif loss == 'prediction_dependent':
-        return PredictionDependentLoss(weights=hyper_parameters, flip_sign=not minimize)
-
-    elif loss == 'linear_reinforce':
-        return LinearReinforce(rewards=hyper_parameters, minus=minimize, without_uncertainty=without_uncertainty)
-
-    elif loss == 'log_reinforce':
-        return LogReinforce(rewards=hyper_parameters, minus=minimize, without_uncertainty=without_uncertainty)
-
-    # elif loss == 'log_linear_reinforce':
-    #     return LogLinearReinforce(rewards=hyper_parameters, minus=minimize, without_uncertainty=without_uncertainty)
-
-    else:
-        raise Exception('unexpected loss_name. got ' + loss)
-
-
 class PredictionDependentLoss:
     """
     loss number 3 on the board

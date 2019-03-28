@@ -23,12 +23,13 @@ class Results:
         plt.show()
 
     def get_best_epoch(self, metric=None):
+        # TODO ???
         metric = metric or 'val_acc'
         metric = metric or 'acc'
         assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
 
         metric_history = np.array(self[metric])
-        return self[metric_history.argmax()]
+        return self[metric_history.argmax()+1]
 
     def summary(self):
         print(self)
@@ -72,19 +73,19 @@ class Results:
     def get_single_epoch(self, epoch=-1):
         num_epochs = self.num_epochs
         if epoch >= num_epochs:
-            raise ValueError("max epoch is", num_epochs - 1, "got", epoch)
+            raise ValueError("max epoch is", num_epochs, "got", epoch)
         if epoch < 0:
             epoch = num_epochs + epoch
 
         scores = {k: v[epoch] for k, v in self.history.items()}
-        return Epoch(epoch_num=epoch, scores=scores, results_parent=self)
+        return Epoch(epoch_num=epoch+1, scores=scores, results_parent=self)
 
     def __getitem__(self, item):
         def get(x):
             if type(x) is str:
                 return self.history[x]
             if type(x) is int:
-                return self.epoch_list[x]
+                return self.epoch_list[x-1]
             if type(x) is slice:
                 epoch_list = []
                 for i in range(x.run, x.stop, x.step or 1):

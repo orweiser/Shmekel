@@ -11,7 +11,6 @@ def ind_generator(num_samples, randomize=True):
 
 def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None, augmentations=None):
     # todo: add support for multiple inputs / outputs
-    # todo: add augmentations support
 
     num_samples = num_samples or len(dataset)
 

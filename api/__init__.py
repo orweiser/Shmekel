@@ -1,12 +1,1 @@
-
-
-def load_experiment_by_path():
-    pass
-
-
-def load_experiment_by_name():
-    pass
-
-
-def name_to_config():
-    pass
+from .core import Experiment, get_exp_from_config, load_config
