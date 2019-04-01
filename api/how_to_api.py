@@ -95,7 +95,7 @@ fully connected models, and different depth.
 
 # fc_3 = Experiment(name='fc_3', model_config=dict(model='FullyConnected', depth=3))
 # fc_5 = Experiment(name='fc_5', model_config=dict(model='FullyConnected', depth=5))
-lstm_exp = Experiment(name='LSTM!', model_config=dict(model='LSTM'),
+lstm_exp = Experiment(name='LSTM!', model_config=dict(model='LSTM', input_shape=(1, 4), output_shape=(2,)),
                       train_dataset_config=dict(dataset='StocksDataset', val_mode=False),
                       val_dataset_config=dict(dataset='StocksDataset', val_mode=True))
 
