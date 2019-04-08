@@ -12,12 +12,13 @@ class Generator(Dataset):
     window_size: int
     step_size: int
 
-    def init(self, num_classes=3, val_mode=False, sample_len=10000, window_size=10, step_size=10):
+    def init(self, num_classes=3, val_mode=False, sample_len=10000, window_size=10, step_size=10, data_type=None):
         self.num_classes = num_classes
         self._val_mode = val_mode
         self.sample_len = sample_len
         self.window_size = window_size
         self.step_size = step_size
+        self.data_type = data_type
 
         self._raw_data = None
         self._processed_data = None
@@ -25,11 +26,8 @@ class Generator(Dataset):
     @property
     def raw_data(self):
         if self._raw_data is None:
-            print('raw dataing')
             x_train = np.sin(range(self.sample_len))
             y_train = np.round(x_train)
-            print('x_train: {}'.format(x_train))
-            print('y_train: {}'.format(y_train))
             # x_test =
             # y_test =
             self._raw_data = ((x_train, y_train), (x_train, y_train))[1 * self.val_mode]
@@ -100,6 +98,10 @@ def normalize(x):
 #     x = x * normalization_params['std']
 #     x += normalization_params['mean']
 #     return x
+
+def create_sin(sample_len):
+    x_train = np.sin(range(sample_len))
+    y_train = np.round(x_train)
 
 
 def one_hot(y, num_classes):
