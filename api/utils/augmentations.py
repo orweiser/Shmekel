@@ -81,3 +81,15 @@ class GaussianNoise(BaseAugmentation):
         return batch_inputs, batch_labels
 
 
+class ExpandLastDim(BaseAugmentation):
+
+    def __init__(self, expansion=1):
+        self.expansion = expansion
+
+    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple):
+        new_shape = list(labels_shape)
+        new_shape[-1] += self.expansion
+        return inputs_shape, tuple(new_shape)
+
+    def call(self, batch_inputs: np.ndarray, batch_labels: np.ndarray):
+        return np.concatenate([batch_labels, np.zeros((batch_labels.size // batch_labels.shape[-1], self.expansion))], axis=-1)

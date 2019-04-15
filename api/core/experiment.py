@@ -247,6 +247,3 @@ class Experiment:
     def compute_shapes(self):
         """ computes the input and output shapes (considering augmentations) """
         raise NotImplementedError()
-
-
-
