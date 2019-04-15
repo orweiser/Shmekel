@@ -73,8 +73,8 @@ class GaussianNoise(BaseAugmentation):
 
         mean, std = self.get_params(len(batch_inputs))
 
-        noise[:] = std * noise
-        noise[:] = mean + noise
+        noise *= std
+        noise += mean
 
         batch_inputs += noise
 
@@ -93,3 +93,38 @@ class ExpandLastDim(BaseAugmentation):
 
     def call(self, batch_inputs: np.ndarray, batch_labels: np.ndarray):
         return np.concatenate([batch_labels, np.zeros((batch_labels.size // batch_labels.shape[-1], self.expansion))], axis=-1)
+
+
+class AddNoise(BaseAugmentation):
+    def __init__(self, mean: float = 0, std: float = 1, fraction_to_added: float = 0.1,
+                 add_extra_label_dim: bool = True):
+        self.mean = mean
+        self.std = std
+        self.fraction_to_added = fraction_to_added
+        self.add_extra_label_dim = add_extra_label_dim
+
+    def get_additional_noise(self, input_shape: tuple) -> np.ndarray:
+        return np.ceil(input_shape[0] * self.fraction_to_added)
+
+    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple):
+        additional_noise = self.get_additional_noise(inputs_shape)
+        inputs_shape = inputs_shape[0] + additional_noise, + inputs_shape[1:]
+        labels_shape = (labels_shape[0] + 1,) if self.add_extra_label_dim else labels_shape
+        return inputs_shape, labels_shape
+
+    def call(self, batch_inputs: np.ndarray, batch_labels: np.ndarray):
+        additional_noise = self.get_additional_noise(batch_inputs.shape)
+        noise = np.random.normal(self.mean, self.std,
+                                 size=(additional_noise,) + batch_inputs.shape[:1])
+
+        if self.add_extra_label_dim:
+            extra_label = np.zeros((additional_noise,) + batch_labels.shape[1:])
+            extra_label[:, -1] = True
+        else:
+            extra_label = np.zeros((additional_noise,) + batch_labels.shape[1:-1] +
+                                   batch_labels.shape[-1])
+            extra_label[:, -1] = True
+
+        batch_inputs = np.concatenate((batch_inputs, noise), axis=0)
+        batch_labels = np.concatenate((batch_labels, extra_label), axis=0)
+        return batch_inputs, batch_labels

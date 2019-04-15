@@ -40,7 +40,7 @@ my_exp.print()
 >>> Loss: categorical_crossentropy
 >>> Train Dataset: mnist_train
 >>> Val Dataset: mnist_val
->>>
+>>> 
 >>> status: 'initialized'
 """
 
