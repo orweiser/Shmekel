@@ -7,7 +7,7 @@ from api.utils.data_utils import batch_generator
 
 class Trainer:
     def __init__(self, experiment=None,
-                 optimizer='adam', batch_size=1024, epochs=5, augmentations=None,
+                 optimizer='adam', batch_size=2048, epochs=10, augmentations=None,
                  callbacks=None, include_experiment_callbacks=True, randomize=True,
                  steps_per_epoch=None, validation_steps=None, **params):
 
