@@ -95,15 +95,15 @@ fully connected models, and different depth.
 
 # fc_3 = Experiment(name='fc_3', model_config=dict(model='FullyConnected', depth=3))
 # fc_5 = Experiment(name='fc_5', model_config=dict(model='FullyConnected', depth=5))
-lstm_exp = Experiment(name='LSTM!', model_config=dict(model='LSTM'),
+lstm_exp = Experiment(name='LSTM_DropOut', model_config=dict(model='LSTM_DropOut'),
                       train_dataset_config=dict(dataset='StocksDataset', time_sample_length=7, val_mode=False),
                       val_dataset_config=dict(dataset='StocksDataset', time_sample_length=7, val_mode=True))
 
 # print(fc_3.model)
 # print(fc_5.model)
 print(lstm_exp.model)
-lstm_exp.train_config['epochs'] += 5
-lstm_exp.run()
+# lstm_exp.train_config['epochs'] += 5
+lstm_exp.start()
 
 """
 >>> fully_connected-depth_3-width_32

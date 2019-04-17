@@ -7,6 +7,7 @@ def get(model: str, **kwargs):
         return FullyConnected(model=model, **kwargs)
     if model == 'LSTM':
         return LSTM(model=model, **kwargs)
-
+    if model == 'LSTM_DropOut':
+        return LSTM(model=model, **kwargs)
     raise ValueError('Unexpected model, got ' + model)
 
