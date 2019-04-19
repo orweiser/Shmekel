@@ -1,5 +1,5 @@
 import numpy as np
-from ShmekelCore import Feature
+from shmekel_core import Feature
 
 
 class ATR(Feature):
@@ -8,7 +8,7 @@ class ATR(Feature):
         use this method to define the parameters of the feature
         """
         super(ATR, self).__init__(**kwargs)
-        self.range = period
+        self._range = period
         self.time_delay = period
         self.is_numerical = True
 
@@ -22,5 +22,5 @@ class ATR(Feature):
         high = self._get_basic_feature(data[0], 'high')
         low = self._get_basic_feature(data[0], 'low')
         high_minus_low = high - low
-        atr = self.getSma(high_minus_low, self.range)
-        return np.array(atr[self.range - 1:])
+        atr = self.getSma(high_minus_low, self._range)
+        return np.array(atr[self._range - 1:])
