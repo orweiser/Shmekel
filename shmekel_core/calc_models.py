@@ -1,4 +1,4 @@
-t from copy import deepcopy as copy
+from copy import deepcopy as copy
 import numpy as np
 from dimentionality_reduction import *
 
