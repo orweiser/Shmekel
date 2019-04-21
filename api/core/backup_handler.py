@@ -3,6 +3,7 @@ Backup handlers to store and read experiments and handle paths
 """
 
 from keras.callbacks import Callback
+from keras.models import load_model
 import os
 
 
@@ -28,6 +29,7 @@ def get_handler(handler='DefaultLocal', instantiate=True, **kwargs):
         'NullHandler': NullHandler,
         'DefaultLocal': DefaultLocal,
         'DefaultLossGroup': DefaultLossGroup,
+        'DefaultModelGroup': DefaultModelGroup
     }
     clas = handlers[handler]
 
@@ -352,3 +354,77 @@ class DefaultLossGroup(BaseBackupHandler):
 
     def erase(self):
         self.rmtree(self.exp_absolute_path)
+
+class DefaultModelGroup(BaseBackupHandler):
+    """
+    saves and reads file locally on computer.
+
+    definitions:
+        -- snapshots are saved and loaded via keras
+        -- configs are saved as json files
+        -- histories are saved as "h5" files
+    """
+    import shutil
+    import pickle
+    import json
+    import io
+
+    def __init__(self, **kwargs):
+        super(DefaultModelGroup, self).__init__(**kwargs)
+
+    @property
+    def res_dir_absolute_path(self):
+        return os.path.abspath(os.path.join(os.path.pardir, 'Shmekel_Results'))
+
+    def dump_snapshot(self, model, epoch: int):
+        if not os.path.exists(os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path)):
+            os.makedirs(os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path))
+        if epoch == 1:
+            model.save(self.get_snapshot_path(epoch))
+        else:
+            model.save_weights(self.get_snapshot_path(epoch))
+
+    def load_snapshot(self, model, epoch: int):
+        if not os.path.exists(self.get_snapshot_path(epoch)):
+            return None
+        if epoch == 1:
+            model = load_model(self.get_snapshot_path(epoch))
+        else:
+            model.load_weights(self.get_snapshot_path(epoch))
+    def dump_history(self, history: dict, epoch: int):
+        if not os.path.exists(os.path.join(self.exp_absolute_path, self.histories_dir_relative_path)):
+            os.makedirs(os.path.join(self.exp_absolute_path, self.histories_dir_relative_path))
+        with open(self.get_history_path(epoch), 'wb') as f:
+            self.pickle.dump(history, f)
+
+    def load_history(self, epoch: int):
+        if not os.path.exists(self.get_history_path(epoch)):
+            return None
+
+        with open(self.get_history_path(epoch), 'rb') as f:
+            h = self.pickle.load(f)
+
+        return h
+
+    def erase(self):
+        path = str(self.exp_absolute_path)
+        self.shutil.rmtree(path)
+
+    def dump_config(self, config: dict):
+        path = self.get_config_path()
+        dir_path = path.rsplit(os.path.sep, 1)[0]
+
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+
+        with self.io.open(path, 'w', encoding='utf8') as outfile:
+            outfile.write(self.json.dumps(config, indent=4, sort_keys=True,
+                                          separators=(',', ': '), ensure_ascii=False))
+
+    @staticmethod
+    def load_config(path):
+        import json
+        with open(path, 'r') as f:
+            data = f.read()
+            c = json.loads(data)
+        return c
