@@ -111,11 +111,10 @@ fully connected models, and different depth.
 # exp.run()
 lstm_exp = Experiment(name='LSTM_compose', model_config=dict(model='LSTM_compose'),
                               train_dataset_config=dict(dataset='MNIST', val_mode=False),
-                              val_dataset_config=dict(dataset='MNIST', val_mode=True),
-                              backup_config=dict(handler='DefaultModelGroup'))
-lstm_exp.train_config['epochs'] = 0
+                              val_dataset_config=dict(dataset='MNIST', val_mode=True))
+#lstm_exp.train_config['epochs'] = 0
 # lstm_exp.run()
-lstm_exp.backup_handler.load_snapshot(lstm_exp.model, 1)
+#lstm_exp.backup_handler.load_snapshot(lstm_exp.model, 1)
 print("printing! {}".format(lstm_exp.model.summary()))
 lstm_exp.run()
 
