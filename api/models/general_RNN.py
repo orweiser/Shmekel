@@ -1,6 +1,6 @@
 from keras import Input
 from keras.layers import LSTM as KerasLSTM
-from keras.layers import Dense, Reshape, Dropout # , RNN
+from keras.layers import Dense, Reshape, Dropout  # , RNN
 from api.core import Model
 import numpy as np
 import random
@@ -16,10 +16,10 @@ class GeneralRnn(Model):
     dropout: bool
     dropout_rate: float
 
-
-    def init(self, layers=[], num_of_layers=0, num_of_rnn_layers=0, input_shape=(10, 1000), output_shape=(3,), output_activation='softmax',
+    def init(self, layers=[], num_of_layers=0, num_of_rnn_layers=0, input_shape=(10, 1000), output_shape=(3,),
+             output_activation='softmax',
              dropout=True, dropout_rate=0.2):
-        self.layers = layers
+        self.hidden_layers = layers
         self.num_of_layers = num_of_layers
         self.num_of_rnn_layers = num_of_rnn_layers
         self.output_activation = output_activation
@@ -34,7 +34,7 @@ class GeneralRnn(Model):
 
         input_layer = Input(input_shape)
 
-    # will make more complex cell, might be interesting but not what we meant
+        # will make more complex cell, might be interesting but not what we meant
         # model = None
         # for layer in self.layers:
         #     if layer['type'] == 'KerasLSTM':
@@ -44,8 +44,8 @@ class GeneralRnn(Model):
         #
         # x = RNN(cell)(input_layer)
 
-        x=input_layer()
-        for layer in self.layers:
+        x = input_layer
+        for layer in self.hidden_layers:
             if layer['type'] == 'KerasLSTM':
                 if self.num_of_rnn_layers > 1:
                     x = KerasLSTM(layer['size'], return_sequences=True)(x)
@@ -53,8 +53,8 @@ class GeneralRnn(Model):
                 else:
                     x = KerasLSTM(layer['size'], return_sequences=False)(x)
             elif layer['type'] == 'Dense':
-                x = Dense(layer['size'], activation=layer['activation_type'])(x)
-            if self.output:
+                x = Dense(layer['size'], activation=layer['activation_function'])(x)
+            if self.dropout:
                 x = Dropout(self.dropout_rate)(x)
 
         x = Dense(np.prod(output_shape), activation=self.output_activation)(x)
