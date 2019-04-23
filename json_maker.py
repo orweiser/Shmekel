@@ -17,6 +17,7 @@ def generate_model_config(output_activation='softmax'):
     model_config = {
         'model': 'General_RNN',
         'num_of_layers': np.random.randint(1, MAX_NUM_OF_LAYERS),
+        'num_of_rnn_layers': 0,
         'layers': [],
         "output_activation": output_activation
     }
@@ -31,7 +32,7 @@ def generate_model_config(output_activation='softmax'):
     # add activation function to Dense layers
     activation_function = np.random.choice(ACTIVATION_FUNCTIONS) if ALL_DENSE_SAME else None
 
-    # crate model layers
+    # create model layers
     for layer in range(model_config['num_of_layers']):
         model_config['layers'].append({
             'type': np.random.choice(LAYERS_TYPES),
@@ -40,6 +41,8 @@ def generate_model_config(output_activation='softmax'):
         if model_config['layers'][layer]['type'] == 'Dense':
             model_config['layers'][layer]['activation_function'] = activation_function or np.random.choice(
                     ACTIVATION_FUNCTIONS)
+        else:
+            model_config['num_of_rnn_layers'] += 1
 
     return model_config
 

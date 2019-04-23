@@ -9,6 +9,7 @@ import random
 class GeneralRnn(Model):
     layers: list
     num_of_layers: int
+    num_of_rnn_layers: int
     output_activation: str
     _input_shape: tuple
     _output_shape: tuple
@@ -16,10 +17,11 @@ class GeneralRnn(Model):
     dropout_rate: float
 
 
-    def init(self, layers=[], num_of_layers=0, input_shape=(10, 1000), output_shape=(3,), output_activation='softmax',
+    def init(self, layers=[], num_of_layers=0, num_of_rnn_layers=0, input_shape=(10, 1000), output_shape=(3,), output_activation='softmax',
              dropout=True, dropout_rate=0.2):
         self.layers = layers
         self.num_of_layers = num_of_layers
+        self.num_of_rnn_layers = num_of_rnn_layers
         self.output_activation = output_activation
         self._input_shape = input_shape
         self._output_shape = output_shape
@@ -36,7 +38,7 @@ class GeneralRnn(Model):
         # model = None
         # for layer in self.layers:
         #     if layer['type'] == 'KerasLSTM':
-        #       cell = KerasLSTM(layer['size'], return_sequences=True)(cell)
+        #       cell = KerasLSTM(layer['size'])(cell)
         #     elif layer['type'] == 'Dense':
         #         cell = Dense(layer['size'], activation=layer['activation_type'])(cell)
         #
@@ -45,7 +47,11 @@ class GeneralRnn(Model):
         x=input_layer()
         for layer in self.layers:
             if layer['type'] == 'KerasLSTM':
-              x = KerasLSTM(layer['size'], return_sequences=True)(x)
+                if self.num_of_rnn_layers > 1:
+                    x = KerasLSTM(layer['size'], return_sequences=True)(x)
+                    self.num_of_rnn_layers -= 1
+                else:
+                    x = KerasLSTM(layer['size'], return_sequences=False)(x)
             elif layer['type'] == 'Dense':
                 x = Dense(layer['size'], activation=layer['activation_type'])(x)
             if self.output:
