@@ -5,6 +5,7 @@ from feature_space import get_feature
 from copy import deepcopy as copy
 import os
 from tqdm import tqdm
+from Utils.logger import logger
 
 
 N_train = 300
@@ -171,7 +172,7 @@ class StocksDataset(Dataset):
         if self._stocks_list is None:
             reader = DataReader(self.config_path)
 
-            print('Loading Stocks:')
+            logger.info('Loading Stocks:')
             self._stocks_list = []
             for tckt in tqdm(self.stock_name_list):
                 self._stocks_list.append(Stock(tckt, reader.load_stock(tckt), feature_list=[get_feature(f_name, **params)

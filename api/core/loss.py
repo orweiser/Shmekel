@@ -1,4 +1,5 @@
 from copy import deepcopy as copy
+from Utils.logger import logger
 
 
 class Loss:
@@ -15,7 +16,7 @@ class Loss:
         loss_weights
         callbacks
     """
-    def __init__(self, loss, experiment=None, **params):
+    def __init__(self, loss='', experiment=None, **params):
         """
         a constructor method.
         replaced by init() in subclasses.
@@ -26,6 +27,9 @@ class Loss:
         :param params: holds all the key-word arguments except for "experiment"
                 those key-words are passed to the init() method
         """
+
+        if not loss: logger.warning('Loss parameter "loss" is missing')
+
         self.experiment = experiment
 
         self.config = copy(self.get_default_config())
