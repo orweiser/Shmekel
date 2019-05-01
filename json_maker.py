@@ -1,6 +1,8 @@
 import json
 import numpy as np
 from api import core
+import time
+import os
 
 MIN_SIZE = 3
 MAX_SIZE = 7
@@ -40,7 +42,7 @@ def generate_model_config(output_activation='softmax'):
         })
         if model_config['layers'][layer]['type'] == 'Dense':
             model_config['layers'][layer]['activation_function'] = activation_function or np.random.choice(
-                    ACTIVATION_FUNCTIONS)
+                ACTIVATION_FUNCTIONS)
         else:
             model_config['num_of_rnn_layers'] += 1
 
@@ -78,7 +80,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
         "augmentations": None,
         "batch_size": 1024,
         "callbacks": None,
-        "epochs": 10,
+        "epochs": 2,
         "include_experiment_callbacks": True,
         "optimizer": "adam",
         "randomize": True,
@@ -110,23 +112,28 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
 
 
 # main
+timestamp = round(time.time())
+main_dir = r'{pardir}\Shmekel_Results\default_project\{timestamp}'.format(timestamp=timestamp, pardir=os.path.pardir)
+os.mkdir(main_dir)
 for i in range(3):
     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
-    file_name = r'.\Shmekel_Results\default_project\config_{name}.json'.format(name=model_name)
+    dir_name = r'{main_dir}\{name}'.format(name=model_name, main_dir=main_dir)
+    file_name = r'{dir_name}\config_{name}.json'.format(name=model_name, dir_name=dir_name)
 
-    model = {}
+    exp_model_name = r'{timestamp}\\'.format(timestamp=timestamp) + model_name
     model = generate_model_config()
-    data = json_format(model_config=model, name=model_name, train_dataset_config=dict(dataset='MNIST', val_mode=False),
-                              val_dataset_config=dict(dataset='MNIST', val_mode=True))
+    data = json_format(model_config=model, name=exp_model_name,
+                       train_dataset_config=dict(dataset='MNIST', val_mode=False),
+                       val_dataset_config=dict(dataset='MNIST', val_mode=True))
     if model['num_of_rnn_layers'] == 0:
-        if 'time_sample_length' in data['train_dataset_config'].keys:
+        if 'time_sample_length' in data['train_dataset_config']:
             data['train_dataset_config']['time_sample_length'] = 1
-        if 'time_sample_length' in data['val_dataset_config'].keys:
+        if 'time_sample_length' in data['val_dataset_config']:
             data['val_dataset_config']['time_sample_length'] = 1
+    os.mkdir(dir_name)
     with open(file_name, 'w') as outfile:
         json.dump(data, outfile)
 
-exp1 = core.get_exp_from_config(
-        core.load_config(r'.\Shmekel_Results\default_project\config_{name}.json'.format(name=model_name)))
-print(exp1.model.summary())
-exp1.run()
+    exp1 = core.get_exp_from_config(core.load_config(file_name))
+    print(exp1.model.summary())
+    exp1.run()
