@@ -28,6 +28,7 @@ def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None, 
         for i, ind in enumerate(ind_gen):
             sample = dataset[ind]
 
+            # TODO: bug fix
             batch_x[i] = sample['inputs']
             batch_y[i] = sample['outputs']
 

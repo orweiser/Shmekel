@@ -102,49 +102,44 @@ class ExpandLastDim(BaseAugmentation):
         return np.concatenate([batch_labels, np.zeros((batch_labels.size // batch_labels.shape[-1], self.expansion))], axis=-1)
 
 
-""" this name is confusing, maybe something like ConcatExtraNoiseSamples """
-class AddNoise(BaseAugmentation):
+class ConcatExtraNoiseSamples(BaseAugmentation):
+
     def __init__(self, mean: float = 0, std: float = 1, fraction_to_added: float = 0.1,
-                 add_extra_label_dim: bool = True):
+                 add_extra_label_dim: bool = True, noise_class: int = -1):
         self.mean = mean
         self.std = std
         self.fraction_to_added = fraction_to_added
         self.add_extra_label_dim = add_extra_label_dim
+        self.noise_class = noise_class
 
-    def get_additional_noise(self, input_shape: tuple) -> np.ndarray:
+    def get_additional_noise_len(self, input_shape: tuple) -> np.ndarray:
         return np.ceil(input_shape[0] * self.fraction_to_added)
 
-    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple):
-        additional_noise = self.get_additional_noise(inputs_shape)
+    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple) -> tuple:
+        additional_noise = self.get_additional_noise_len(inputs_shape)
 
-        """ missing () around the tuple: (inputs_shape[0] + additional_noise,) + inputs_shape[1:] """
-        inputs_shape = inputs_shape[0] + additional_noise, + inputs_shape[1:]
+        inputs_shape = (int(inputs_shape[0] + additional_noise),) + inputs_shape[1:]
+        labels_shape = (int(labels_shape[0] + additional_noise),) + labels_shape[1:]
 
-        """ labels shape get changed regardless of "self.add_extra_label_dim", since 
-                the number of samples is changing.
-            what exactly is "self.add_extra_label_dim" supposed to do? im not sure that (labels_shape[0] + 1,) 
-                is what u wanted
-        """
-        labels_shape = (labels_shape[0] + 1,) if self.add_extra_label_dim else labels_shape
+        if self.add_extra_label_dim:
+            labels_shape = labels_shape[:-1] + (int(labels_shape[-1] + 1),)
+
         return inputs_shape, labels_shape
 
     def call(self, batch_inputs: np.ndarray, batch_labels: np.ndarray):
-        additional_noise = self.get_additional_noise(batch_inputs.shape)
+        additional_noise = int(self.get_additional_noise_len(batch_inputs.shape))
         noise = np.random.normal(self.mean, self.std,
-                                 size=(additional_noise,) + batch_inputs.shape[:1])
-        #                                                     Should be [1:] instead of [:1]
+                                 size=(additional_noise,) + batch_inputs.shape[1:])
+
+        extra_label = np.zeros((additional_noise,) + batch_labels.shape[1:-1] +
+                               (batch_labels.shape[-1] + self.add_extra_label_dim,), dtype=bool)
+        extra_label[..., self.noise_class] = True
 
         if self.add_extra_label_dim:
-            extra_label = np.zeros((additional_noise,) + batch_labels.shape[1:])
-            extra_label[:, -1] = True
-        else:
-            extra_label = np.zeros((additional_noise,) + batch_labels.shape[1:-1] +
-                                   batch_labels.shape[-1])
-            extra_label[:, -1] = True
+            extra_layer = np.zeros(batch_labels.shape[:-1] + (1,), dtype=bool)
+            batch_labels = np.concatenate((batch_labels, extra_layer), axis=-1)
 
         batch_inputs = np.concatenate((batch_inputs, noise), axis=0)
-
-        """ i think that when add_extra_label_dim is True, those (batch_labels, extra_label) 
-        don't have the same shape and cant be concatenated. """
         batch_labels = np.concatenate((batch_labels, extra_label), axis=0)
+
         return batch_inputs, batch_labels
