@@ -81,9 +81,8 @@ class GaussianNoise(BaseAugmentation):
         return batch_inputs, batch_labels
 
 
-""" maybe change the name to ExpandLastLabelDim which is more accurate """
-class ExpandLastDim(BaseAugmentation):
-    """ im not one to talk, but try to add a short description, so other people can use it too """
+class ExpandLastLabelDim(BaseAugmentation):
+    """ Augmentation for adding a specified amount (or 1) of zeros to the last dim of the input_labels"""
     def __init__(self, expansion=1):
         self.expansion = expansion
 
@@ -93,13 +92,7 @@ class ExpandLastDim(BaseAugmentation):
         return inputs_shape, tuple(new_shape)
 
     def call(self, batch_inputs: np.ndarray, batch_labels: np.ndarray):
-        """
-        it is not well documented, but augmentations are expected to return two objects: input, labels.
-        also, i think that the "np.zeros((batch_labels.size // batch_labels.shape[-1], self.expansion))" part is
-            only working if the labels shape is 2D.
-            suggestion: np.zeros( batch_labels.shape[:-1] + (self.expansion,) )
-        """
-        return np.concatenate([batch_labels, np.zeros((batch_labels.size // batch_labels.shape[-1], self.expansion))], axis=-1)
+        return batch_inputs, np.concatenate([batch_labels, np.zeros(batch_labels.shape[:-1] + (self.expansion,))], axis=-1)
 
 
 """ this name is confusing, maybe something like ConcatExtraNoiseSamples """
