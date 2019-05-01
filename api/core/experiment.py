@@ -145,13 +145,14 @@ class Experiment:
 
     def _assert_shapes(self):
         def _get_mode_shapes(mode):
-            dataset = getattr(self, 'mode_%s' % mode)
+            dataset = getattr(self, '%s_dataset' % mode)
             augmentation = self.trainer.augmentations[mode]
 
             shapes = []
             shapes.append((dataset.input_shape, dataset.output_shape))
-            shapes.append(augmentation.get_output_shapes(*shapes[-1]))
-            shapes.append(self.model._input_shape, self.model._output_shape)  # todo: put _shapes in model
+            if augmentation:
+                shapes.append(augmentation.get_output_shapes(*shapes[-1]))
+            shapes.append((self.model._input_shape, self.model._output_shape))  # todo: put _shapes in model
             return shapes
 
         train = _get_mode_shapes('train')
@@ -169,7 +170,8 @@ class Experiment:
         if not self._model:
             if any([key not in self.model_config for key in ['input_shape', 'output_shape']]):
                 shapes = [self.train_dataset.input_shape, self.train_dataset.output_shape]
-                shapes = self.trainer.augmentations['train'].get_output_shapes(*shapes)
+                if self.trainer.augmentations['train']:
+                    shapes = self.trainer.augmentations['train'].get_output_shapes(*shapes)
 
                 self.model_config['input_shape'] = shapes[0]
                 self.model_config['output_shape'] = shapes[1]
