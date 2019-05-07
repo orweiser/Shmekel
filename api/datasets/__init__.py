@@ -1,6 +1,7 @@
 from .mnist import MNIST
 from .data_generator import Generator
 from .stock_dataset import StocksDataset
+from .smooth_stocks import SmoothStocksDataset
 
 
 def get(dataset: str, **kwargs):
@@ -11,5 +12,7 @@ def get(dataset: str, **kwargs):
         return Generator(dataset=dataset, **kwargs)
     elif dataset == 'StocksDataset':
         return StocksDataset(dataset=dataset, **kwargs)
+    elif dataset == 'SmoothStocksDataset':
+        return SmoothStocksDataset(dataset=dataset, **kwargs)
 
     raise ValueError('Unexpected dataset, got ' + dataset)

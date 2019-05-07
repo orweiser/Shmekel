@@ -89,7 +89,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
     }
     data_dic['train_dataset_config'] = train_dataset_config or {
         "config_path": None,
-        "dataset": "StocksDataset",
+        "dataset": "SmoothStocksDataset",
         "feature_list": None,
         "output_feature_list": None,
         "stock_name_list": None,
@@ -98,7 +98,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
     }
     data_dic['val_dataset_config'] = val_dataset_config or {
         "config_path": None,
-        "dataset": "StocksDataset",
+        "dataset": "SmoothStocksDataset",
         "feature_list": None,
         "output_feature_list": None,
         "stock_name_list": None,
@@ -113,18 +113,21 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
 
 # main
 timestamp = round(time.time())
-main_dir = r'{pardir}\Shmekel_Results\default_project\{timestamp}'.format(timestamp=timestamp, pardir=os.path.pardir)
+main_dir = os.pardir
+main_dir = os.path.join(main_dir, 'Shmekel_Results')
+main_dir = os.path.join(main_dir, 'default_project')
+main_dir = os.path.join(main_dir, str(timestamp))
 os.mkdir(main_dir)
 for i in range(3):
     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
-    dir_name = r'{main_dir}\{name}'.format(name=model_name, main_dir=main_dir)
-    file_name = r'{dir_name}\config_{name}.json'.format(name=model_name, dir_name=dir_name)
+    dir_name = os.path.join(main_dir, model_name)
+    file_name = os.path.join(dir_name, 'config_{name}.json'.format(name=model_name))
 
-    exp_model_name = r'{timestamp}\\'.format(timestamp=timestamp) + model_name
+    exp_model_name = os.path.join(str(timestamp), model_name)
     model = generate_model_config()
-    data = json_format(model_config=model, name=exp_model_name,
-                       train_dataset_config=dict(dataset='MNIST', val_mode=False),
-                       val_dataset_config=dict(dataset='MNIST', val_mode=True))
+    data = json_format(model_config=model, name=exp_model_name)
+                       # train_dataset_config=dict(dataset='MNIST', val_mode=False),
+                       # val_dataset_config=dict(dataset='MNIST', val_mode=True))
     if model['num_of_rnn_layers'] == 0:
         if 'time_sample_length' in data['train_dataset_config']:
             data['train_dataset_config']['time_sample_length'] = 1

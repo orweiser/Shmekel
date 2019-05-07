@@ -174,6 +174,7 @@ class StocksDataset(Dataset):
             print('Loading Stocks:')
             self._stocks_list = []
             for tckt in tqdm(self.stock_name_list):
+                data = reader.load_stock(tckt)
                 self._stocks_list.append(Stock(tckt, reader.load_stock(tckt), feature_list=[get_feature(f_name, **params)
                               for f_name, params in self.feature_list_with_params + self._non_numerical_features]))
         return self._stocks_list
