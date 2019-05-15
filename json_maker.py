@@ -89,16 +89,17 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
     }
     data_dic['train_dataset_config'] = train_dataset_config or {
         "config_path": None,
-        "dataset": "SmoothStocksDataset",
+        "dataset": "StocksDataset",
         "feature_list": None,
         "output_feature_list": None,
         "stock_name_list": None,
         "time_sample_length": 7,
-        "val_mode": False
+        "val_mode": True
+
     }
     data_dic['val_dataset_config'] = val_dataset_config or {
         "config_path": None,
-        "dataset": "SmoothStocksDataset",
+        "dataset": "StocksDataset",
         "feature_list": None,
         "output_feature_list": None,
         "stock_name_list": None,
@@ -122,12 +123,16 @@ for i in range(3):
     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
     dir_name = os.path.join(main_dir, model_name)
     file_name = os.path.join(dir_name, 'config_{name}.json'.format(name=model_name))
+    figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
+    figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
 
     exp_model_name = os.path.join(str(timestamp), model_name)
     model = generate_model_config()
-    data = json_format(model_config=model, name=exp_model_name)
-                       # train_dataset_config=dict(dataset='MNIST', val_mode=False),
-                       # val_dataset_config=dict(dataset='MNIST', val_mode=True))
+    data = json_format(model_config=model, name=exp_model_name,
+                       train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
+                                                 time_sample_length=100),
+                       val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
+                                               time_sample_length=100))
     if model['num_of_rnn_layers'] == 0:
         if 'time_sample_length' in data['train_dataset_config']:
             data['train_dataset_config']['time_sample_length'] = 1
