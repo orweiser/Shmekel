@@ -1,0 +1,49 @@
+{
+    "name": "e01_7-units_16-time_2-optimizer_adam",
+    "model_config": {
+        "input_shape": [2, 5],
+        "model": "LSTM",
+        "output_activation": "softmax",
+        "output_shape": [2],
+        "units": 16
+    },
+    "train_dataset_config": {
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 2,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 2,
+        "val_mode": true
+    },
+    "train_config": {
+        "batch_size": 2048,
+        "callbacks": null,
+        "epochs": 2,
+        "include_experiment_callbacks": true,
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": null,
+        "val_augmentations": null,
+        "validation_steps": null
+    },
+    "loss_config": {
+        "loss": "categorical_crossentropy"
+    },
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "project": "example_project",
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    }
+}

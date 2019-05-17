@@ -162,7 +162,8 @@ class Experiment:
             assert s1 == s2, 'shapes in train and val mode dont match'
             assert len(s1) == 2
 
-        assert train[-1] == train[-2], 'model input and output shape dont match dataset + augmentations'
+        assert train[-1] == train[-2], 'model input and output shape dont match dataset + augmentations' \
+                                       '.\nGot: %s and %s respectively' % (str(train[-1]), str(train[-2]))
 
     """ Sub-Modules: """
     @property

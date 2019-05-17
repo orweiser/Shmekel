@@ -94,9 +94,9 @@ class BaseBackupHandler(Callback):
     def get_config_path(self):
         """
         :return: a path to experiment config backup path
-            default: exp_dir/config.json
+            default: exp_dir/baseline.json
         """
-        return os.path.join(self.exp_absolute_path, "config.json")
+        return os.path.join(self.exp_absolute_path, "baseline.json")
 
     def dump_config(self, config: dict):
         """
@@ -303,10 +303,22 @@ class DefaultLocal(BaseBackupHandler):
 
     @staticmethod
     def load_config(path):
+        def shapes_to_tuples(c):
+            for key, value in c.items():
+                if isinstance(value, dict):
+                    shapes_to_tuples(value)
+
+                if isinstance(key, str) and 'shape' in key.lower():
+                    if isinstance(value, list):
+                        c[key] = tuple(value)
+                    if isinstance(value, int):
+                        c[key] = (value,)
+
         import json
         with open(path, 'r') as f:
             data = f.read()
             c = json.loads(data)
+        shapes_to_tuples(c)
         return c
 
 

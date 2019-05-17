@@ -18,7 +18,7 @@ def load_config(path, handler=None):
         raise RuntimeError('could not find path: ' + path)
 
     if os.path.isdir(path):
-        new_path = os.path.join(path, 'config.json')
+        new_path = os.path.join(path, 'baseline.json')
         logger.debug('found a directory at path:', path, '\nLooking for a config file in:', new_path)
         path = new_path
 

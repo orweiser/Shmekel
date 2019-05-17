@@ -1,0 +1,49 @@
+{
+    "name": "e01_EXP_NUMBER-EXP_DESCRIPTION",
+    "model_config": {
+        "input_shape": [TIME_SAMPLE_LENGTH, 5],
+        "model": "LSTM",
+        "output_activation": "softmax",
+        "output_shape": [2],
+        "units": NUM_MODEL_UNITS
+    },
+    "train_dataset_config": {
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": TIME_SAMPLE_LENGTH,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": TIME_SAMPLE_LENGTH,
+        "val_mode": true
+    },
+    "train_config": {
+        "batch_size": 2048,
+        "callbacks": null,
+        "epochs": 2,
+        "include_experiment_callbacks": true,
+        "optimizer": OPTIMIZER,
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": null,
+        "val_augmentations": null,
+        "validation_steps": null
+    },
+    "loss_config": {
+        "loss": "categorical_crossentropy"
+    },
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "project": "example_project",
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    }
+}
