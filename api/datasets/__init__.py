@@ -1,7 +1,9 @@
 from .mnist import MNIST
 from .stock_dataset import StocksDataset
+from Utils.logger import logger
 
 
+@logger.info_dec
 def get(dataset: str, **kwargs):
     if dataset == 'MNIST':
         return MNIST(dataset=dataset, **kwargs)
