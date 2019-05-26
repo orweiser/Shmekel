@@ -4,6 +4,7 @@ from .model import Model
 from .trainer import Trainer
 from .experiment import Experiment
 from .backup_handler import get_handler
+from Utils.logger import logger
 
 
 def get_exp_from_config(config: dict):
@@ -18,7 +19,7 @@ def load_config(path, handler=None):
 
     if os.path.isdir(path):
         new_path = os.path.join(path, 'config.json')
-        print('found a directory at path:', path, '\nLooking for a config file in:', new_path)
+        logger.debug('found a directory at path:', path, '\nLooking for a config file in:', new_path)
         path = new_path
 
     handler = get_handler(handler or 'DefaultLocal', instantiate=False)

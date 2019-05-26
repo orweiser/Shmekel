@@ -1,5 +1,6 @@
 from keras import Model as KerasModel
 from copy import deepcopy as copy
+from Utils.logger import logger
 
 
 class Model(KerasModel):
@@ -15,7 +16,7 @@ class Model(KerasModel):
     optional methods for advanced training schemes:
         callbacks
     """
-    def __init__(self, model, experiment=None, **params):
+    def __init__(self, model='', experiment=None, **params):
         """
         a constructor method.
         replaced by init() in subclasses.
@@ -27,6 +28,7 @@ class Model(KerasModel):
         :param params: holds all the key-word arguments except for "experiment"
                 those key-words are passed to the init() method
         """
+        if not model: logger.warning('Model parameter "model" is missing')
         self.experiment = experiment
 
         self.config = copy(self.get_default_config())
