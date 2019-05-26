@@ -4,6 +4,7 @@ from ..losses import get as get_loss
 from .results import Results
 from .trainer import Trainer
 from .backup_handler import get_handler
+from Utils.logger import logger
 
 
 class Experiment:
@@ -23,8 +24,8 @@ class Experiment:
         self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
 
         # todo: have 'project' be a field of experiment instead of backup_handler
-
         # todo: load existing config by experiment name?
+
         self.__name = name
         self._name = None
 
@@ -42,7 +43,7 @@ class Experiment:
         self._backup_dir = None
         self._callbacks = None
 
-        self._fill_configs()
+        # self._create()
 
     """ Summary methods: """
 
@@ -58,7 +59,7 @@ class Experiment:
 
     @property
     def status(self):
-        self._fill_configs()
+        self._create()
         if not self.results:
             return 'initialized'
         else:
@@ -94,18 +95,19 @@ class Experiment:
     """ Controllers: """
 
     def start(self, prefix='Starting '):
-        print('\n' + prefix + ' experiment:', self, '\n')
-        self._fill_configs()
+        logger.info('\n' + prefix + ' experiment: ' + str(self) + '\n')
+        self._create()
         self.trainer.fit()
-        print('\nTraining Done.')
 
     def run(self, backup=True):
         if backup:
             self.backup_handler.dump_config(self.config)
 
+        self._assert_shapes()
+
         status = self.status
         if status is 'done':
-            print('Experiment is done.')
+            logger.info('Experiment is done.')
 
         elif status is 'initialized':
             self.start()
@@ -124,7 +126,7 @@ class Experiment:
             self._trainer = None
 
         else:
-            print('unexpected status:', status)
+            logger.warning('unexpected status:', status)
             return
 
         self.results.summary()
@@ -141,23 +143,56 @@ class Experiment:
                 return
         self.backup_handler.erase()
 
+    def _assert_shapes(self):
+        def _get_mode_shapes(mode):
+            dataset = getattr(self, '%s_dataset' % mode)
+            augmentation = self.trainer.augmentations[mode]
+
+            shapes = []
+            shapes.append((dataset.input_shape, dataset.output_shape))
+            if augmentation:
+                shapes.append(augmentation.get_output_shapes(*shapes[-1]))
+            shapes.append((self.model._input_shape, self.model._output_shape))  # todo: put _shapes in model
+            return shapes
+
+        train = _get_mode_shapes('train')
+        val = _get_mode_shapes('val')
+
+        for s1, s2 in zip(train, val):
+            assert s1 == s2, 'shapes in train and val mode dont match'
+            assert len(s1) == 2
+
+        assert train[-1] == train[-2], 'model input and output shape dont match dataset + augmentations'
+
     """ Sub-Modules: """
     @property
     def model(self):
         if not self._model:
+            if any([key not in self.model_config for key in ['input_shape', 'output_shape']]):
+                shapes = [self.train_dataset.input_shape, self.train_dataset.output_shape]
+                if self.trainer.augmentations['train']:
+                    shapes = self.trainer.augmentations['train'].get_output_shapes(*shapes)
+
+                self.model_config['input_shape'] = shapes[0]
+                self.model_config['output_shape'] = shapes[1]
+
             self._model = get_model(**self.model_config)
+            self.model_config = self._model.config
 
         return self._model
 
     @property
     def trainer(self):
-        self._trainer = self._trainer or Trainer(experiment=self, **self.train_config)
+        if self._trainer is None:
+            self._trainer = Trainer(experiment=self, **self.train_config)
+            self.train_config = self._trainer.config
         return self._trainer
 
     @property
     def loss(self):
         if not self._loss:
             self._loss = get_loss(**self.loss_config)
+            self.loss_config = self._loss.config
 
         return self._loss
 
@@ -167,6 +202,7 @@ class Experiment:
     def train_dataset(self):
         if not self._train_dataset:
             self._train_dataset = get_dataset(**self.train_dataset_config)
+            self.train_dataset_config = self._train_dataset.config
 
         return self._train_dataset
 
@@ -174,6 +210,7 @@ class Experiment:
     def val_dataset(self):
         if not self._val_dataset:
             self._val_dataset = get_dataset(**self.val_dataset_config)
+            self.val_dataset_config = self._val_dataset.config
 
         return self._val_dataset
 
@@ -185,21 +222,23 @@ class Experiment:
     def backup_handler(self):
         if self._backup_handler is None:
             self._backup_handler = get_handler(experiment=self, **self.backup_config)
+            self.backup_config = self._backup_handler.config
+
         return self._backup_handler
 
     """ Configurations: """
 
-    def _fill_configs(self):
-        self.train_config = self.trainer.config
-        self.loss_config = self.loss.config
-        self.train_dataset_config = self.train_dataset.config
-        self.val_dataset_config = self.val_dataset.config
-        self.model_config = self.model.config
-        self.backup_config = self.backup_handler.config
+    def _create(self):
+        _ = self.trainer
+        _ = self.loss
+        _ = self.train_dataset
+        _ = self.val_dataset
+        _ = self.model
+        _ = self.backup_handler
 
     @property
     def config(self):
-        self._fill_configs()
+        self._create()
         return dict(name=self.name,
                     model_config=self.model_config,
                     loss_config=self.loss_config,
