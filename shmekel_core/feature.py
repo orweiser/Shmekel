@@ -20,10 +20,17 @@ def normalize(feature, normalization_type=None):
     method is not necessary at first stage.
     """
 
-    normalization_type = normalization_type or normalization_type
-    # todo: add normalization methods
+    if normalization_type is None:
+        return feature
 
-    return feature
+    elif normalization_type == 'default':
+        mean = feature.mean(axis=0)
+        std = feature.std(axis=0)
+
+        return (feature - mean) / std
+
+    else:
+        raise RuntimeError()
 
 
 class Feature:
