@@ -1,121 +1,85 @@
 from ..core import Model
 from keras import Input
 import keras.layers as layers
-from ..custome_layers import Gate
+from keras.backend import tile
 
 
-class SequentialMultiPathDAG(Model):
+class Tile(layers.Layer):
+    def __init__(self, tiles, **kwargs):
+        super(Tile, self).__init__(**kwargs)
 
-    def init(self, *args, num_duplicates=None, **kwargs):
-        self.num_duplicates = num_duplicates
+        self.tiles = tiles
+
+    def compute_output_shape(self, input_shape):
+        return [i * j for i, j in zip(input_shape, self.tiles)]
+
+    def call(self, inputs, **kwargs):
+        return tile(inputs, self.tiles)
+
+
+class SequentialSuperDenseModel(Model):
+
+    graph_config = [
+        {'num_groups': None, 'gate_params': None, 'concat_params': None, 'layer_params': None},
+    ]
+    _input_shape = None
+
+    def init_agent(self):
         raise NotImplementedError
 
-    @property
-    def agent(self):
-        raise NotImplementedError()
-
-    @property
-    def pre_agent(self):
-        raise NotImplementedError()
-
-    def sequential_layers_desc(self):
+    def agent_step(self):
         raise NotImplementedError
 
-    def get_input_output_tensors(self):
-        def LAYER(layer_name, params):
-            return getattr(layers, layer_name)(**params)
+    @staticmethod
+    def reshape_mask(mask, level):
+        num_groups = level['num_groups']
+        units = level['layer_params']['units']
 
-        layers = self.sequential_layers_desc()
-        input = LAYER(*layers[0])
-        output = LAYER(*layers[-1])
-        layers = [[LAYER(*l) for _ in range(self.num_duplicates)] for l in layers[1:-1]]
+        assert not units % num_groups, '"units" must be a multiple of "num_groups".' \
+                                       '\nGot %d and %d' % (units, num_groups)
+        tiles = (1, units / num_groups)
+        return Tile(tiles)(mask)
 
-        x = input
-        y = self.pre_agent(input)
-        h = None
+    @staticmethod
+    def gate(x, mask, level):
+        return layers.Multiply()([x, mask])
 
-        for group in layers:
-            mask, h = self.agent(y, h)
-
-            weighted = []
-            for i, l in enumerate(group):
-                weighted.append()
-
-    def __str__(self):
-        pass
-
-    def get_default_config(self) -> dict:
-        pass
-
-
-class GatedSequential(Model):
-
-    def init(self, *args, **kwargs):
-        raise NotImplementedError()
-
-    @property
-    def rnn_cell(self):
-        raise NotImplementedError()
-
-    @property
-    def pre_rnn(self):
-        raise NotImplementedError()
-
-    def create_layers(self):
-        raise NotImplementedError()
-
-    def create_input_layers(self):
-        raise NotImplementedError()
-
-    def create_output_layer(self):
-        # return layers.Dense(self._output_shape, activation='softmax')
+    def concat(self, x, level):
         raise NotImplementedError()
 
     def get_input_output_tensors(self):
-        input_layer, agent_input = self.create_input_layers()
+        agent_input = self.init_agent()
 
+        input_layer = Input(self._input_shape)
         x = input_layer
-        rnn_inputs = self.pre_rnn(agent_input)
-
-        for layer in self.create_layers():
+        for level in self.graph_config:
+            layer = layers.Dense(**level['layer_params'])
             x = layer(x)
-            rnn_inputs = self.rnn_cell(rnn_inputs)
-            g = rnn_inputs[0]
 
-            x = Gate()([x, g])
+            mask = self.agent_step()
+            mask = self.reshape_mask(mask=mask, level=level)
 
-        x = self.create_output_layer()(x)
+            x = self.gate(x, mask, level)
 
-        return x, [input_layer, agent_input]
+            x = self.concat(x, level)
 
-    def __str__(self):
-        pass
+            x = layers.Activation('relu')(x)
 
-    def get_default_config(self) -> dict:
-        raise NotImplementedError()
-
-
-class GatedDense(GatedSequential):
+        return [input_layer, agent_input], x
 
     def init(self, *args, **kwargs):
         pass
 
-    @property
-    def rnn_cell(self):
-        pass
-
-    @property
-    def pre_rnn(self):
-        pass
-
-    def create_layers(self):
-        pass
-
-    def create_input_layers(self):
-        return input_layer, agent_input_layer
-
-    def create_output_layer(self):
-        return layers.Dense(self._output_shape[-1], activation='softmax')
+    def __str__(self):
+        return 'SequentialSuperDenseModel'
 
     def get_default_config(self) -> dict:
         pass
+
+
+
+
+
+
+
+
