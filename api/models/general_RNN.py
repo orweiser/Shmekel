@@ -18,7 +18,7 @@ class GeneralRnn(Model):
 
     def init(self, layers=[], num_of_layers=0, num_of_rnn_layers=0, input_shape=(10, 1000), output_shape=(3,),
              output_activation='softmax',
-             dropout=True, dropout_rate=0.2):
+             dropout=True, dropout_rate=0.2, units=None):
         self.hidden_layers = layers
         self.num_of_layers = num_of_layers
         self.num_of_rnn_layers = num_of_rnn_layers
@@ -27,6 +27,7 @@ class GeneralRnn(Model):
         self._output_shape = output_shape
         self.dropout = dropout
         self.dropout_rate = dropout_rate
+        self.units = units
 
     def get_input_output_tensors(self):
         input_shape = self._input_shape

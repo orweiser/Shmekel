@@ -6,7 +6,7 @@ import os
 
 MIN_SIZE = 3
 MAX_SIZE = 7
-MAX_NUM_OF_LAYERS = 10
+MAX_NUM_OF_LAYERS = 5
 LAYERS_TYPES = ['KerasLSTM', 'Dense']
 ALL_DENSE_SAME = False
 ACTIVATION_FUNCTIONS = ['relu', 'sigmoid', 'tanh']
@@ -80,7 +80,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
         "augmentations": None,
         "batch_size": 1024,
         "callbacks": None,
-        "epochs": 2,
+        "epochs": 3,
         "include_experiment_callbacks": True,
         "optimizer": "adam",
         "randomize": True,
