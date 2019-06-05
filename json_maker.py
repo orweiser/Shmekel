@@ -119,7 +119,7 @@ main_dir = os.path.join(main_dir, 'Shmekel_Results')
 main_dir = os.path.join(main_dir, 'default_project')
 main_dir = os.path.join(main_dir, str(timestamp))
 os.mkdir(main_dir)
-for i in range(3):
+for i in range(100):
     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
     dir_name = os.path.join(main_dir, model_name)
     file_name = os.path.join(dir_name, 'config_{name}.json'.format(name=model_name))
@@ -130,9 +130,9 @@ for i in range(3):
     model = generate_model_config()
     data = json_format(model_config=model, name=exp_model_name,
                        train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
-                                                 time_sample_length=100),
+                                                 time_sample_length=7),
                        val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
-                                               time_sample_length=100))
+                                               time_sample_length=7))
     if model['num_of_rnn_layers'] == 0:
         if 'time_sample_length' in data['train_dataset_config']:
             data['train_dataset_config']['time_sample_length'] = 1
