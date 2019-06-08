@@ -99,6 +99,8 @@ dif_dir = 'C:/Shmekel/local_repository/Shmekel_Results/default_project'
 x = get_models_raw_stats(dif_dir)
 data = get_model_stats(x)
 data = data.sort_values(by=['num_of_rnn_layers'])
-plt.scatter(data['num_of_rnn_layers'], data['best val_acc val_acc'])
-plt.show()
-z = 3
+file_name = 'C:/Shmekel/local_repository/Shmekel_Results/model_group_results.csv'
+data.to_csv(file_name)
+
+# plt.scatter(data['num_of_rnn_layers'], data['best val_acc val_acc'])
+# plt.show()
