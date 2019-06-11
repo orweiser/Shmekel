@@ -1,0 +1,75 @@
+{
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "project": "__ProjectName__",
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    },
+    "loss_config": {
+        "loss": "categorical_crossentropy"
+    },
+    "model_config": {
+        "base_activation": "relu",
+        "batch_norm_after_activation": true,
+        "batch_norm_before_output": false,
+        "batch_normalization": __BNBool__,
+        "depth": __Depth__,
+        "input_shape": __InputShape__,
+        "model": "FullyConnected",
+        "name": null,
+        "output_activation": "softmax",
+        "output_shape": __OutputShape__,
+        "skip_connections": __SkipBool__,
+        "width": __Width__
+    },
+    "name": "__Name__",
+    "train_config": {
+        "batch_size": 1024,
+        "callbacks": null,
+        "epochs": __Epochs__,
+        "include_experiment_callbacks": true,
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": __TrainAugmentations__,
+        "val_augmentations": __ValAugmentations__,
+        "validation_steps": null,
+        "verbose": 1
+    },
+    "train_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": __FeatureList__,
+        "output_feature_list": __OutputFeatureList__,
+        "stock_name_list": null,
+        "time_sample_length": __TimeSampleLength__,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": __FeatureList__,
+        "output_feature_list": __OutputFeatureList__,
+        "stock_name_list": null,
+        "time_sample_length": __TimeSampleLength__,
+        "val_mode": true
+    }
+}
+__VARIABLES__
+
+__ProjectName__
+__BNBool__
+__Depth__
+__InputShape__
+__OutputShape__
+__SkipBool__
+__Width__
+__Name__
+__Epochs__
+__TrainAugmentations__
+__ValAugmentations__
+__FeatureList__
+__OutputFeatureList__
+__TimeSampleLength__

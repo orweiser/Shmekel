@@ -1,0 +1,59 @@
+{
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "project": "preprocess",
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    },
+    "loss_config": {
+        "loss": "categorical_crossentropy"
+    },
+    "model_config": {
+        "base_activation": "relu",
+        "batch_norm_after_activation": true,
+        "batch_norm_before_output": false,
+        "batch_normalization": false,
+        "depth": 1,
+        "input_shape": [3, 5],
+        "model": "FullyConnected",
+        "name": null,
+        "output_activation": "softmax",
+        "output_shape": [2],
+        "skip_connections": false,
+        "width": 16
+    },
+    "name": "t_3--d_1--w_16",
+    "train_config": {
+        "batch_size": 1024,
+        "callbacks": null,
+        "epochs": 10,
+        "include_experiment_callbacks": true,
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": null,
+        "val_augmentations": null,
+        "validation_steps": null,
+        "verbose": 1
+    },
+    "train_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 3,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 3,
+        "val_mode": true
+    }
+}

@@ -100,6 +100,7 @@ class Experiment:
         self.trainer.fit()
 
     def run(self, backup=True):
+        logger.info('running %s', str(self))
         if backup:
             self.backup_handler.dump_config(self.config)
 
@@ -152,7 +153,8 @@ class Experiment:
             shapes.append((dataset.input_shape, dataset.output_shape))
             if augmentation:
                 shapes.append(augmentation.get_output_shapes(*shapes[-1]))
-            shapes.append((self.model._input_shape, self.model._output_shape))  # todo: put _shapes in model
+            shapes.append((tuple(self.model._input_shape),
+                           tuple(self.model._output_shape)))  # todo: put _shapes in model
             return shapes
 
         train = _get_mode_shapes('train')
