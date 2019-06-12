@@ -3,6 +3,7 @@ import numpy as np
 from api import core
 import time
 import os
+from itertools import chain, combinations, combinations_with_replacement, product
 
 MIN_SIZE = 3
 MAX_SIZE = 7
@@ -13,6 +14,43 @@ ACTIVATION_FUNCTIONS = ['relu', 'sigmoid', 'tanh']
 DROPOUT_CHANCE = 0.7
 MIN_DROPOUT = 0.1
 MAX_DROPOUT = 0.3
+
+NUM_OF_BATCHES = 4
+MAX_DEPTH = 20
+
+def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activation_functions=['relu', 'sigmoid', 'tanh'], num_of_batchs=4, max_depth=3, neurons=[], output_activation='softmax'):
+    models_configs = []
+    for depth in range(1, max_depth):
+        for layers_combination in list(product(layers_types, repeat=depth)):
+            for activation_functions_combination in list(product(activation_functions, repeat=depth)):
+                for neurons_combination in list(product(neurons, repeat=depth)):
+                    model_config = {
+                        'model': 'General_RNN',
+                        'num_of_layers': depth,
+                        'layers': [],
+                        'num_of_rnn_layers': 0,
+                        "output_activation": output_activation
+                    }
+                    name = ''
+                    for index, layer in enumerate(layers_combination):
+                        layer_config = {
+                            'type': layer,
+                            'size': neurons_combination[index]
+                        }
+                        name += layer_config['type'] + str(layer_config['size'])
+                        if layer == 'Dense':
+                            layer_config[
+                                'activation_function'] = activation_functions_combination[index]
+                            name += layer_config['activation_function']
+                        else:
+                            model_config['num_of_rnn_layers'] += 1
+                        model_config['layers'].append(layer_config)
+                    model_config['name'] = name
+                    models_configs.append(model_config)
+
+    models_configs = list({v['name']:v for v in models_configs}.values())
+    print("num of models: " + str(models_configs.__len__()))
+    return models_configs
 
 
 def generate_model_config(output_activation='softmax'):
@@ -119,6 +157,7 @@ main_dir = os.path.join(main_dir, 'Shmekel_Results')
 main_dir = os.path.join(main_dir, 'default_project')
 main_dir = os.path.join(main_dir, str(timestamp))
 os.mkdir(main_dir)
+generate_grid_models(neurons=[8, 16, 32, 64, 128, 256, 512])
 for i in range(100):
     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
     dir_name = os.path.join(main_dir, model_name)
