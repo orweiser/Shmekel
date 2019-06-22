@@ -5,10 +5,33 @@ import os
 from api.core import get_exp_from_config, load_config
 
 
-function = type(lambda: None)
-
-
 class GridSearch:
+    """
+    an object to handle a bunch of experiments created via grid search.
+    in a nutshell, it lets you iterate over experiments in your grid search
+    Examples:
+        1. to run all experiments:
+                for exp in grid_search:
+                    exp.run()
+        2. to check status:
+                for exp in grid_search:
+                    exp.run()
+        3. to get the best epoch out of every experiment:
+                best_epochs = []
+                for exp in grid_search:
+                    best_epochs.append(exp.results.get_best_epoch()
+        etc.
+
+    to create a grid_search you need a template. an example can be found in:
+        api/example_grid_search_template.json
+    you also need to state a "configs_dir" parameter, in which config files are stored
+    as a first step, before you can iterate, you need to create the config files
+
+    example:
+        gs = GridSearch(template_path, configs_dir)
+        gs.create_config_files()
+
+    """
     def __init__(self, template_path, configs_dir):
         self.template_path = template_path
         self.configs_dir = configs_dir
@@ -24,7 +47,6 @@ class GridSearch:
     @staticmethod
     def parse_line(line):
         if 'lambda' in line:
-            # WARNING ...
             var, values = line.split('lambda')
             var = var.split(':')[0].strip(' ')
 
@@ -40,8 +62,6 @@ class GridSearch:
             keys = json.loads(x)
             keys = [str(v) for v in keys]
 
-            print(keys, format)
-
             values = [lambda x: format % tuple([x[key] for key in keys])]
 
         else:
@@ -54,7 +74,9 @@ class GridSearch:
         return var, values
 
     def parse_overrides(self, overrides):
-        return [self.parse_line(l) for l in overrides.splitlines() if l]
+        overrides = [l.strip() for l in overrides.splitlines() if l]
+        overrides = [l for l in overrides if not l.startswith('//')]
+        return [self.parse_line(l) for l in overrides if l]
 
     @staticmethod
     def overrides_to_combs(overrides):
@@ -81,6 +103,7 @@ class GridSearch:
         if not os.path.exists(configs_dir):
             os.makedirs(configs_dir)
 
+        function = type(lambda: None)
         for comb in combs:
             for key, val in comb.items():
                 if isinstance(val, function):
