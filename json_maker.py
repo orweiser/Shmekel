@@ -14,39 +14,64 @@ ACTIVATION_FUNCTIONS = ['relu', 'sigmoid', 'tanh']
 DROPOUT_CHANCE = 0.7
 MIN_DROPOUT = 0.1
 MAX_DROPOUT = 0.3
+DENSE = 'Dense'
 
 NUM_OF_BATCHES = 4
 MAX_DEPTH = 20
 
-def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activation_functions=['relu', 'sigmoid', 'tanh'], num_of_batchs=4, max_depth=3, neurons=[], output_activation='softmax'):
+
+def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activation_functions=['relu', 'sigmoid', 'tanh'], num_of_batchs=4, max_depth=5, neurons=[], output_activation='softmax'):
     models_configs = []
-    for depth in range(1, max_depth):
+    for depth in range(1, max_depth + 1):
         for layers_combination in list(product(layers_types, repeat=depth)):
-            for activation_functions_combination in list(product(activation_functions, repeat=depth)):
-                for neurons_combination in list(product(neurons, repeat=depth)):
-                    model_config = {
-                        'model': 'General_RNN',
-                        'num_of_layers': depth,
-                        'layers': [],
-                        'num_of_rnn_layers': 0,
-                        "output_activation": output_activation
-                    }
-                    name = ''
-                    for index, layer in enumerate(layers_combination):
+            for neurons_combination in list(product(neurons, repeat=depth)):
+                model_config = {
+                    'model': 'General_RNN',
+                    'num_of_layers': depth,
+                    'layers': [],
+                    'num_of_rnn_layers': 0,
+                    "output_activation": output_activation
+                }
+                name = ''
+                for index, layer in enumerate(layers_combination):
+                    if layer == DENSE:
+                        layer_config = None
+                    else:
                         layer_config = {
                             'type': layer,
                             'size': neurons_combination[index]
                         }
                         name += layer_config['type'] + str(layer_config['size'])
-                        if layer == 'Dense':
-                            layer_config[
-                                'activation_function'] = activation_functions_combination[index]
-                            name += layer_config['activation_function']
-                        else:
-                            model_config['num_of_rnn_layers'] += 1
-                        model_config['layers'].append(layer_config)
+                        model_config['num_of_rnn_layers'] += 1
+                    model_config['layers'].append(layer_config)
+                num_of_dense_layers = model_config['layers'].count(None)
+                if num_of_dense_layers is 0:
                     model_config['name'] = name
                     models_configs.append(model_config)
+                else:
+                    for activation_functions_combinations in list(product(activation_functions, repeat=num_of_dense_layers)):
+                        new_model_config = {
+                            'model': 'General_RNN',
+                            'num_of_layers': depth,
+                            'layers': [],
+                            'num_of_rnn_layers': model_config['num_of_rnn_layers'],
+                            "output_activation": output_activation
+                        }
+                        index = 0
+                        for layer_index, layer in enumerate(model_config['layers']):
+                            if layer is None:
+                                layer_config = {
+                                    'type': DENSE,
+                                    'size': neurons_combination[layer_index],
+                                    'activation_function': activation_functions_combinations[index]
+                                }
+                                index += 1
+                                name = layer_config['type'] + str(layer_config['size']) + layer_config['activation_function']
+                                new_model_config['layers'].append(layer_config)
+                            else:
+                                new_model_config['layers'].append(model_config['layers'])
+                        new_model_config['name'] = name
+                        models_configs.append(new_model_config)
 
     models_configs = list({v['name']:v for v in models_configs}.values())
     print("num of models: " + str(models_configs.__len__()))
@@ -157,7 +182,7 @@ main_dir = os.path.join(main_dir, 'Shmekel_Results')
 main_dir = os.path.join(main_dir, 'default_project')
 main_dir = os.path.join(main_dir, str(timestamp))
 os.mkdir(main_dir)
-generate_grid_models(neurons=[8, 16, 32, 64, 128, 256, 512])
+generate_grid_models(neurons=[8, 32, 128])
 for i in range(100):
     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
     dir_name = os.path.join(main_dir, model_name)
