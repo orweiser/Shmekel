@@ -32,9 +32,9 @@ class GridSearch:
         gs.create_config_files()
 
     """
-    def __init__(self, template_path, configs_dir):
+    def __init__(self, template_path, configs_dir=None):
         self.template_path = template_path
-        self.configs_dir = configs_dir
+        self.configs_dir = configs_dir or os.path.split(template_path)[0]
 
     def read_template(self, path=None):
         path = path or self.template_path
@@ -100,14 +100,14 @@ class GridSearch:
         template, overrides = self.read_template(template_path)
         combs = self.overrides_to_combs(overrides)
 
-        if not os.path.exists(configs_dir):
-            os.makedirs(configs_dir)
-
         function = type(lambda: None)
         for comb in combs:
             for key, val in comb.items():
                 if isinstance(val, function):
                     comb[key] = val(comb)
+
+        if not os.path.exists(configs_dir):
+            os.makedirs(configs_dir)
 
         paths = []
         for comb in combs:
@@ -124,6 +124,54 @@ class GridSearch:
             paths.append(path)
 
         return paths
+
+    def get_all_combs(self):
+        template_path = self.template_path
+
+        template, overrides = self.read_template(template_path)
+        combs = self.overrides_to_combs(overrides)
+
+        function = type(lambda: None)
+        for comb in combs:
+            for key, val in comb.items():
+                if isinstance(val, function):
+                    comb[key] = val(comb)
+
+        return combs
+
+    def get_exp_name_2_combs_converter(self, minimal=True):
+        combs = self.get_all_combs()
+
+        if minimal:
+            all_options = {}
+
+            for comb in combs:
+                for key, val in comb.items():
+                    all_options.setdefault(key, set()).add(val)
+
+            non_degenerate_keys = [key for key, val in all_options.items() if len(val) > 1]
+            combs = [{key: c[key] for key in non_degenerate_keys} for c in combs]
+
+        converter = {}
+        for comb in combs:
+            try:
+                name = comb['__Name__']
+            except KeyError:
+                raise AssertionError('this method assumes that all combinations include a "__Name__" field')
+
+            if name in converter:
+                raise RuntimeError('Collision! two experiments with the same name [%s]' % name)
+
+            parsed_comb = {}
+            for key, val in comb.items():
+                try:
+                    parsed_comb[key] = json.loads(val)
+                except json.decoder.JSONDecodeError:
+                    parsed_comb[key] = val
+
+            converter[name] = parsed_comb
+
+        return converter
 
     def iter_exps(self, configs_dir=None):
         configs_dir = configs_dir or self.configs_dir
@@ -143,3 +191,39 @@ class GridSearch:
     def __iter__(self):
         return self.iter_exps()
 
+    def __iter_fixed_contained(self, mode, fixed_values: dict, minimal=True, yield_comb=False):
+        assert mode in ['fixed', 'contained']
+
+        def is_to_skip(val1, val2):
+            if mode == 'fixed':
+                return val1 != val2
+            else:
+                return val1 not in val2
+
+        converter = self.get_exp_name_2_combs_converter(minimal=minimal)
+        for exp in self:
+            comb = converter[exp.name]
+
+            to_continue = False
+            for key, val in fixed_values.items():
+                if is_to_skip(comb[key], val):
+                    to_continue = True
+                    break
+
+            if to_continue:
+                continue
+
+            if yield_comb:
+                yield exp, comb
+            else:
+                yield exp
+
+    def iter_fixed(self, fixed_values: dict, minimal=True, yield_comb=False):
+        for x in self.__iter_fixed_contained(mode='fixed', fixed_values=fixed_values,
+                                             minimal=minimal, yield_comb=yield_comb):
+            yield x
+
+    def iter_contained(self, fixed_values: dict, minimal=True, yield_comb=False):
+        for x in self.__iter_fixed_contained(mode='contained', fixed_values=fixed_values,
+                                             minimal=minimal, yield_comb=yield_comb):
+            yield x
