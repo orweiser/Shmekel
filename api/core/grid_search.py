@@ -32,9 +32,9 @@ class GridSearch:
         gs.create_config_files()
 
     """
-    def __init__(self, template_path, configs_dir):
+    def __init__(self, template_path, configs_dir=None):
         self.template_path = template_path
-        self.configs_dir = configs_dir
+        self.configs_dir = configs_dir or os.path.split(template_path)[0]
 
     def read_template(self, path=None):
         path = path or self.template_path
@@ -130,6 +130,9 @@ class GridSearch:
 
         for f in os.listdir(configs_dir):
             if not f.endswith('.json'):
+                continue
+
+            if f.startswith('template'):
                 continue
 
             path = os.path.join(configs_dir, f)

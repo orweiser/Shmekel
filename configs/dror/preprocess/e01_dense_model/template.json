@@ -57,19 +57,19 @@
         "val_mode": true
     }
 }
-__VARIABLES__
+__OVERRIDES__
+__Depth__: 1, 2, 3
+__BNBool__: false
+__OutputShape__: [2]
+__SkipBool__: false
+__Width__: 16, 32, 64
+__ProjectName__: "preprocess"
+__Epochs__: 10
+__TrainAugmentations__: null
+__ValAugmentations__: null
+__FeatureList__: null
+__OutputFeatureList__: null
+__TimeSampleLength__: 1, 2, 3
 
-__ProjectName__
-__BNBool__
-__Depth__
-__InputShape__
-__OutputShape__
-__SkipBool__
-__Width__
-__Name__
-__Epochs__
-__TrainAugmentations__
-__ValAugmentations__
-__FeatureList__
-__OutputFeatureList__
-__TimeSampleLength__
+__InputShape__: lambda [%, 5] @ __TimeSampleLength__
+__Name__: lambda t_%--d_%--w_% @ __TimeSampleLength__, __Depth__, __Width__
