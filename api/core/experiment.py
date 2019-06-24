@@ -100,6 +100,7 @@ class Experiment:
         self.trainer.fit()
 
     def run(self, backup=True):
+        logger.info('running %s', str(self))
         if backup:
             self.backup_handler.dump_config(self.config)
 

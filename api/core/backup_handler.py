@@ -77,7 +77,7 @@ class BaseBackupHandler(Callback):
     def res_dir_absolute_path(self):
         """
         :return: an absolute path to the results directory, in which
-            all the different projects are stored.
+            all the different configs are stored.
         """
         raise NotImplementedError()
 

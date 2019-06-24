@@ -1,0 +1,98 @@
+{
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "project": "__ProjectName__",
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    },
+    "loss_config": {
+        "loss": "categorical_crossentropy"
+    },
+    "model_config": {
+        "base_activation": "relu",
+        "batch_norm_after_activation": true,
+        "batch_norm_before_output": false,
+        "batch_normalization": __BNBool__,
+        "depth": __Depth__,
+        "input_shape": __InputShape__,
+        "model": "FullyConnected",
+        "name": null,
+        "output_activation": "softmax",
+        "output_shape": __OutputShape__,
+        "skip_connections": __SkipBool__,
+        "width": __Width__
+    },
+    "name": "__Name__",
+    "train_config": {
+        "batch_size": 1024,
+        "callbacks": null,
+        "epochs": __Epochs__,
+        "include_experiment_callbacks": true,
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": __TrainAugmentations__,
+        "val_augmentations": __ValAugmentations__,
+        "validation_steps": null,
+        "verbose": 1
+    },
+    "train_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": __FeatureList__,
+        "output_feature_list": __OutputFeatureList__,
+        "stock_name_list": null,
+        "time_sample_length": __TimeSampleLength__,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": __FeatureList__,
+        "output_feature_list": __OutputFeatureList__,
+        "stock_name_list": null,
+        "time_sample_length": __TimeSampleLength__,
+        "val_mode": true
+    }
+}
+__OVERRIDES__
+// this is an example on "how to write a template for a grid search"
+// comments: lines that STARTS with // are considered as comments and ignored
+
+// above is the "config_template", you can see that it is just a config file
+// with some values replaced with variables such as __Depth__.
+// note: variables can appear more than once, take __TimeSampleLength__ for example.
+
+// below are the overrides: all the values that each variable can get
+// we have two kinds of variables: dependent and undependent
+
+// undependent variables: variables that thier value is not conditioned on other variables:
+//      Depth__ can get one of three values, __BNBool__ can get only one value so its degenrate, etc.
+__Depth__: 1, 2, 3
+__BNBool__: false
+__OutputShape__: [2]
+__SkipBool__: false
+__Width__: 16, 32, 64
+__ProjectName__: "preprocess"
+__Epochs__: 10
+__TrainAugmentations__: null
+__ValAugmentations__: null
+__FeatureList__: null
+__OutputFeatureList__: null
+__TimeSampleLength__: 1, 2, 3
+
+// dependent variables: this part is a little more tricky. we allow variables to be conditioned on
+// choices that were already made above.
+// the sintax is like that:
+//      a. use the keyword "lambda" to note that this is a conditioned variable
+//      b. state the value, using "%" as placeholders for the relevant variables
+//      c. use "@" to finish writing the value
+//      d. list the variables to put in the place holders by order of appearence
+
+// here for example, if __TimeSampleLength__= 67, than __InputShape__ = [67, 5],
+__InputShape__: lambda [%, 5] @ __TimeSampleLength__
+__Name__: lambda t_%--d_%--w_% @ __TimeSampleLength__, __Depth__, __Width__
+
+// use the GridSearch object to parse, create and run your grid search

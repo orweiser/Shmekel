@@ -196,3 +196,6 @@ class StocksDataset(Dataset):
 
     def __str__(self) -> str:
         return 'StocksDataSet-' + 'val' * self.val_mode
+
+    def __bool__(self) -> bool:
+        return bool(self.stock_name_list)
