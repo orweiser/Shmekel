@@ -3,6 +3,8 @@ import os
 from copy import deepcopy as copy
 import os
 from api.core import get_exp_from_config, load_config
+from Utils.logger import logger
+import matplotlib.pyplot as plt
 
 
 class GridSearch:
@@ -125,31 +127,37 @@ class GridSearch:
 
         return paths
 
-    def get_all_combs(self):
+    def get_all_combs(self, parse_lambdas=True):
         template_path = self.template_path
 
         template, overrides = self.read_template(template_path)
         combs = self.overrides_to_combs(overrides)
 
-        function = type(lambda: None)
-        for comb in combs:
-            for key, val in comb.items():
-                if isinstance(val, function):
-                    comb[key] = val(comb)
+        if parse_lambdas:
+            function = type(lambda: None)
+            for comb in combs:
+                for key, val in comb.items():
+                    if isinstance(val, function):
+                        comb[key] = val(comb)
 
         return combs
+
+    @staticmethod
+    def combs_2_minimal_keys_values(combs):
+        all_options = {}
+
+        for comb in combs:
+            for key, val in comb.items():
+                all_options.setdefault(key, set()).add(val)
+
+        minimal = {key: val for key, val in all_options.items() if len(val) > 1}
+        return minimal
 
     def get_exp_name_2_combs_converter(self, minimal=True):
         combs = self.get_all_combs()
 
         if minimal:
-            all_options = {}
-
-            for comb in combs:
-                for key, val in comb.items():
-                    all_options.setdefault(key, set()).add(val)
-
-            non_degenerate_keys = [key for key, val in all_options.items() if len(val) > 1]
+            non_degenerate_keys = [k for k in self.combs_2_minimal_keys_values(combs).keys()]
             combs = [{key: c[key] for key in non_degenerate_keys} for c in combs]
 
         converter = {}
@@ -227,3 +235,55 @@ class GridSearch:
         for x in self.__iter_fixed_contained(mode='contained', fixed_values=fixed_values,
                                              minimal=minimal, yield_comb=yield_comb):
             yield x
+
+    def plot_a_slice(self, fixed_values: dict, metric='val_acc', title=None, minimal=True):
+        fig = plt.figure()
+        legend = []
+        for exp in self.iter_fixed(fixed_values=fixed_values, minimal=minimal):
+            if not exp.results:
+                logger.error('trying to plot an experiment with no result[%s]. Skipping', exp.name)
+                continue
+
+            legend.append(exp.name)
+            plt.plot(exp.results[metric])
+
+        plt.grid('on')
+        plt.xlabel('# Epochs')
+        plt.ylabel(metric)
+        if title:
+            plt.title(title)
+        plt.legend(legend)
+
+        return fig
+
+    def plot_parameter_slices(self, param, slices=None, metric='val_acc', figs_dir=None):
+        if figs_dir:
+            if not os.path.exists(figs_dir):
+                os.makedirs(figs_dir)
+
+        combs = self.get_all_combs(parse_lambdas=False)
+        minimal = self.combs_2_minimal_keys_values(combs)
+
+        slices = slices or minimal[param]
+
+        new_slices = []
+        for s in slices:
+            try:
+                new_slices.append(json.loads(s))
+            except json.decoder.JSONDecodeError:
+                new_slices.append(s)
+
+        for val in new_slices:
+            title = 'Slice - %s (%s)' % (param, str(val))
+            fig = self.plot_a_slice({param: val}, metric=metric, title=title)
+
+            if figs_dir:
+                fig.savefig(os.path.join(figs_dir, title + '.png'))
+
+    def plot_all_parameters_slices(self, metric='val_acc', figs_dir=None):
+        combs = self.get_all_combs(parse_lambdas=False)
+        minimal = self.combs_2_minimal_keys_values(combs)
+
+        for param in minimal.keys():
+            self.plot_parameter_slices(param, metric=metric, figs_dir=figs_dir)
+
