@@ -31,7 +31,11 @@
     },
     "name": "first_exp",
     "train_config": {
-        "augmentations": [["ConcatExtraNoiseSamples", {
+        "train_augmentations": [["ConcatExtraNoiseSamples", {
+            "std": 1,
+            "fraction_to_added": 0.5
+        }]],
+        "val_augmentations": [["ConcatExtraNoiseSamples", {
             "std": 1,
             "fraction_to_added": 0.5
         }]],

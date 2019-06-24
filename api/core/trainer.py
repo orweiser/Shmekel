@@ -35,11 +35,13 @@ class Trainer:
 
         self.params = params or {}
         self.user_augmentations = {'train': train_augmentations, 'val': val_augmentations}
-        self._augmentations = {'train': None, 'val': None}
+        # self._augmentations = {'train': None, 'val': None}
+        self._augmentations = None
 
     @property
     def augmentations(self):
         if self._augmentations is None:
+            self._augmentations = {}
             for key in ('train', 'val'):
                 self._augmentations[key] = AugmentationList(self.user_augmentations[key] or [])
         return self._augmentations

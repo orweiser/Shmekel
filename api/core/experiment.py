@@ -148,11 +148,17 @@ class Experiment:
             dataset = getattr(self, '%s_dataset' % mode)
             augmentation = self.trainer.augmentations[mode]
 
+            batch_axis = (10, )
+
             shapes = []
-            shapes.append((dataset.input_shape, dataset.output_shape))
+            shapes.append((batch_axis + tuple(dataset.input_shape),
+                           batch_axis + tuple(dataset.output_shape)))
             if augmentation:
                 shapes.append(augmentation.get_output_shapes(*shapes[-1]))
-            shapes.append((self.model._input_shape, self.model._output_shape))  # todo: put _shapes in model
+
+            shapes = [(s1[1:], s2[1:]) for s1, s2 in shapes]
+            shapes.append((tuple(self.model._input_shape), tuple(self.model._output_shape)))
+            # todo: put _shapes in model
             return shapes
 
         train = _get_mode_shapes('train')
@@ -162,7 +168,8 @@ class Experiment:
             assert s1 == s2, 'shapes in train and val mode dont match'
             assert len(s1) == 2
 
-        assert train[-1] == train[-2], 'model input and output shape dont match dataset + augmentations'
+        assert train[-1] == train[-2], 'model input and output shape dont match dataset + augmentations' \
+                                       '\nGot %s and %s' % (str(train[-1]), str(train[-2]))
 
     """ Sub-Modules: """
     @property
