@@ -69,7 +69,7 @@ __TrainAugmentations__: null
 __ValAugmentations__: null
 __FeatureList__: null
 __OutputFeatureList__: null
-__TimeSampleLength__: 1, 2, 3
+__TimeSampleLength__: 1, 3, 5
 
 __InputShape__: lambda [%, 5] @ __TimeSampleLength__
 __Name__: lambda t_%--d_%--w_% @ __TimeSampleLength__, __Depth__, __Width__
