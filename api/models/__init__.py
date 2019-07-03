@@ -1,10 +1,12 @@
 from .fully_connected import FullyConnected
 from .lstm import LSTM
+from Utils.logger import logger
 from .LSTM_DropOut import LSTM_DropOut
 from .lstm_compose import LSTM_compose
 from .general_RNN import GeneralRnn
 
 
+@logger.info_dec
 def get(model: str, **kwargs):
     if model == 'FullyConnected':
         return FullyConnected(model=model, **kwargs)
