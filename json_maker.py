@@ -4,7 +4,10 @@ from api import core
 import time
 import os
 from itertools import chain, combinations, combinations_with_replacement, product
+from copy import deepcopy as copy
 
+
+EXP_CONFIG = None  # todo
 MIN_SIZE = 3
 MAX_SIZE = 7
 MAX_NUM_OF_LAYERS = 5
@@ -18,6 +21,32 @@ DENSE = 'Dense'
 
 NUM_OF_BATCHES = 4
 MAX_DEPTH = 20
+
+
+def get_config_identifiers(model_config):
+    identifiers = dict()
+
+    identifiers['model'] = model_config['model']
+    identifiers['num_of_layers'] = model_config['num_of_layers']
+    identifiers['num_of_rnn_layers'] = model_config['num_of_rnn_layers']
+    identifiers["output_activation"] = model_config['output_activation']
+
+    for i, layer in enumerate(model_config['layers']):
+        print(model_config['layers'])
+        identifiers['layer_%d_type' % i] = layer['type']
+        identifiers['layer_%d_size' % i] = layer['size']
+        if layer['type'] == DENSE:
+            identifiers['layer_%d_activation' % i] = layer['activation_function']
+        else:
+            identifiers['layer_%d_activation' % i] = None
+
+    for j in range(i, 100):
+        print(model_config['layers'])
+        identifiers['layer_%d_type' % j] = None
+        identifiers['layer_%d_size' % j] = None
+        identifiers['layer_%d_activation' % i] = None
+
+    return identifiers
 
 
 def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activation_functions=['relu', 'sigmoid', 'tanh'], num_of_batchs=4, max_depth=5, neurons=[], output_activation='softmax'):
@@ -41,7 +70,7 @@ def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activ
                             'type': layer,
                             'size': neurons_combination[index]
                         }
-                        name += layer_config['type'] + str(layer_config['size'])
+                        name += '.'.join([layer_config['type'], str(layer_config['size'])])
                         model_config['num_of_rnn_layers'] += 1
                     model_config['layers'].append(layer_config)
                 num_of_dense_layers = model_config['layers'].count(None)
@@ -66,10 +95,12 @@ def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activ
                                     'activation_function': activation_functions_combinations[index]
                                 }
                                 index += 1
-                                name = layer_config['type'] + str(layer_config['size']) + layer_config['activation_function']
+                                name += '.'.join([
+                                    layer_config['type'], str(layer_config['size']), layer_config['activation_function']
+                                ])
                                 new_model_config['layers'].append(layer_config)
                             else:
-                                new_model_config['layers'].append(model_config['layers'])
+                                new_model_config['layers'].append(layer)
                         new_model_config['name'] = name
                         models_configs.append(new_model_config)
 
@@ -181,31 +212,61 @@ main_dir = os.pardir
 main_dir = os.path.join(main_dir, 'Shmekel_Results')
 main_dir = os.path.join(main_dir, 'default_project')
 main_dir = os.path.join(main_dir, str(timestamp))
-os.mkdir(main_dir)
-generate_grid_models(neurons=[8, 32, 128])
-for i in range(100):
+if not os.path.exists(main_dir):
+    os.makedirs(main_dir)
+
+
+# for i in range(100):
+#     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
+#     dir_name = os.path.join(main_dir, model_name)
+#     file_name = os.path.join(dir_name, 'config_{name}.json'.format(name=model_name))
+#     figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
+#     figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
+#
+#     exp_model_name = os.path.join(str(timestamp), model_name)
+#     model = generate_model_config()
+#     data = json_format(model_config=model, name=exp_model_name,
+#                        train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
+#                                                  time_sample_length=7),
+#                        val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
+#                                                time_sample_length=7),
+#                        )
+#     if model['num_of_rnn_layers'] == 0:
+#         if 'time_sample_length' in data['train_dataset_config']:
+#             data['train_dataset_config']['time_sample_length'] = 1
+#         if 'time_sample_length' in data['val_dataset_config']:
+#             data['val_dataset_config']['time_sample_length'] = 1
+#     os.mkdir(dir_name)
+#     with open(file_name, 'w') as outfile:
+#         json.dump(data, outfile)
+#
+#     exp1 = core.get_exp_from_config(core.load_config(file_name))
+#     print(exp1.model.summary())
+#     # exp1.run()
+
+
+for i, model_config in enumerate(generate_grid_models(neurons=[8, 32, 128])):
     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
     dir_name = os.path.join(main_dir, model_name)
-    file_name = os.path.join(dir_name, 'config_{name}.json'.format(name=model_name))
+    file_name = os.path.join(main_dir, 'config_{name}.json'.format(name=model_name))
     figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
     figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
 
-    exp_model_name = os.path.join(str(timestamp), model_name)
-    model = generate_model_config()
-    data = json_format(model_config=model, name=exp_model_name,
+    name = model_config.pop('name')
+    data = json_format(model_config=model_config, name=name,
                        train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
                                                  time_sample_length=7),
                        val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
-                                               time_sample_length=7))
-    if model['num_of_rnn_layers'] == 0:
+                                               time_sample_length=7),
+                       )
+
+    data['identifiers'] = get_config_identifiers(model_config)
+
+    if model_config['num_of_rnn_layers'] == 0:
         if 'time_sample_length' in data['train_dataset_config']:
             data['train_dataset_config']['time_sample_length'] = 1
         if 'time_sample_length' in data['val_dataset_config']:
             data['val_dataset_config']['time_sample_length'] = 1
-    os.mkdir(dir_name)
+
     with open(file_name, 'w') as outfile:
         json.dump(data, outfile)
-
-    exp1 = core.get_exp_from_config(core.load_config(file_name))
-    print(exp1.model.summary())
-    exp1.run()

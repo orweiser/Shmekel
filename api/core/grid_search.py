@@ -287,3 +287,112 @@ class GridSearch:
         for param in minimal.keys():
             self.plot_parameter_slices(param, metric=metric, figs_dir=figs_dir)
 
+
+class GridSearch2:
+    def __init__(self, configs_dir):
+        self.configs_dir = configs_dir
+
+    def iter_exps(self, configs_dir=None):
+        configs_dir = configs_dir or self.configs_dir
+
+        for f in os.listdir(configs_dir):
+            if not f.endswith('.json'):
+                continue
+
+            path = os.path.join(configs_dir, f)
+
+            config = load_config(path)
+
+            identifiers = config.pop('identifiers')
+
+            exp = get_exp_from_config(config)
+            exp.identifiers = identifiers
+            yield exp
+
+    def __iter__(self):
+        return self.iter_exps()
+
+    def __iter_fixed_contained(self, mode, fixed_values: dict):
+        assert mode in ['fixed', 'contained']
+
+        def is_to_skip(val1, val2):
+            if mode == 'fixed':
+                return val1 != val2
+            else:
+                return val1 not in val2
+
+        for exp in self:
+            to_continue = False
+            for key, val in fixed_values.items():
+                if is_to_skip(exp.identifiers[key], val):
+                    to_continue = True
+                    break
+
+            if to_continue:
+                continue
+
+            else:
+                yield exp
+
+    def iter_fixed(self, fixed_values: dict):
+        for x in self.__iter_fixed_contained(mode='fixed', fixed_values=fixed_values):
+            yield x
+
+    def iter_contained(self, fixed_values: dict):
+        for x in self.__iter_fixed_contained(mode='contained', fixed_values=fixed_values):
+            yield x
+
+    def plot_a_slice(self, fixed_values: dict, metric='val_acc', title=None):
+        fig = plt.figure()
+        legend = []
+        for exp in self.iter_fixed(fixed_values=fixed_values):
+            if not exp.results:
+                logger.error('trying to plot an experiment with no result[%s]. Skipping', exp.name)
+                continue
+
+            legend.append(exp.name)
+            plt.plot(exp.results[metric])
+
+        plt.grid('on')
+        plt.xlabel('# Epochs')
+        plt.ylabel(metric)
+        if title:
+            plt.title(title)
+        plt.legend(legend)
+
+        return fig
+
+    def plot_parameter_slices(self, param, slices=None, metric='val_acc', figs_dir=None):
+        if figs_dir:
+            if not os.path.exists(figs_dir):
+                os.makedirs(figs_dir)
+
+        minimal = {}
+        for e in self:
+            for key, val in e.identifiers.items():
+                minimal.setdefault(key, set()).add(val)
+
+        slices = slices or minimal[param]
+
+        new_slices = []
+        for s in slices:
+            try:
+                new_slices.append(json.loads(s))
+            except json.decoder.JSONDecodeError:
+                new_slices.append(s)
+
+        for val in new_slices:
+            title = 'Slice - %s (%s)' % (param, str(val))
+            fig = self.plot_a_slice({param: val}, metric=metric, title=title)
+
+            if figs_dir:
+                fig.savefig(os.path.join(figs_dir, title + '.png'))
+
+    def plot_all_parameters_slices(self, metric='val_acc', figs_dir=None):
+        minimal = {}
+        for e in self:
+            for key, val in e.identifiers.items():
+                minimal.setdefault(key, set()).add(val)
+
+        for param in minimal.keys():
+            self.plot_parameter_slices(param, metric=metric, figs_dir=figs_dir)

@@ -16,10 +16,10 @@ class GeneralRnn(Model):
     dropout: bool
     dropout_rate: float
 
-    def init(self, layers=[], num_of_layers=0, num_of_rnn_layers=0, input_shape=(10, 1000), output_shape=(3,),
+    def init(self, layers=None, num_of_layers=0, num_of_rnn_layers=0, input_shape=(10, 1000), output_shape=(3,),
              output_activation='softmax',
              dropout=True, dropout_rate=0.2, units=None):
-        self.hidden_layers = layers
+        self.hidden_layers = layers or []
         self.num_of_layers = num_of_layers
         self.num_of_rnn_layers = num_of_rnn_layers
         self.output_activation = output_activation
