@@ -33,14 +33,5 @@ class SmoothStocksDataset(StocksDataset):
                     Stock(stock.stock_tckt, smooth_stock_data,
                           feature_list=[get_feature(f_name, **params) for f_name, params in
                                         self.feature_list_with_params]))
-            plt.figure()
-            for stock in super().stocks_list:
-                plt.plot(stock.numerical_feature_list[0])
-                break
-            for stock in smooth_stocks_list:
-                plt.plot(stock.numerical_feature_list[0])
-                break
-            plt.title("Smooth stock plot - window size {}".format(self.time_sample_length))
-            plt.savefig(self.figpath)
             self._stocks_list = smooth_stocks_list
         return self._stocks_list

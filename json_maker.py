@@ -31,8 +31,8 @@ def get_config_identifiers(model_config):
     identifiers['num_of_rnn_layers'] = model_config['num_of_rnn_layers']
     identifiers["output_activation"] = model_config['output_activation']
 
+    # print(model_config['layers'])
     for i, layer in enumerate(model_config['layers']):
-        print(model_config['layers'])
         identifiers['layer_%d_type' % i] = layer['type']
         identifiers['layer_%d_size' % i] = layer['size']
         if layer['type'] == DENSE:
@@ -41,7 +41,7 @@ def get_config_identifiers(model_config):
             identifiers['layer_%d_activation' % i] = None
 
     for j in range(i, 100):
-        print(model_config['layers'])
+        # print(model_config['layers'])
         identifiers['layer_%d_type' % j] = None
         identifiers['layer_%d_size' % j] = None
         identifiers['layer_%d_activation' % i] = None
@@ -49,7 +49,7 @@ def get_config_identifiers(model_config):
     return identifiers
 
 
-def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activation_functions=['relu', 'sigmoid', 'tanh'], num_of_batchs=4, max_depth=5, neurons=[], output_activation='softmax'):
+def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', DENSE], activation_functions=['relu', 'sigmoid', 'tanh'], num_of_batchs=4, max_depth=3, neurons=[], output_activation='softmax'):
     models_configs = []
     for depth in range(1, max_depth + 1):
         for layers_combination in list(product(layers_types, repeat=depth)):
@@ -68,9 +68,10 @@ def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activ
                     else:
                         layer_config = {
                             'type': layer,
-                            'size': neurons_combination[index]
+                            'size': neurons_combination[index],
                         }
-                        name += '.'.join([layer_config['type'], str(layer_config['size'])])
+                        layer_config['name'] = '_'.join([layer_config['type'], str(layer_config['size'])])
+                        name += layer_config['name'] + '_'
                         model_config['num_of_rnn_layers'] += 1
                     model_config['layers'].append(layer_config)
                 num_of_dense_layers = model_config['layers'].count(None)
@@ -87,6 +88,7 @@ def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activ
                             "output_activation": output_activation
                         }
                         index = 0
+                        name = ''
                         for layer_index, layer in enumerate(model_config['layers']):
                             if layer is None:
                                 layer_config = {
@@ -95,17 +97,15 @@ def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', 'Dense'], activ
                                     'activation_function': activation_functions_combinations[index]
                                 }
                                 index += 1
-                                name += '.'.join([
+                                name += '_'.join([
                                     layer_config['type'], str(layer_config['size']), layer_config['activation_function']
-                                ])
+                                ]) + '_'
                                 new_model_config['layers'].append(layer_config)
                             else:
+                                name += layer['name'] + '_'
                                 new_model_config['layers'].append(layer)
                         new_model_config['name'] = name
                         models_configs.append(new_model_config)
-
-    models_configs = list({v['name']:v for v in models_configs}.values())
-    print("num of models: " + str(models_configs.__len__()))
     return models_configs
 
 
@@ -244,9 +244,10 @@ if not os.path.exists(main_dir):
 #     print(exp1.model.summary())
 #     # exp1.run()
 
-
-for i, model_config in enumerate(generate_grid_models(neurons=[8, 32, 128])):
-    model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
+models = generate_grid_models(neurons=[8, 32, 128])
+print(len(models))
+for i, model_config in enumerate(models):
+    model_name = model_config['name']
     dir_name = os.path.join(main_dir, model_name)
     file_name = os.path.join(main_dir, 'config_{name}.json'.format(name=model_name))
     figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))

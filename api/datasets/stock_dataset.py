@@ -7,8 +7,8 @@ import os
 from tqdm import tqdm
 from Utils.logger import logger
 
-N_train = 300
-N_val = 80
+N_train = 10
+N_val = 10
 
 DEFAULT_TRAIN_STOCK_LIST = tuple(
     ['anh', 'artx', 'brt', 'sfl', 'nsit', 'sbac', 'ssb', 'myj', 'cev', 'itrn', 'nly', 'gef', 'oiim', 'olp', 'fcbc',

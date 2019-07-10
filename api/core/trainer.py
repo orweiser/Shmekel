@@ -84,6 +84,7 @@ class Trainer:
         print('validation_steps: {}'.format(str(self.params)))
 
         logger.info('Enter fitting loop')
+        self.params.pop('augmentations', None)
         self._history = model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch,
                                             callbacks=self.callbacks,
                                             validation_data=val_gen, validation_steps=validation_steps,
