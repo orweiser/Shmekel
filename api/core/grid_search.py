@@ -342,6 +342,11 @@ class GridSearch2:
         for x in self.__iter_fixed_contained(mode='contained', fixed_values=fixed_values):
             yield x
 
+    def iter_modulo(self, mod=4, rem=0):
+        for i, x in enumerate(self.iter_exps()):
+            if i % mod == rem:
+                yield x
+
     def plot_a_slice(self, fixed_values: dict, metric='val_acc', title=None):
         fig = plt.figure()
         legend = []
@@ -377,6 +382,7 @@ class GridSearch2:
         new_slices = []
         for s in slices:
             try:
+                s = str(s)
                 new_slices.append(json.loads(s))
             except json.decoder.JSONDecodeError:
                 new_slices.append(s)

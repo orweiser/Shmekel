@@ -6,6 +6,7 @@ import os
 from itertools import chain, combinations, combinations_with_replacement, product
 from copy import deepcopy as copy
 
+from api.core.grid_search import GridSearch2
 
 EXP_CONFIG = None  # todo
 MIN_SIZE = 3
@@ -18,8 +19,7 @@ DROPOUT_CHANCE = 0.7
 MIN_DROPOUT = 0.1
 MAX_DROPOUT = 0.3
 DENSE = 'Dense'
-
-NUM_OF_BATCHES = 4
+LSTM = 'KerasLSTM'
 MAX_DEPTH = 20
 
 
@@ -40,18 +40,18 @@ def get_config_identifiers(model_config):
         else:
             identifiers['layer_%d_activation' % i] = None
 
-    for j in range(i, 100):
+    for j in range(i+1, 10):
         # print(model_config['layers'])
         identifiers['layer_%d_type' % j] = None
         identifiers['layer_%d_size' % j] = None
-        identifiers['layer_%d_activation' % i] = None
+        identifiers['layer_%d_activation' % j] = None
 
     return identifiers
 
 
-def generate_grid_models(batch_num=0, layers_types=['KerasLSTM', DENSE], activation_functions=['relu', 'sigmoid', 'tanh'], num_of_batchs=4, max_depth=3, neurons=[], output_activation='softmax'):
+def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu', 'sigmoid', 'tanh'], min_depth=3, max_depth=5, neurons=[], output_activation='softmax'):
     models_configs = []
-    for depth in range(1, max_depth + 1):
+    for depth in range(min_depth, max_depth + 1):
         for layers_combination in list(product(layers_types, repeat=depth)):
             for neurons_combination in list(product(neurons, repeat=depth)):
                 model_config = {
@@ -174,7 +174,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
         "augmentations": None,
         "batch_size": 1024,
         "callbacks": None,
-        "epochs": 3,
+        "epochs": 15,
         "include_experiment_callbacks": True,
         "optimizer": "adam",
         "randomize": True,
@@ -187,7 +187,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
         "feature_list": None,
         "output_feature_list": None,
         "stock_name_list": None,
-        "time_sample_length": 7,
+        "time_sample_length": 16,
         "val_mode": True
 
     }
@@ -197,7 +197,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
         "feature_list": None,
         "output_feature_list": None,
         "stock_name_list": None,
-        "time_sample_length": 7,
+        "time_sample_length": 16,
         "val_mode": True
     }
 
@@ -207,13 +207,13 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
 
 
 # main
-timestamp = round(time.time())
-main_dir = os.pardir
-main_dir = os.path.join(main_dir, 'Shmekel_Results')
-main_dir = os.path.join(main_dir, 'default_project')
-main_dir = os.path.join(main_dir, str(timestamp))
-if not os.path.exists(main_dir):
-    os.makedirs(main_dir)
+# timestamp = round(time.time())
+# main_dir = os.pardir
+# main_dir = os.path.join(main_dir, 'Shmekel_Results')
+# main_dir = os.path.join(main_dir, 'default_project')
+# main_dir = os.path.join(main_dir, str(timestamp))
+# if not os.path.exists(main_dir):
+#     os.makedirs(main_dir)
 
 
 # for i in range(100):
@@ -244,30 +244,39 @@ if not os.path.exists(main_dir):
 #     print(exp1.model.summary())
 #     # exp1.run()
 
-models = generate_grid_models(neurons=[8, 32, 128])
-print(len(models))
-for i, model_config in enumerate(models):
-    model_name = model_config['name']
-    dir_name = os.path.join(main_dir, model_name)
-    file_name = os.path.join(main_dir, 'config_{name}.json'.format(name=model_name))
-    figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
-    figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
+# models = generate_grid_models(neurons=[8, 32, 128], activation_functions=['relu'])
+# print(len(models))
+# for i, model_config in enumerate(models):
+#     model_name = model_config['name']
+#     dir_name = os.path.join(main_dir, model_name)
+#     file_name = os.path.join(main_dir, 'config_{name}.json'.format(name=model_name))
+#     figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
+#     figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
+#
+#     name = model_config.pop('name')
+#     data = json_format(model_config=model_config, name=name,
+#                        train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
+#                                                  time_sample_length=7),
+#                        val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
+#                                                time_sample_length=7),
+#                        )
+#
+#     data['identifiers'] = get_config_identifiers(model_config)
+#
+#     if model_config['num_of_rnn_layers'] == 0:
+#         if 'time_sample_length' in data['train_dataset_config']:
+#             data['train_dataset_config']['time_sample_length'] = 1
+#         if 'time_sample_length' in data['val_dataset_config']:
+#             data['val_dataset_config']['time_sample_length'] = 1
+#
+#     with open(file_name, 'w') as outfile:
+#         json.dump(data, outfile)
 
-    name = model_config.pop('name')
-    data = json_format(model_config=model_config, name=name,
-                       train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
-                                                 time_sample_length=7),
-                       val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
-                                               time_sample_length=7),
-                       )
 
-    data['identifiers'] = get_config_identifiers(model_config)
+gs = GridSearch2('C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\1563139009')
+# for exp in gs.iter_fixed({'num_of_layers': 1}):
+#     exp.run()
 
-    if model_config['num_of_rnn_layers'] == 0:
-        if 'time_sample_length' in data['train_dataset_config']:
-            data['train_dataset_config']['time_sample_length'] = 1
-        if 'time_sample_length' in data['val_dataset_config']:
-            data['val_dataset_config']['time_sample_length'] = 1
-
-    with open(file_name, 'w') as outfile:
-        json.dump(data, outfile)
+# gs.plot_all_parameters_slices(figs_dir='C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\Figs')
+for exp in gs.iter_modulo(rem=3):
+    exp.run()
