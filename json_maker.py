@@ -5,6 +5,7 @@ import time
 import os
 from itertools import chain, combinations, combinations_with_replacement, product
 from copy import deepcopy as copy
+from keras import callbacks
 
 from api.core.grid_search import GridSearch2
 
@@ -21,7 +22,9 @@ MAX_DROPOUT = 0.3
 DENSE = 'Dense'
 LSTM = 'KerasLSTM'
 MAX_DEPTH = 20
-name2num = {'Yishai': 0,'Michael': 1,'Ron': 2, 'Rotem': 3}
+EARLY_STOP = True
+
+name2num = {'Yishai': 0, 'Michael': 1, 'Ron': 2, 'Rotem': 3}
 
 
 def get_config_identifiers(model_config):
@@ -76,6 +79,8 @@ def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu
                         model_config['num_of_rnn_layers'] += 1
                     model_config['layers'].append(layer_config)
                 num_of_dense_layers = model_config['layers'].count(None)
+                if EARLY_STOP:
+                    model_config['callbacks'] = 'early_stop'
                 if num_of_dense_layers is 0:
                     model_config['name'] = name
                     models_configs.append(model_config)
@@ -105,6 +110,8 @@ def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu
                             else:
                                 name += layer['name'] + '_'
                                 new_model_config['layers'].append(layer)
+                        if EARLY_STOP:
+                            new_model_config['callbacks'] = 'early_stop'
                         new_model_config['name'] = name
                         models_configs.append(new_model_config)
     return models_configs
@@ -175,7 +182,7 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
         "augmentations": None,
         "batch_size": 1024,
         "callbacks": None,
-        "epochs": 15,
+        "epochs": 20,
         "include_experiment_callbacks": True,
         "optimizer": "adam",
         "randomize": True,
@@ -289,5 +296,6 @@ def grid_jason_maker(main_dir):
 
 # main
 gs = GridSearch2(grid_jason_maker(create_configs_directory()))
-for exp in gs.itr_modulo(rem=name2num['Ron']):
+for exp in gs.iter_modulo(rem=name2num['Ron']):
+    print(exp)
     exp.run()
