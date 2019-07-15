@@ -1,6 +1,6 @@
 import json
 import numpy as np
-from api import core
+#from api import core
 
 MIN_SIZE = 3
 MAX_SIZE = 7
@@ -86,21 +86,21 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
         "validation_steps": None
     }
     data_dic['train_dataset_config'] = train_dataset_config or {
-        "config_path": None,
-        "dataset": "StocksDataset",
-        "feature_list": None,
-        "output_feature_list": None,
-        "stock_name_list": None,
-        "time_sample_length": 7,
+        # "config_path": None,
+        "dataset": "MNIST",
+        # "feature_list": None,
+        # "output_feature_list": None,
+        # "stock_name_list": None,
+        # "time_sample_length": 7,
         "val_mode": False
     }
     data_dic['val_dataset_config'] = val_dataset_config or {
-        "config_path": None,
-        "dataset": "StocksDataset",
-        "feature_list": None,
-        "output_feature_list": None,
-        "stock_name_list": None,
-        "time_sample_length": 7,
+        # "config_path": None,
+        "dataset": "MNIST",
+        # "feature_list": None,
+        # "output_feature_list": None,
+        # "stock_name_list": None,
+        # "time_sample_length": 7,
         "val_mode": True
     }
 
@@ -117,16 +117,16 @@ for i in range(3):
     model = {}
     model = generate_model_config()
     data = json_format(model_config=model, name=model_name, train_dataset_config=dict(dataset='MNIST', val_mode=False),
-                              val_dataset_config=dict(dataset='MNIST', val_mode=True))
+                       val_dataset_config=dict(dataset='MNIST', val_mode=True))
     if model['num_of_rnn_layers'] == 0:
-        if 'time_sample_length' in data['train_dataset_config'].keys:
+        if 'time_sample_length' in (data['train_dataset_config']):
             data['train_dataset_config']['time_sample_length'] = 1
-        if 'time_sample_length' in data['val_dataset_config'].keys:
+        if 'time_sample_length' in (data['val_dataset_config']):
             data['val_dataset_config']['time_sample_length'] = 1
     with open(file_name, 'w') as outfile:
         json.dump(data, outfile)
 
-exp1 = core.get_exp_from_config(
-        core.load_config(r'.\Shmekel_Results\default_project\config_{name}.json'.format(name=model_name)))
-print(exp1.model.summary())
-exp1.run()
+# exp1 = core.get_exp_from_config(
+#         core.load_config(r'.\Shmekel_Results\default_project\config_{name}.json'.format(name=model_name)))
+# print(exp1.model.summary())
+# exp1.run()
