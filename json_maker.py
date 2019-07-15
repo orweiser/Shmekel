@@ -21,6 +21,7 @@ MAX_DROPOUT = 0.3
 DENSE = 'Dense'
 LSTM = 'KerasLSTM'
 MAX_DEPTH = 20
+name2num = {'Yishai': 0,'Michael': 1,'Ron': 2, 'Rotem': 3}
 
 
 def get_config_identifiers(model_config):
@@ -206,77 +207,87 @@ def json_format(name, backup_config=None, loss_config=None, model_config=None, t
     return data_dic
 
 
-# main
-# timestamp = round(time.time())
-# main_dir = os.pardir
-# main_dir = os.path.join(main_dir, 'Shmekel_Results')
-# main_dir = os.path.join(main_dir, 'default_project')
-# main_dir = os.path.join(main_dir, str(timestamp))
-# if not os.path.exists(main_dir):
-#     os.makedirs(main_dir)
+def create_configs_directory():
+    timestamp = round(time.time())
+    main_dir = os.pardir
+    main_dir = os.path.join(main_dir, 'Shmekel_Results')
+    main_dir = os.path.join(main_dir, 'default_project')
+    main_dir = os.path.join(main_dir, str(timestamp))
+    if not os.path.exists(main_dir):
+        os.makedirs(main_dir)
+    return main_dir
 
 
-# for i in range(100):
-#     model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
-#     dir_name = os.path.join(main_dir, model_name)
-#     file_name = os.path.join(dir_name, 'config_{name}.json'.format(name=model_name))
-#     figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
-#     figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
-#
-#     exp_model_name = os.path.join(str(timestamp), model_name)
-#     model = generate_model_config()
-#     data = json_format(model_config=model, name=exp_model_name,
-#                        train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
-#                                                  time_sample_length=7),
-#                        val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
-#                                                time_sample_length=7),
-#                        )
-#     if model['num_of_rnn_layers'] == 0:
-#         if 'time_sample_length' in data['train_dataset_config']:
-#             data['train_dataset_config']['time_sample_length'] = 1
-#         if 'time_sample_length' in data['val_dataset_config']:
-#             data['val_dataset_config']['time_sample_length'] = 1
-#     os.mkdir(dir_name)
-#     with open(file_name, 'w') as outfile:
-#         json.dump(data, outfile)
-#
+def random_jason_maker(main_dir):
+    for i in range(100):
+        model_name = 'RNN_MODEL_{test_number}'.format(test_number=i)
+        dir_name = os.path.join(main_dir, model_name)
+        file_name = os.path.join(dir_name, 'config_{name}.json'.format(name=model_name))
+        figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
+        figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
+
+        exp_model_name = os.path.join(str(timestamp), model_name)
+        model = generate_model_config()
+        data = json_format(model_config=model, name=exp_model_name,
+                           train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
+                                                     time_sample_length=7),
+                           val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
+                                                   time_sample_length=7),
+                           )
+        if model['num_of_rnn_layers'] == 0:
+            if 'time_sample_length' in data['train_dataset_config']:
+                data['train_dataset_config']['time_sample_length'] = 1
+            if 'time_sample_length' in data['val_dataset_config']:
+                data['val_dataset_config']['time_sample_length'] = 1
+        os.mkdir(dir_name)
+        with open(file_name, 'w') as outfile:
+            json.dump(data, outfile)
+
 #     exp1 = core.get_exp_from_config(core.load_config(file_name))
 #     print(exp1.model.summary())
 #     # exp1.run()
 
-# models = generate_grid_models(neurons=[8, 32, 128], activation_functions=['relu'])
-# print(len(models))
-# for i, model_config in enumerate(models):
-#     model_name = model_config['name']
-#     dir_name = os.path.join(main_dir, model_name)
-#     file_name = os.path.join(main_dir, 'config_{name}.json'.format(name=model_name))
-#     figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
-#     figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
-#
-#     name = model_config.pop('name')
-#     data = json_format(model_config=model_config, name=name,
-#                        train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
-#                                                  time_sample_length=7),
-#                        val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
-#                                                time_sample_length=7),
-#                        )
-#
-#     data['identifiers'] = get_config_identifiers(model_config)
-#
-#     if model_config['num_of_rnn_layers'] == 0:
-#         if 'time_sample_length' in data['train_dataset_config']:
-#             data['train_dataset_config']['time_sample_length'] = 1
-#         if 'time_sample_length' in data['val_dataset_config']:
-#             data['val_dataset_config']['time_sample_length'] = 1
-#
-#     with open(file_name, 'w') as outfile:
-#         json.dump(data, outfile)
+
+def grid_jason_maker(main_dir):
+    models = generate_grid_models(neurons=[8, 32, 128], activation_functions=['relu'])
+    print(len(models))
+    for i, model_config in enumerate(models):
+        model_name = model_config['name']
+        dir_name = os.path.join(main_dir, model_name)
+        file_name = os.path.join(main_dir, 'config_{name}.json'.format(name=model_name))
+        figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
+        figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
+
+        name = model_config.pop('name')
+        data = json_format(model_config=model_config, name=name,
+                           train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
+                                                     time_sample_length=7),
+                           val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
+                                                   time_sample_length=7),
+                           )
+
+        data['identifiers'] = get_config_identifiers(model_config)
+
+        if model_config['num_of_rnn_layers'] == 0:
+            if 'time_sample_length' in data['train_dataset_config']:
+                data['train_dataset_config']['time_sample_length'] = 1
+            if 'time_sample_length' in data['val_dataset_config']:
+                data['val_dataset_config']['time_sample_length'] = 1
+
+        with open(file_name, 'w') as outfile:
+            json.dump(data, outfile)
+    return main_dir
 
 
-gs = GridSearch2('C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\1563139009')
+# gs = GridSearch2('F:\\Users\\Ron\\Shmekels\\Shmekel_Results\\default_project\\1563206162')
 # for exp in gs.iter_fixed({'num_of_layers': 1}):
 #     exp.run()
 
 # gs.plot_all_parameters_slices(figs_dir='C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\Figs')
-for exp in gs.iter_modulo(rem=3):
+# for exp in gs.iter_modulo(rem=2):
+#     exp.run()
+
+# main
+gs = GridSearch2(grid_jason_maker(create_configs_directory()))
+for exp in gs.itr_modulo(rem=name2num['Ron']):
     exp.run()
