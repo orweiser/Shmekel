@@ -17,7 +17,7 @@ class GeneralRnn(Model):
     dropout_rate: float
 
     def init(self, layers=None, num_of_layers=0, num_of_rnn_layers=0, input_shape=(10, 1000), output_shape=(3,),
-             output_activation='softmax',
+             output_activation='softmax', callbacks=None,
              dropout=True, dropout_rate=0.2, units=None):
         self.hidden_layers = layers or []
         self.num_of_layers = num_of_layers
@@ -28,6 +28,9 @@ class GeneralRnn(Model):
         self.dropout = dropout
         self.dropout_rate = dropout_rate
         self.units = units
+        if callbacks is 'early_stop':
+            self.callbacks = callbacks.EarlyStopping(monitor='val_acc', min_delta=0.002, patience=2, verbose=0,
+                                                     mode='max', baseline=None, restore_best_weights=False)
 
     def get_input_output_tensors(self):
         input_shape = self._input_shape
