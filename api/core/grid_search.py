@@ -5,6 +5,7 @@ import os
 from api.core import get_exp_from_config, load_config
 from Utils.logger import logger
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class GridSearch:
@@ -373,7 +374,7 @@ class GridSearch2:
                 os.makedirs(figs_dir)
 
         minimal = {}
-        for e in self:
+        for e in self:      # maybe obsolete when using from plot all parameter slices
             for key, val in e.identifiers.items():
                 minimal.setdefault(key, set()).add(val)
 
@@ -402,3 +403,32 @@ class GridSearch2:
 
         for param in minimal.keys():
             self.plot_parameter_slices(param, metric=metric, figs_dir=figs_dir)
+
+    def print_slice_information(self, compare, slices=None, fixed_values={}, metric='val_acc', file=None):
+
+        if slices is None:
+            slices = {}
+            for e in self.iter_fixed(fixed_values):
+                for key, val in e.identifiers.items():
+                    slices.setdefault(key, set()).add(val)
+
+        slices = slices[compare]
+        new_slices = []
+        for s in slices:
+            try:
+                s = str(s)
+                new_slices.append(json.loads(s))
+            except json.decoder.JSONDecodeError:
+                new_slices.append(s)
+
+        for val in new_slices:
+            curr_slice = []
+            fixed_values[compare] = val
+            for exp in self.iter_fixed(fixed_values):
+                if exp.history:
+                    curr_slice.append(max(exp.results[metric]))
+            best = max(curr_slice)
+            size = len(curr_slice)
+            avg = np.mean(curr_slice)
+            print('Slice - %s (%s):' % (compare, str(val)))
+            print('total nets: %d;  best: %d;   avg: %d' % (size, best, avg))

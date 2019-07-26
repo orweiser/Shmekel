@@ -1,4 +1,5 @@
 from keras import Input
+from keras import callbacks as keras_callbacks
 from keras.layers import LSTM as KerasLSTM
 from keras.layers import Dense, Reshape, Dropout  # , RNN
 from api.core import Model
@@ -28,9 +29,8 @@ class GeneralRnn(Model):
         self.dropout = dropout
         self.dropout_rate = dropout_rate
         self.units = units
-        if callbacks is 'early_stop':
-            self.callbacks = callbacks.EarlyStopping(monitor='val_acc', min_delta=0.002, patience=2, verbose=0,
-                                                     mode='max', baseline=None, restore_best_weights=False)
+        self.callbacks = callbacks  # Need to make more general
+
 
     def get_input_output_tensors(self):
         input_shape = self._input_shape
@@ -72,3 +72,17 @@ class GeneralRnn(Model):
 
     def get_default_config(self) -> dict:
         return dict(units=128, input_shape=(10, 1000), output_shape=(3,), output_activation='softmax')
+
+    @property
+    def callbacks(self):
+
+        return []
+
+    @callbacks.setter
+    def callbacks(self, callback):
+        if self.callbacks is None:
+            self.callbacks = []
+        if callback == 'early_stop':
+            self.callbacks.append(keras_callbacks.EarlyStopping(monitor='val_acc', min_delta=0.002, patience=2, verbose=0,
+                                                     mode='max', baseline=None, restore_best_weights=False))
+        return self.callbacks

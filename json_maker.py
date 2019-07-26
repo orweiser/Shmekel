@@ -5,7 +5,7 @@ import time
 import os
 from itertools import chain, combinations, combinations_with_replacement, product
 from copy import deepcopy as copy
-from keras import callbacks
+from api.core import get_exp_from_config, load_config
 
 from api.core.grid_search import GridSearch2
 
@@ -44,7 +44,7 @@ def get_config_identifiers(model_config):
         else:
             identifiers['layer_%d_activation' % i] = None
 
-    for j in range(i+1, 10):
+    for j in range(i + 1, 10):
         # print(model_config['layers'])
         identifiers['layer_%d_type' % j] = None
         identifiers['layer_%d_size' % j] = None
@@ -53,7 +53,8 @@ def get_config_identifiers(model_config):
     return identifiers
 
 
-def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu', 'sigmoid', 'tanh'], min_depth=3, max_depth=5, neurons=[], output_activation='softmax'):
+def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu', 'sigmoid', 'tanh'], min_depth=3,
+                         max_depth=5, neurons=[], output_activation='softmax'):
     models_configs = []
     for depth in range(min_depth, max_depth + 1):
         for layers_combination in list(product(layers_types, repeat=depth)):
@@ -85,7 +86,8 @@ def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu
                     model_config['name'] = name
                     models_configs.append(model_config)
                 else:
-                    for activation_functions_combinations in list(product(activation_functions, repeat=num_of_dense_layers)):
+                    for activation_functions_combinations in list(
+                            product(activation_functions, repeat=num_of_dense_layers)):
                         new_model_config = {
                             'model': 'General_RNN',
                             'num_of_layers': depth,
@@ -144,7 +146,7 @@ def generate_model_config(output_activation='softmax'):
         })
         if model_config['layers'][layer]['type'] == 'Dense':
             model_config['layers'][layer]['activation_function'] = activation_function or np.random.choice(
-                ACTIVATION_FUNCTIONS)
+                    ACTIVATION_FUNCTIONS)
         else:
             model_config['num_of_rnn_layers'] += 1
 
@@ -236,7 +238,8 @@ def random_jason_maker(main_dir):
         exp_model_name = os.path.join(str(timestamp), model_name)
         model = generate_model_config()
         data = json_format(model_config=model, name=exp_model_name,
-                           train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
+                           train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False,
+                                                     figpath=figpath_train,
                                                      time_sample_length=7),
                            val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
                                                    time_sample_length=7),
@@ -250,7 +253,8 @@ def random_jason_maker(main_dir):
         with open(file_name, 'w') as outfile:
             json.dump(data, outfile)
 
-#     exp1 = core.get_exp_from_config(core.load_config(file_name))
+
+# exp1 = core.get_exp_from_config(core.load_config(file_name))
 #     print(exp1.model.summary())
 #     # exp1.run()
 
@@ -267,7 +271,8 @@ def grid_jason_maker(main_dir):
 
         name = model_config.pop('name')
         data = json_format(model_config=model_config, name=name,
-                           train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False, figpath=figpath_train,
+                           train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False,
+                                                     figpath=figpath_train,
                                                      time_sample_length=7),
                            val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
                                                    time_sample_length=7),
@@ -286,6 +291,52 @@ def grid_jason_maker(main_dir):
     return main_dir
 
 
+def train_by_modulo(name):
+    gs = GridSearch2(grid_jason_maker(create_configs_directory()))
+    for exp in gs.iter_modulo(rem=name2num[name]):
+        print(exp)
+        exp.run()
+
+
+def print_statistics(path, compare, fixed_values={}, metric='val_acc', file=None):
+    results = {}
+    for dir in os.listdir(path):
+        if 'histories' in os.listdir(os.path.join(path, dir)):
+            config = load_config(os.path.join(path, dir))
+            exp = get_exp_from_config(config)
+            config = load_config(os.path.join(path, '1563481881', 'config_' + dir + '.json'))
+            identifiers = config.pop('identifiers')
+            exp.identifiers = identifiers
+            is_in_fixed_values = True
+            for key, value in fixed_values.items():
+                is_in_fixed_values = exp.identifiers[key] == value
+            if is_in_fixed_values:
+                if compare == "size":
+                    size = 0
+                    for layer in range(exp.identifiers['num_of_layers']):
+                        size += exp.identifiers['layer_{layer}_size'.format(layer=layer)]
+                    if size not in results:
+                        results[size] = []
+                    results[size].append(exp.results.get_best_epoch()[metric])
+                else:
+                    if exp.identifiers[compare] not in results:
+                        results[exp.identifiers[compare]] = []
+                    results[exp.identifiers[compare]].append(exp.results.get_best_epoch()[metric])
+
+    for key, value in results.items():
+        best = np.max(value)
+        size = len(value)
+        avg = np.mean(value)
+        worst = np.min(value)
+        print('Slice - {compare} {key}'.format(compare=compare, key=str(key)))
+        print('total nets: %d;  max: %f;   avg: %f; min: %f' % (size, best, avg, worst))
+        if file:
+            os.system('echo Slice - {compare} {key} > {file}'.format(compare=compare, key=str(key),
+                                                                     file=os.path.join(os.pardir, file)))
+            print('echo total nets: %d;  max: %f;   avg: %f; min: %f > %s' % (
+            size, best, avg, worst, os.path.join(os.pardir, file)))
+
+
 # gs = GridSearch2('F:\\Users\\Ron\\Shmekels\\Shmekel_Results\\default_project\\1563206162')
 # for exp in gs.iter_fixed({'num_of_layers': 1}):
 #     exp.run()
@@ -295,7 +346,5 @@ def grid_jason_maker(main_dir):
 #     exp.run()
 
 # main
-gs = GridSearch2(grid_jason_maker(create_configs_directory()))
-for exp in gs.iter_modulo(rem=name2num['Ron']):
-    print(exp)
-    exp.run()
+print_statistics('F:\\Users\\Ron\\Shmekels\\Shmekel_Results\\default_project', 'size',
+                 file='results.txt')
