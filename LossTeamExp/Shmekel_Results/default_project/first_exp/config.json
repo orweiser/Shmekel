@@ -2,7 +2,7 @@
     "backup_config": {
         "handler": "DefaultLocal",
         "history_backup_delta": 1,
-        "project": "Test_Augmentation_ConcatExtraNoiseSamples",
+        "project": "default_project",
         "save_history_after_training": true,
         "save_snapshot_after_training": true,
         "snapshot_backup_delta": 1
@@ -29,23 +29,33 @@
         "skip_connections": false,
         "width": 32
     },
-    "name": "third_test",
+    "name": "first_exp",
     "train_config": {
-        "train_augmentations": [["ConcatExtraNoiseSamples", {
-            "std": 1,
-            "fraction_to_added": 0.8
-        }]],
-        "val_augmentations": [["ConcatExtraNoiseSamples", {
-            "std": 1,
-            "fraction_to_added": 0.5
-        }]],
         "batch_size": 1024,
         "callbacks": null,
-        "epochs": 50,
+        "epochs": 5,
         "include_experiment_callbacks": true,
         "optimizer": "adam",
         "randomize": true,
         "steps_per_epoch": null,
+        "train_augmentations": [
+            [
+                "ConcatExtraNoiseSamples",
+                {
+                    "fraction_to_added": 0.5,
+                    "std": 1
+                }
+            ]
+        ],
+        "val_augmentations": [
+            [
+                "ConcatExtraNoiseSamples",
+                {
+                    "fraction_to_added": 0.5,
+                    "std": 1
+                }
+            ]
+        ],
         "validation_steps": null
     },
     "train_dataset_config": {

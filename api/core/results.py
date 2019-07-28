@@ -21,6 +21,7 @@ class Results:
             plt.plot(self[metric])
         plt.legend(metrics)
         plt.show()
+        return fig
 
     def get_best_epoch(self, metric=None):
         # TODO ???
