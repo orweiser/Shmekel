@@ -20,8 +20,8 @@ def grid_search_test():
     grid_serach_exps.create_config_files()
     for exp in grid_serach_exps:
         exp.run()
-        exp_result = exp.results
-        exp_result.plot()
+        # exp_result = exp.results
+        # exp_result.plot()
 
 
 if __name__ == '__main__':
