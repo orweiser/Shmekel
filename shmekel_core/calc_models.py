@@ -88,7 +88,7 @@ class Stock:
 
     def __get_features(self, numerical=True):
         f_list = [feature for feature in self.features if feature.is_numerical is numerical]
-        return [f.get_feature(data=self.data,
+        return [f.get_feature(data=self.data, normalization_type=f.normalization_type,
                               temporal_delay=self.temporal_delays[0],
                               neg_temporal_delay=self.temporal_delays[1]) for f in f_list]
 

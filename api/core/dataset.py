@@ -1,4 +1,5 @@
 from copy import deepcopy as copy
+from Utils.logger import logger
 
 
 class BaseDataset:
@@ -60,6 +61,7 @@ class Dataset(BaseDataset):
         :param params: holds all the key-word arguments except for "experiment"
                 those key-words are passed to the init() method
         """
+        if not dataset: logger.warning('Dataset parameter "dataset" is missing')
         self.experiment = experiment
 
         self.config = copy(self.get_default_config())

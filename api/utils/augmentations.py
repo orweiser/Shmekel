@@ -1,4 +1,8 @@
 import numpy as np
+from Utils.logger import logger
+
+
+class InvalidShape(Exception): pass
 
 
 def get_augmentation(aug):
@@ -24,6 +28,9 @@ class AugmentationList:
 
         self.aug_list = [get_augmentation(aug) for aug in augmentations]
 
+        for aug in self.aug_list:
+            self._test_augmentation(aug)
+
     def get_output_shapes(self, input_shape: tuple, labels_shape: tuple):
         for aug in self.aug_list:
             input_shape, labels_shape = aug.get_output_shapes(input_shape, labels_shape)
@@ -34,6 +41,44 @@ class AugmentationList:
             batch_inputs, batch_labels = aug(batch_inputs, batch_labels)
 
         return batch_inputs, batch_labels
+
+    @logger.debug_dec
+    def _test_augmentation(self, aug):
+        get_shapes_test_cases = [
+            ((1, 1), (11, 13)),
+            ((2, 3, 4, 5), (8,)),
+            ((15,), (2, 3, 4, 1, 1))
+        ]
+
+        for input_shape, output_shape in get_shapes_test_cases:
+            try:
+                out_shapes = aug.get_output_shapes(input_shape, output_shape)
+
+                assert len(out_shapes) == 2, 'Augmentations "get_output_shapes" must return two outputs: ' \
+                                       'new_input_shape, new_output_shape'
+
+                for shape in out_shapes:
+                    assert isinstance(shape, tuple), 'Shapes are expected to be tuples'
+
+                for i in out_shapes[0] + out_shapes[1]:
+                    if i is None: continue
+
+                    assert isinstance(i, int), 'shape must be a tuple of integers. got ' + str(type(i))
+
+                input = np.random.random(input_shape)
+                labels = np.random.rand(output_shape)
+
+                outs = aug(input, labels)
+
+                for o, s in zip(outs, out_shapes):
+                    if s != o.shape:
+                        raise ValueError('augmentations "call" outputs does not match "get_output_shapes" method')
+
+            except InvalidShape: pass
+
+            except NotImplementedError as e:
+                logger.error('augmentations must implement "call" and "get_output_shapes"')
+                raise e
 
 
 """ Augmentations Base class """

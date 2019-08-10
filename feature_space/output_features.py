@@ -1,6 +1,6 @@
 import numpy as np
 from shmekel_core import Feature
-from utils.generic_utils import one_hot
+from Utils.generic_utils import one_hot
 
 
 """
@@ -33,12 +33,12 @@ class Rise(Feature):
         """
     SUPPORTED_OUTPUT_TYPES = ('regression', 'binary', 'categorical', 'ternary')
 
-    def __init__(self, output_type='categorical', threshold=None, k_next_candle=1, **kwargs):
+    def __init__(self, output_type='categorical', threshold=None, k_next_candle=1, normalization_type=None, **kwargs):
         assert output_type in self.SUPPORTED_OUTPUT_TYPES
         assert not all((threshold is None, output_type == 'ternary')), 'when using "outpit_type" == "ternary", ' \
                                                                        'must specify threshold'
 
-        super(Rise, self).__init__(**kwargs)
+        super(Rise, self).__init__(normalization_type=normalization_type, **kwargs)
         self.time_delay = -k_next_candle
         self.num_features = 1 if output_type != 'categorical' else (2 if threshold is None else 3)
 

@@ -24,8 +24,8 @@ class Candle(Feature):
 
 
 class DateTuple(Feature):
-    def __init__(self, **kwargs):
-        super(DateTuple, self).__init__(**kwargs)
+    def __init__(self, normalization_type=None, **kwargs):
+        super(DateTuple, self).__init__(normalization_type=normalization_type, **kwargs)
 
         self.time_delay = 0
         self.is_numerical = False
@@ -36,8 +36,8 @@ class DateTuple(Feature):
 
 
 class High(Feature):
-    def __init__(self, **kwargs):
-        super(High, self).__init__(**kwargs)
+    def __init__(self, normalization_type='default', **kwargs):
+        super(High, self).__init__(normalization_type=normalization_type, **kwargs)
 
         self.time_delay = 0
         self.is_numerical = True
@@ -48,8 +48,8 @@ class High(Feature):
 
 
 class Low(Feature):
-    def __init__(self, **kwargs):
-        super(Low, self).__init__(**kwargs)
+    def __init__(self, normalization_type='default', **kwargs):
+        super(Low, self).__init__(normalization_type=normalization_type, **kwargs)
 
         self.time_delay = 0
         self.is_numerical = True
@@ -60,8 +60,8 @@ class Low(Feature):
 
 
 class Open(Feature):
-    def __init__(self, **kwargs):
-        super(Open, self).__init__(**kwargs)
+    def __init__(self, normalization_type='default', **kwargs):
+        super(Open, self).__init__(normalization_type=normalization_type, **kwargs)
 
         self.time_delay = 0
         self.is_numerical = True
@@ -72,8 +72,8 @@ class Open(Feature):
 
 
 class Close(Feature):
-    def __init__(self, **kwargs):
-        super(Close, self).__init__(**kwargs)
+    def __init__(self, normalization_type='default', **kwargs):
+        super(Close, self).__init__(normalization_type=normalization_type, **kwargs)
 
         self.time_delay = 0
         self.is_numerical = True
@@ -84,8 +84,8 @@ class Close(Feature):
 
 
 class Volume(Feature):
-    def __init__(self, **kwargs):
-        super(Volume, self).__init__(**kwargs)
+    def __init__(self, normalization_type='default', **kwargs):
+        super(Volume, self).__init__(normalization_type=normalization_type, **kwargs)
 
         self.time_delay = 0
         self.is_numerical = True

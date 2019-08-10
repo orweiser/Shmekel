@@ -35,6 +35,8 @@ def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None, 
                 break
 
         if augmentations:
-            batch_x, batch_y = augmentations(batch_x, batch_y)
+            batch_x_o, batch_y_o = augmentations(batch_x, batch_y)
+        else:
+            batch_x_o, batch_y_o = [batch_x, batch_y]
 
-        yield copy(batch_x), copy(batch_y)
+        yield copy(batch_x_o), copy(batch_y_o)

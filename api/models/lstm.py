@@ -11,7 +11,7 @@ class LSTM(Model):
     _output_shape: tuple
     units: int
 
-    def init(self, units=64, input_shape=(28, 28), output_shape=(10,), output_activation='softmax'):
+    def init(self, units=64, input_shape=(5, 5), output_shape=(2,), output_activation='softmax'):
         self.output_activation = output_activation
         self._input_shape = input_shape
         self._output_shape = output_shape
