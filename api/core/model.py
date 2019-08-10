@@ -1,6 +1,6 @@
 from keras import Model as KerasModel
 from copy import deepcopy as copy
-from Utils.logger import logger
+from utils.logger import logger
 
 
 class Model(KerasModel):

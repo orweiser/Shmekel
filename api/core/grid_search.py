@@ -3,7 +3,7 @@ import os
 from copy import deepcopy as copy
 import os
 from api.core import get_exp_from_config, load_config
-from Utils.logger import logger
+from utils.logger import logger
 import matplotlib.pyplot as plt
 
 

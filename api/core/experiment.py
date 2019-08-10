@@ -4,7 +4,7 @@ from ..losses import get as get_loss
 from .results import Results
 from .trainer import Trainer
 from .backup_handler import get_handler
-from Utils.logger import logger
+from utils.logger import logger
 
 
 class Experiment:
