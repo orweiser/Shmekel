@@ -1,7 +1,8 @@
-from Utils.data import DataReader
+from utils.data import DataReader
 from shmekel_core.calc_models import Stock
 from feature_space.basic_features import *
-from Utils.shmekel_config import *
+from utils.shmekel_config import *
+from dimentionality_reduction import LinearDimReduction
 import numpy as np
 
 config_path = r"C:\Or\Projects\Shmekel_config.txt"
@@ -25,7 +26,6 @@ print('chose:', stock_info)
 
 
 # we can now define a stock:
-from Indicators import *
 stock = Stock(stock_tckt=stock_info[0], data=data_reader.load_stock(stock_info[0]), feature_axis=data_reader.feature_axis)
 
 # to access the stock data, just subscript it
@@ -39,7 +39,8 @@ print('data shape:', data.shape, '\ndates length:', len(dates))
 #   for the sake of the example, lets say we want the following features, even though they are degenerate:
 feature_list = [High(), Candle(with_volume=True), Candle(with_volume=False)]
 
-stock = Stock(stock_tckt=stock_info[0], data=data_reader.load_stock(stock_info[0]), feature_list=feature_list)
+stock = Stock(stock_tckt=stock_info[0], data=data_reader.load_stock(stock_info[0]), feature_list=feature_list,
+              linear_dim_reduction=LinearDimReduction(8, 'PCA'))
 # or we could have just do the following:
 stock.set_feature_list(feature_list)
 
