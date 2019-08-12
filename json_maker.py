@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import pandas as pd
 from api import core
 import time
 import os
@@ -8,6 +9,7 @@ from copy import deepcopy as copy
 from api.core import get_exp_from_config, load_config
 
 from api.core.grid_search import GridSearch2
+
 
 EXP_CONFIG = None  # todo
 MIN_SIZE = 3
@@ -146,7 +148,7 @@ def generate_model_config(output_activation='softmax'):
         })
         if model_config['layers'][layer]['type'] == 'Dense':
             model_config['layers'][layer]['activation_function'] = activation_function or np.random.choice(
-                    ACTIVATION_FUNCTIONS)
+                ACTIVATION_FUNCTIONS)
         else:
             model_config['num_of_rnn_layers'] += 1
 
@@ -334,17 +336,100 @@ def print_statistics(path, compare, fixed_values={}, metric='val_acc', file=None
             os.system('echo Slice - {compare} {key} > {file}'.format(compare=compare, key=str(key),
                                                                      file=os.path.join(os.pardir, file)))
             print('echo total nets: %d;  max: %f;   avg: %f; min: %f > %s' % (
-            size, best, avg, worst, os.path.join(os.pardir, file)))
+                size, best, avg, worst, os.path.join(os.pardir, file)))
 
 
-# gs = GridSearch2('F:\\Users\\Ron\\Shmekels\\Shmekel_Results\\default_project\\1563206162')
-# for exp in gs.iter_fixed({'num_of_layers': 1}):
+def create_identifiers_csv(pth, metric=('val_acc',)):
+    # create DataFrame labels
+    df = pd.DataFrame(columns=['name', 'num_of_layers', 'num_of_rnn_layers'])
+    for i in range(MAX_NUM_OF_LAYERS):
+        df['layer{num} type'.format(num=i + 1)] = ''
+        df['layer{num} size'.format(num=i + 1)] = ''
+        df['layer{num} activation_function'.format(num=i + 1)] = ''
+    for m in metric:
+        df['best epoch number by {metric}'.format(metric=m)] = ''
+        df['best epoch values by {metric}'.format(metric=m)] = ''
+    df['status'] = ''
+    # Creating a dictionary containing keys as in the DataFrame
+    milon = {}
+    for col in df:
+        milon[col] = None
+
+    # Looping over all config files in the directory and appending the model config to the DataFrame
+    config_list = os.listdir(pth)
+    config_list.sort()
+    for config_name in config_list:
+        if config_name.endswith('.json'):
+
+            with open(pth + '\\' + config_name, 'r') as f:
+                config = json.load(f)
+            milon['name'] = config['name']
+            milon['num_of_layers'] = config['model_config']['num_of_layers']
+            milon['num_of_rnn_layers'] = config['model_config']['num_of_rnn_layers']
+            for i, layer in enumerate(config['model_config']['layers']):
+                milon['layer{num} type'.format(num=i + 1)] = layer['type']
+                milon['layer{num} size'.format(num=i + 1)] = layer['size']
+                if 'activation_function' in layer:
+                    milon['layer{num} activation_function'.format(num=i + 1)] = layer['activation_function']
+            milon['status'] = 'waiting'
+            df = df.append(pd.Series(milon), ignore_index=True)
+            milon = dict.fromkeys(milon, None)
+
+    df.to_csv(pth + '\\grid_results', index=False)
+
+
+def insert_values_to_csv_cells(pth, find_by, row_tags, data):
+    '''
+
+    :param pth: csv path
+    :param find_by: a string of one of the csv column label
+    :param row_tags: list containing some value to unikly specify certain rows
+    :param data: dictionary containing keys as the csv file columns name
+    :return: modify a csv file
+    '''
+
+    # Loading a csv file to a dataframe and modify the wanted values
+    csv_data = pd.read_csv(pth)
+    for r in row_tags:
+        idx = csv_data.loc[csv_data[find_by] == r].index.values.astype(int)[0]
+        for key, val in data.items():
+            csv_data.at[idx, key] = val
+        csv_data.at[idx, 'status'] = 'Done'
+
+    # save the modified data frame to a new csv file, delete the old file and rename the new file
+    csv_data.to_csv(pth + '_temp', index=False)
+    os.remove(pth)
+    os.rename(pth + '_temp', pth)
+
+
+
+config_path = 'C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\1563996163'
+# gs = GridSearch2(config_path)
+# for exp in gs.iter_fixed({'num_of_layers': 5}):
 #     exp.run()
-
 # gs.plot_all_parameters_slices(figs_dir='C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\Figs')
+
+metric = ('val_acc',)
+if not os.path.exists(config_path + '\\grid_results'):
+    create_identifiers_csv(config_path)
+
+exp_results = pd.read_csv(config_path + '\\grid_results')
 # for exp in gs.iter_modulo(rem=2):
-#     exp.run()
+for exp_name in exp_results['name']:
+    config = load_config(config_path + '\\config_' + exp_name + '.json')
+    config.pop('identifiers')
+    exp = get_exp_from_config(config)
+    exp.run()
+    for m in metric:
+        num = exp.results.get_best_epoch_number()
+        val = exp.results.get_best_epoch()[m]
+        labels_value_dict = {'best epoch numebr by {metric}'.format(metric=m): num,
+             'best epoch values by {metric}'.format(metric=m): val}
+        idx = exp_results.loc[exp_results['name'] == exp._name].index.values.astype(int)[0]
+        if exp_results.at[idx, 'status']!='Done':
+            insert_values_to_csv_cells(config_path + '\\grid_results', find_by='name', row_tags=[exp._name], data=labels_value_dict)
+
 
 # main
-print_statistics('F:\\Users\\Ron\\Shmekels\\Shmekel_Results\\default_project', 'size',
-                 file='results.txt')
+# print_statistics('C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project', 'size',
+#                  file='results.txt')
