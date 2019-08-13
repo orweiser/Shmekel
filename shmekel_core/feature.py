@@ -1,5 +1,6 @@
 import numpy as np
 
+
 #
 # feature_axis = get_config()['feature_axis']
 # pattern = get_config()['pattern']
@@ -8,7 +9,7 @@ import numpy as np
 # default_feature_axis = -1
 
 
-def normalize(feature, normalization_type=None):
+def normalize(feature, normalization_type=None, time_sample_length=5):
     """
     different normalization methods.
 
@@ -28,7 +29,9 @@ def normalize(feature, normalization_type=None):
         std = feature.std(axis=0)
 
         return (feature - mean) / std
-
+    elif normalization_type == 'convolve':
+        return np.convolve(feature, np.ones((time_sample_length,)) / time_sample_length,
+                           mode='valid')
     else:
         raise RuntimeError()
 
@@ -39,8 +42,9 @@ class Feature:
         however, do take the time and effort to understand its structure and parameters
         to see how to implement a specific feature, go to the feature example at the end
     """
+
     def __init__(self, pattern=('open', 'high', 'low', 'close', 'volume'), feature_axis=-1, normalization_type=None,
-                 time_delay=0, num_features=1, is_numerical=True):
+                 time_delay=0, num_features=1, is_numerical=True, time_sample_length=5):
         """
         :param pattern: the pattern of the candle data inserted ('High', 'Low'...), as defined in the config file
         :type pattern: list
@@ -70,6 +74,7 @@ class Feature:
         self.is_numerical = is_numerical
         self.time_delay = time_delay
         self.num_features = num_features
+        self.time_sample_length = time_sample_length
 
     def _get_basic_feature(self, candles, key, keep_dims=False):
         """
@@ -130,7 +135,7 @@ class Feature:
             raise Exception('while using method "get_feature" temporal_delay can not be smaller than self.time_delay')
 
         feature = self._compute_feature(data)
-        feature = normalize(feature, normalization_type=normalization_type)
+        feature = normalize(feature, normalization_type=normalization_type, time_sample_length=self.time_sample_length)
 
         if self.is_numerical and len(feature.shape) > 1 and self._feature_axis:
             feature = np.swapaxes(feature, -1, self._feature_axis)
@@ -142,7 +147,8 @@ class Feature:
             feature = feature[temporal_delay:]
 
         if self.time_delay < 0:
-            neg_temporal_delay = neg_temporal_delay - abs(self.time_delay) * (neg_temporal_delay >= abs(self.time_delay))
+            neg_temporal_delay = neg_temporal_delay - abs(self.time_delay) * (
+                        neg_temporal_delay >= abs(self.time_delay))
 
         if neg_temporal_delay:
             feature = feature[neg_temporal_delay:]

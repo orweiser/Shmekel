@@ -10,7 +10,6 @@ from api.core import get_exp_from_config, load_config
 
 from api.core.grid_search import GridSearch2
 
-
 EXP_CONFIG = None  # todo
 MIN_SIZE = 3
 MAX_SIZE = 7
@@ -251,6 +250,7 @@ def random_jason_maker(main_dir):
                 data['train_dataset_config']['time_sample_length'] = 1
             if 'time_sample_length' in data['val_dataset_config']:
                 data['val_dataset_config']['time_sample_length'] = 1
+
         os.mkdir(dir_name)
         with open(file_name, 'w') as outfile:
             json.dump(data, outfile)
@@ -270,23 +270,25 @@ def grid_jason_maker(main_dir):
         file_name = os.path.join(main_dir, 'config_{name}.json'.format(name=model_name))
         figpath_train = os.path.join(dir_name, 'train_fig_{name}.png'.format(name=model_name))
         figpath_val = os.path.join(dir_name, 'val_fig_{name}.png'.format(name=model_name))
+        feature_list = (('High', dict(normalization_type='convolve')), ('Open', dict(normalization_type='convolve')),
+                        ('Low', dict(normalization_type='convolve')), ('Close', dict(normalization_type='convolve')),
+                        ('Volume', dict(normalization_type='convolve')))
 
         name = model_config.pop('name')
         data = json_format(model_config=model_config, name=name,
-                           train_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=False,
-                                                     figpath=figpath_train,
+                           train_dataset_config=dict(dataset='StocksDataset', val_mode=False,
                                                      time_sample_length=7),
-                           val_dataset_config=dict(dataset='SmoothStocksDataset', val_mode=True, figpath=figpath_val,
-                                                   time_sample_length=7),
+                           val_dataset_config=dict(dataset='StocksDataset', val_mode=True,
+                                                   time_sample_length=7)
                            )
 
         data['identifiers'] = get_config_identifiers(model_config)
 
-        if model_config['num_of_rnn_layers'] == 0:
-            if 'time_sample_length' in data['train_dataset_config']:
-                data['train_dataset_config']['time_sample_length'] = 1
-            if 'time_sample_length' in data['val_dataset_config']:
-                data['val_dataset_config']['time_sample_length'] = 1
+        # if model_config['num_of_rnn_layers'] == 0:
+        #     if 'time_sample_length' in data['train_dataset_config']:
+        #         data['train_dataset_config']['time_sample_length'] = 1
+        #     if 'time_sample_length' in data['val_dataset_config']:
+        #         data['val_dataset_config']['time_sample_length'] = 1
 
         with open(file_name, 'w') as outfile:
             json.dump(data, outfile)
@@ -360,8 +362,7 @@ def create_identifiers_csv(pth, metric=('val_acc',)):
     config_list.sort()
     for config_name in config_list:
         if config_name.endswith('.json'):
-
-            with open(pth + '\\' + config_name, 'r') as f:
+            with open(os.path.join(pth, config_name), 'r') as f:
                 config = json.load(f)
             milon['name'] = config['name']
             milon['num_of_layers'] = config['model_config']['num_of_layers']
@@ -375,7 +376,8 @@ def create_identifiers_csv(pth, metric=('val_acc',)):
             df = df.append(pd.Series(milon), ignore_index=True)
             milon = dict.fromkeys(milon, None)
 
-    df.to_csv(pth + '\\grid_results', index=False)
+    df.to_csv(os.path.join(pth, 'grid_results'), index=False)
+    print("DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 def insert_values_to_csv_cells(pth, find_by, row_tags, data):
@@ -402,21 +404,23 @@ def insert_values_to_csv_cells(pth, find_by, row_tags, data):
     os.rename(pth + '_temp', pth)
 
 
+config_path = os.path.join(os.pardir, 'Shmekel_Results', 'default_project', 'configs')
+# grid_jason_maker(config_path)  # -- use this to create the configs
 
-config_path = 'C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\1563996163'
 # gs = GridSearch2(config_path)
 # for exp in gs.iter_fixed({'num_of_layers': 5}):
 #     exp.run()
 # gs.plot_all_parameters_slices(figs_dir='C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\Figs')
 
 metric = ('val_acc',)
-if not os.path.exists(config_path + '\\grid_results'):
+grid_results_path = os.path.join(config_path, 'grid_results')
+if not os.path.exists(grid_results_path):
     create_identifiers_csv(config_path)
 
-exp_results = pd.read_csv(config_path + '\\grid_results')
+exp_results = pd.read_csv(grid_results_path)
 # for exp in gs.iter_modulo(rem=2):
 for exp_name in exp_results['name']:
-    config = load_config(config_path + '\\config_' + exp_name + '.json')
+    config = load_config(os.path.join(config_path, 'config_' + exp_name + '.json'))
     config.pop('identifiers')
     exp = get_exp_from_config(config)
     exp.run()
@@ -424,11 +428,10 @@ for exp_name in exp_results['name']:
         num = exp.results.get_best_epoch_number()
         val = exp.results.get_best_epoch()[m]
         labels_value_dict = {'best epoch numebr by {metric}'.format(metric=m): num,
-             'best epoch values by {metric}'.format(metric=m): val}
+                             'best epoch values by {metric}'.format(metric=m): val}
         idx = exp_results.loc[exp_results['name'] == exp._name].index.values.astype(int)[0]
-        if exp_results.at[idx, 'status']!='Done':
-            insert_values_to_csv_cells(config_path + '\\grid_results', find_by='name', row_tags=[exp._name], data=labels_value_dict)
-
+        if exp_results.at[idx, 'status'] != 'Done':
+            insert_values_to_csv_cells(grid_results_path, find_by='name', row_tags=[exp._name], data=labels_value_dict)
 
 # main
 # print_statistics('C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project', 'size',
