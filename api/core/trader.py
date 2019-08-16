@@ -1,6 +1,7 @@
 import os
 from itertools import product
 import numpy as np
+from Utils.logger import logger
 
 
 class Trader:
@@ -49,7 +50,7 @@ class Trader:
         if redirect_to:
             cmd += '>> %s' % redirect_to
 
-        print('Running', cmd)
+        logger.info('Running', cmd)
         os.system(cmd)
 
     def iter_configurations(self, configurable_params=None, resolution=None):
