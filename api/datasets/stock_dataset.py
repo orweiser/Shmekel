@@ -147,7 +147,23 @@ class StocksDataset(Dataset):
 
         return self._num_output_features
 
+    def get_stock_possible_indices(self, s):
+        # todo: make sure to only make this calc once per stock
+        if entire_stock:
+            return [i for i in range(len(s) - self.time_sample_length + 1)]
+
+        else:
+            years = [(d[0], i) for i, d in enumerate(s.not_numerical_feature_list[0]) if d[0] in val_years]
+            divided = [[i for y, i in years if y == year] for year in val_years]
+            devided = [l[:(len(l) - self.time_sample_length + 1)] for l in divided]
+
+            out = []
+            for d in devided:
+                out += d
+            return out
+
     def stock_effective_len(self, s):
+        # todo: update based on get_stock_possible_indices
         return len(s) - self.time_sample_length + 1
 
     def __getitem__(self, index) -> dict:
@@ -157,6 +173,9 @@ class StocksDataset(Dataset):
             if index < self.stock_effective_len(stock):
                 break
             index = index - self.stock_effective_len(stock)
+
+        # todo: somthing like:
+        #  index = self.get_stock_possible_indices[index]
 
         inputs = copy(stock.feature_matrix[index: index + self.time_sample_length, :self.num_input_features])
         outputs = copy(stock.feature_matrix[index, self.num_input_features:])
