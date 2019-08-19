@@ -1,6 +1,7 @@
 from ..models import get as get_model
 from ..datasets import get as get_dataset
 from ..losses import get as get_loss
+from ..metrics import get as get_metrics
 from .results import Results
 from .trainer import Trainer
 from .backup_handler import get_handler
@@ -14,7 +15,7 @@ class Experiment:
     def __init__(self, name='default_exp',
                  model_config=None, loss_config=None,
                  train_dataset_config=None, val_dataset_config=None,
-                 train_config=None, backup_config=None):
+                 train_config=None, backup_config=None, metrics_list=None):
 
         self.model_config = model_config or {'model': 'LSTM'}
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
@@ -22,6 +23,7 @@ class Experiment:
         self.val_dataset_config = val_dataset_config or {'dataset': 'StocksDataset', 'val_mode': True}
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
+        self.metrics_list = metrics_list
 
         # todo: have 'project' be a field of experiment instead of backup_handler
         # todo: load existing config by experiment name?
@@ -37,6 +39,7 @@ class Experiment:
         self._loss = None
         self._trainer = None
         self._backup_handler = None
+        self._metrics_list = None
 
         # properties declarations
         self._history = None
@@ -243,6 +246,7 @@ class Experiment:
         _ = self.val_dataset
         _ = self.model
         _ = self.backup_handler
+        _ = self.metrics_list
 
     @property
     def config(self):
@@ -253,14 +257,17 @@ class Experiment:
                     train_dataset_config=self.train_dataset_config,
                     val_dataset_config=self.val_dataset_config,
                     train_config=self.train_config,
-                    backup_config=self.backup_config)
+                    backup_config=self.backup_config,
+                    metrics_list=self.metrics_list)
 
     """ Extra properties: """
 
     @property
-    def metrics(self) -> list:
-        # todo: implement functionality
-        return ['acc']
+    def metrics(self):
+        if not self._metrics_list:
+            self._metrics_list = get_metrics(self.metrics_list)
+
+        return self._metrics_list
 
     @property
     def history(self) -> dict:

@@ -156,7 +156,7 @@ class BaseBackupHandler(Callback):
 
     def last_history_epoch(self):
         """ get the latest epoch number with saved history. """
-        for i in range(self.experiment.train_config['epochs'], 0, -1):
+        for i in range(int(self.experiment.train_config['epochs']), 0, -1):
             if os.path.exists(self.get_history_path(i)):
                 return i
 

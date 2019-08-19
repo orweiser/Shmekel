@@ -34,7 +34,7 @@ class ClassificationReinforce(Loss):
         epsilon = K.epsilon()
 
         win_prob = K.sum(y_true * y_pred, axis=-1)
-        additional_probs = {ind: y_pred[:, ind] for ind in self.additional_rewards.keys()}
+        additional_probs = {ind: y_pred[:, int(ind)] for ind in self.additional_rewards.keys()}
 
         lose_prob = 1 - (win_prob + sum([v for v in additional_probs.values()]))
 
@@ -43,9 +43,9 @@ class ClassificationReinforce(Loss):
         else:
             act = lambda prob: prob
 
-        reward = self.win_reward * act(win_prob) + \
-                 self.lose_reward * act(lose_prob) + \
-                 sum([reward * act(additional_probs[ind]) for ind, reward in self.additional_rewards.items()])
+        reward = float(self.win_reward) * act(win_prob) + \
+                 float(self.lose_reward) * act(lose_prob) + \
+                 sum([additional_reward * act(additional_probs[str(ind)]) for ind, additional_reward in self.additional_rewards.items()])
 
         reward = -reward
         return reward

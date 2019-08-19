@@ -73,7 +73,7 @@ class Results:
 
     def get_single_epoch(self, epoch=-1):
         num_epochs = self.num_epochs
-        if epoch >= num_epochs:
+        if epoch > num_epochs:
             raise ValueError("max epoch is", num_epochs, "got", epoch)
         if epoch < 0:
             epoch = num_epochs + epoch
