@@ -13,7 +13,7 @@ class Trainer:
                  callbacks=None, include_experiment_callbacks=True, randomize=True,
                  steps_per_epoch=None, validation_steps=None, **params):
 
-        params['epochs'] = epochs
+        params['epochs'] = int(epochs)
         self.config = {**dict(optimizer=optimizer, batch_size=batch_size, randomize=randomize,
                               train_augmentations=train_augmentations, val_augmentations=val_augmentations,
                               callbacks=callbacks, include_experiment_callbacks=include_experiment_callbacks,
