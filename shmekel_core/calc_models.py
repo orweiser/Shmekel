@@ -1,5 +1,6 @@
 from copy import deepcopy as copy
 import numpy as np
+from dimentionality_reduction import *
 
 
 class Stock:
@@ -7,7 +8,7 @@ class Stock:
     this class represents a stock with it's features
     it holds the data and the computations
     """
-    def __init__(self, stock_tckt, data, feature_axis=None, feature_list=None):
+    def __init__(self, stock_tckt, data, feature_axis=None, feature_list=None, linear_dim_reduction=None):
         """
         :param stock_tckt: just the name of the stock
         :param data: optional. if not given, it loads data automatically
@@ -25,9 +26,11 @@ class Stock:
         self._not_numerical_feature_list = None
         self._temporal_delays = None
         self._temporal_size = None
+        self._linear_dim_reduction = linear_dim_reduction
 
     def set_feature_list(self, feature_list):
-        self.__init__(stock_tckt=self.stock_tckt, data=self.data, feature_list=feature_list)
+        self.__init__(stock_tckt=self.stock_tckt, data=self.data, feature_axis=self._feature_axis,
+                      feature_list=feature_list, linear_dim_reduction=self._linear_dim_reduction)
 
     def __get_data(self):
         """
@@ -79,6 +82,8 @@ class Stock:
                     f_list[i] = f
 
             self._feature_matrix = np.concatenate(f_list, axis=self._feature_axis)
+            if self._linear_dim_reduction is not None:
+                self._feature_matrix = self._linear_dim_reduction(self._feature_matrix)
         return self._feature_matrix
 
     def __get_features(self, numerical=True):

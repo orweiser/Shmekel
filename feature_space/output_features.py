@@ -1,6 +1,6 @@
 import numpy as np
 from shmekel_core import Feature
-from Utils.generic_utils import one_hot
+from utils.generic_utils import one_hot
 
 
 """

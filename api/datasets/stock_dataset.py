@@ -1,11 +1,11 @@
 from ..core.dataset import Dataset
-from Utils.data import DataReader
+from utils.data import DataReader
 from shmekel_core.calc_models import Stock
 from feature_space import get_feature
 from copy import deepcopy as copy
 import os
 from tqdm import tqdm
-from Utils.logger import logger
+from utils.logger import logger
 
 
 N_train = 300
