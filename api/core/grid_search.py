@@ -17,7 +17,7 @@ class GridSearch:
                     exp.run()
         2. to check status:
                 for exp in grid_search:
-                    exp.run()
+                    exp.status
         3. to get the best epoch out of every experiment:
                 best_epochs = []
                 for exp in grid_search:

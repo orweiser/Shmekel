@@ -2,7 +2,7 @@
     "backup_config": {
         "handler": "DefaultLocal",
         "history_backup_delta": 1,
-        "project": "Test_Augmentation_ConcatExtraNoiseSamples",
+        "project": "__ProjectName__",
         "save_history_after_training": true,
         "save_snapshot_after_training": true,
         "snapshot_backup_delta": 1
@@ -15,7 +15,7 @@
         "batch_norm_after_activation": true,
         "batch_norm_before_output": false,
         "batch_normalization": false,
-        "depth": 1,
+        "depth": __Depth__,
         "input_shape": [
             28,
             28
@@ -29,19 +29,19 @@
         "skip_connections": false,
         "width": 32
     },
-    "name": "third_test",
+    "name": "__Name__",
     "train_config": {
         "train_augmentations": [["ConcatExtraNoiseSamples", {
             "std": 1,
-            "fraction_to_added": 0.8
+            "fraction_to_added": __FracToAdd__
         }]],
         "val_augmentations": [["ConcatExtraNoiseSamples", {
             "std": 1,
-            "fraction_to_added": 0.5
+            "fraction_to_added": __FracToAdd__
         }]],
         "batch_size": 1024,
         "callbacks": null,
-        "epochs": 50,
+        "epochs": __Epochs__,
         "include_experiment_callbacks": true,
         "optimizer": "adam",
         "randomize": true,
@@ -59,3 +59,19 @@
         "val_mode": true
     }
 }
+__OVERRIDES__
+__Depth__: 1, 2
+__BNBool__: false
+__OutputShape__: [2]
+__SkipBool__: false
+__Width__: 64
+__ProjectName__: "test_concat_noise"
+__Epochs__: 50, 60, 100
+__TrainAugmentations__: null
+__ValAugmentations__: null
+__FeatureList__: null
+__OutputFeatureList__: null
+__TimeSampleLength__: 5
+__FracToAdd__: 0.2, 0.5, 0.8
+
+__Name__: lambda depth_%--epoch_%--FracToAdd_% @__Depth__, __Epochs__, __FracToAdd__

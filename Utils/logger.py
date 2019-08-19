@@ -15,6 +15,8 @@ class ShmekelLogger:
 
         formatter = logging.Formatter(FORMAT)
 
+        self.stream_handler = None
+
         if log_level:
             file_handler = logging.FileHandler(os.path.join('logs', '%s.log' % name))
             file_handler.setLevel(getattr(logging, log_level.upper()))
@@ -22,10 +24,10 @@ class ShmekelLogger:
             logger.addHandler(file_handler)
 
         if stream_level:
-            stream_handler = logging.StreamHandler()
-            stream_handler.setLevel(getattr(logging, stream_level.upper()))
-            stream_handler.setFormatter(formatter)
-            logger.addHandler(stream_handler)
+            self.stream_handler = logging.StreamHandler()
+            self.stream_handler.setLevel(getattr(logging, stream_level.upper()))
+            self.stream_handler.setFormatter(formatter)
+            logger.addHandler(self.stream_handler)
 
         self.logger = logger
         self.default_decorator_log_level = default_decorator_log_level
@@ -76,6 +78,9 @@ class ShmekelLogger:
     def critical_dec(self, f): return self._decorator(f, log_level='critical')
 
     def elaborate_dec(self, f): return self._decorator(f, log_level='critical', elaborate=True)
+
+    def set_stream_level(self, stream_level):
+        self.stream_handler.setLevel(getattr(logging, stream_level.upper()))
 
 
 logger = ShmekelLogger()

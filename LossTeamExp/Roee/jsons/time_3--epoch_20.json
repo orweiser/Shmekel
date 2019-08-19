@@ -2,7 +2,7 @@
     "backup_config": {
         "handler": "DefaultLocal",
         "history_backup_delta": 1,
-        "project": "Test_Augmentation_ConcatExtraNoiseSamples",
+        "project": "test_concat_noise",
         "save_history_after_training": true,
         "save_snapshot_after_training": true,
         "snapshot_backup_delta": 1
@@ -29,11 +29,11 @@
         "skip_connections": false,
         "width": 32
     },
-    "name": "third_test",
+    "name": "time_3--epoch_20",
     "train_config": {
         "train_augmentations": [["ConcatExtraNoiseSamples", {
             "std": 1,
-            "fraction_to_added": 0.8
+            "fraction_to_added": 0.2
         }]],
         "val_augmentations": [["ConcatExtraNoiseSamples", {
             "std": 1,
@@ -41,7 +41,7 @@
         }]],
         "batch_size": 1024,
         "callbacks": null,
-        "epochs": 50,
+        "epochs": 20,
         "include_experiment_callbacks": true,
         "optimizer": "adam",
         "randomize": true,
@@ -49,8 +49,12 @@
         "validation_steps": null
     },
     "train_dataset_config": {
-        "dataset": "MNIST",
-        "num_classes": 10,
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 3,
         "val_mode": false
     },
     "val_dataset_config": {
