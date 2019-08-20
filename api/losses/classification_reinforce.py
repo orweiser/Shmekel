@@ -45,7 +45,7 @@ class ClassificationReinforce(Loss):
 
         reward = float(self.win_reward) * act(win_prob) + \
                  float(self.lose_reward) * act(lose_prob) + \
-                 sum([additional_reward * act(additional_probs[str(ind)]) for ind, additional_reward in self.additional_rewards.items()])
+                 sum([float(additional_reward) * act(additional_probs[str(ind)]) for ind, additional_reward in self.additional_rewards.items()])
 
         reward = -reward
         return reward
