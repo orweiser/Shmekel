@@ -1,6 +1,6 @@
 from .fully_connected import FullyConnected
 from .lstm import LSTM
-from utils.logger import logger
+from Utils.logger import logger
 
 
 @logger.info_dec

@@ -1,6 +1,6 @@
 from api.utils.augmentations import AugmentationList
 from api.utils.data_utils import batch_generator
-from utils.logger import logger
+from Utils.logger import logger
 
 
 """ WELCOME TO THE TRAINER!!! """

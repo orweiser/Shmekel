@@ -1,6 +1,6 @@
 from .mnist import MNIST
 from .stock_dataset import StocksDataset
-from utils.logger import logger
+from Utils.logger import logger
 
 
 @logger.info_dec

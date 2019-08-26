@@ -1,5 +1,5 @@
 from copy import deepcopy as copy
-from utils.logger import logger
+from Utils.logger import logger
 
 
 class Loss:

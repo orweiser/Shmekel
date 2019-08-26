@@ -4,7 +4,7 @@ from .model import Model
 from .trainer import Trainer
 from .experiment import Experiment
 from .backup_handler import get_handler
-from utils.logger import logger
+from Utils.logger import logger
 
 
 def get_exp_from_config(config: dict):

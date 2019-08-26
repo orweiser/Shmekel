@@ -1,5 +1,5 @@
 import numpy as np
-from utils.logger import logger
+from Utils.logger import logger
 
 
 class InvalidShape(Exception): pass

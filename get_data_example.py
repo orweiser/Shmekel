@@ -1,7 +1,7 @@
-from utils.data import DataReader
+from Utils.data import DataReader
 from shmekel_core.calc_models import Stock
 from feature_space.basic_features import *
-from utils.shmekel_config import *
+from Utils.shmekel_config import *
 from dimentionality_reduction import LinearDimReduction
 import numpy as np
 

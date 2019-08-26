@@ -1,6 +1,6 @@
 from .keras_loss import KerasLoss
 from .classification_reinforce import ClassificationReinforce
-from utils.logger import logger
+from Utils.logger import logger
 
 
 @logger.info_dec
