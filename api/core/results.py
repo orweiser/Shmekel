@@ -18,7 +18,7 @@ class Results:
 
         fig = plt.figure()
         for metric in metrics:
-            plt.plot(self[metric])
+            plt.plot(range(1, len(self[metric]) + 1), self[metric])
         plt.legend(metrics)
         plt.show()
         return fig

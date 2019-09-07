@@ -64,8 +64,8 @@
 }
 __OVERRIDES__
 
-__Epochs__: 10
-__LoseReward__: -2, -1, 0
-__AdditionalReward__: 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
+__Epochs__: 20
+__LoseReward__: -1.1, -1, -0.9
+__AdditionalReward__: 0, 0.1, 0.2, 0.3, 0.4, 0.5
 __ProjectName__: "stocks_with_uncertainty_2"
 __Name__: lambda lr_%--ar_% @ __LoseReward__, __AdditionalReward__
