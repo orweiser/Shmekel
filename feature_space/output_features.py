@@ -10,19 +10,19 @@ NEGATIVE TIME DELAY
 
 class Rise(Feature):
     """
-        indicates a rise in the NEXT day price ('Close' - 'High')
+        indicates a rise in the NEXT day price ('Close' - 'Open')
 
         "output_type": this feature supports various output types:
-            - 'regression': return the difference 'Close' - 'High'
+            - 'regression': return the difference 'Close' - 'Open'
             - 'binary':
-                    if 'close' > 'high':
+                    if 'close' > 'open':
                         return 1
                     else:
                         return 0
             - 'ternary':
-                if 'Close' - 'High' < "threshold":
+                if 'Close' - 'Open' < "threshold":
                     return 0
-                elif 'Close' > 'High':
+                elif 'Close' > 'Open':
                     return 1
                 else:
                     return -1

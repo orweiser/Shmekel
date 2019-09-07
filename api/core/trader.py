@@ -7,6 +7,14 @@ from Utils.logger import logger
 class Trader:
     def __init__(self, exe_path):
         self.exe_path = exe_path
+        self.trained_configuration = None
+
+    @property
+    def is_trained(self):
+        return self.trained_configuration is not None
+
+    def set_trained(self, configuration):
+        self.trained_configuration = configuration
 
     @property
     def configurable_params(self) -> dict:
@@ -38,7 +46,7 @@ class Trader:
         """
         raise NotImplementedError
 
-    def single_run(self, csv_input, configuration=None, redirect_to=None):
+    def single_run(self, csv_input, configuration, redirect_to=None):
         cmd = '%s %s ' % (self.exe_path, csv_input)
 
         for key, val in configuration:
