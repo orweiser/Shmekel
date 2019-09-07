@@ -39,7 +39,7 @@ class Experiment:
         self._loss = None
         self._trainer = None
         self._backup_handler = None
-        self._metrics_list = None
+        self._metrics = None
 
         # properties declarations
         self._history = None
@@ -246,7 +246,7 @@ class Experiment:
         _ = self.val_dataset
         _ = self.model
         _ = self.backup_handler
-        _ = self.metrics_list
+        _ = self.metrics
 
     @property
     def config(self):
@@ -264,10 +264,10 @@ class Experiment:
 
     @property
     def metrics(self):
-        if not self._metrics_list:
-            self._metrics_list = get_metrics(self.metrics_list)
+        if not self._metrics:
+            self._metrics = get_metrics(self.metrics_list)
 
-        return self._metrics_list
+        return self._metrics
 
     @property
     def history(self) -> dict:

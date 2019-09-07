@@ -101,7 +101,7 @@ class StocksDataset(Dataset):
     # TODO: why is this not __init__?
     def init(self, config_path=None, time_sample_length=5,
              stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None,
-             split_by_year=True):
+             split_by_year=False):
 
         if config_path is None:
             config_path = 'Shmekel_config.txt'

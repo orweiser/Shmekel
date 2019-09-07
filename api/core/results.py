@@ -30,7 +30,10 @@ class Results:
         assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
 
         metric_history = np.array(self[metric])
-        return self[metric_history.argmax()+1]
+        try:
+            return self[np.nanargmax(metric_history) + 1]
+        except ValueError:
+            return self[1]
 
     def summary(self):
         print(self)
