@@ -60,7 +60,7 @@ metrics_mapping = {
 @logger.info_dec
 def get(requested_metrics, **kwargs):
     metrics = ['acc', total_sharpness]
-    for metric in requested_metrics:
+    for metric in requested_metrics or []:
         if metric in metrics_mapping:
             metrics.append(metrics_mapping[metric])
         else:
