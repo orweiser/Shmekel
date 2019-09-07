@@ -66,7 +66,7 @@ __OutputShape__: [2]
 __SkipBool__: false
 __Width__: 64
 __ProjectName__: "test_concat_noise"
-__Epochs__: 50, 60, 100
+__Epochs__: 50, 60
 __TrainAugmentations__: null
 __ValAugmentations__: null
 __FeatureList__: null
