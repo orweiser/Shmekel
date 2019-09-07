@@ -79,6 +79,9 @@ DEFAULT_FULL_SPLIT_STATISTICS = {
 DEFAULT_INPUT_FEATURES = ('High', 'Open', 'Low', 'Close', 'Volume')
 DEFAULT_OUTPUT_FEATURES = (('rise', dict(output_type='categorical', k_next_candle=1)),)
 
+DEFAULT_TRAIN_YEARS = []
+DEFAULT_VAL_YEARS = []
+
 
 class StocksDataset(Dataset):
     time_sample_length: int
@@ -92,9 +95,13 @@ class StocksDataset(Dataset):
     _non_numerical_features: (list, tuple)
     _num_input_features: int
     _num_output_features: int
+    split_by_year: bool
+    _relevant_indices: dict
 
+    # TODO: why is this not __init__?
     def init(self, config_path=None, time_sample_length=5,
-             stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None):
+             stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None,
+             split_by_year=True):
 
         if config_path is None:
             config_path = 'Shmekel_config.txt'
@@ -107,6 +114,8 @@ class StocksDataset(Dataset):
         self._val_mode = val_mode
         self._stocks_list = None
         self.config_path = config_path
+        self.split_by_year = split_by_year
+        self._relevant_indices = {}
 
         self.output_features = output_feature_list or DEFAULT_OUTPUT_FEATURES
         self.input_features = feature_list or DEFAULT_INPUT_FEATURES
@@ -149,33 +158,36 @@ class StocksDataset(Dataset):
 
     def get_stock_possible_indices(self, s):
         # todo: make sure to only make this calc once per stock
-        if entire_stock:
+        if not self.split_by_year:
             return [i for i in range(len(s) - self.time_sample_length + 1)]
 
-        else:
-            years = [(d[0], i) for i, d in enumerate(s.not_numerical_feature_list[0]) if d[0] in val_years]
-            divided = [[i for y, i in years if y == year] for year in val_years]
-            devided = [l[:(len(l) - self.time_sample_length + 1)] for l in divided]
-
-            out = []
-            for d in devided:
-                out += d
-            return out
+        set_year_list = DEFAULT_VAL_YEARS if self._val_mode else DEFAULT_TRAIN_YEARS
+        years = [(i, d[0]) for i, d in enumerate(s.not_numerical_feature_list[0]) if d[0] in set_year_list]
+        divided_years_indices = [[i for i, year in years if year == set_year] for set_year in set_year_list]
+        indices_groups = [year_indices[:-self.time_sample_length + 1]
+                          if (len(year_indices) - self.time_sample_length + 1) > 0
+                          else []
+                          for year_indices in divided_years_indices]
+        return sum(indices_groups, [])
 
     def stock_effective_len(self, s):
-        # todo: update based on get_stock_possible_indices
-        return len(s) - self.time_sample_length + 1
+        if s.stock_tckt not in self._relevant_indices:
+            self._relevant_indices[s.stock_tckt] = self.get_stock_possible_indices(s)
 
-    def __getitem__(self, index) -> dict:
-        o_index = index
+        return len(self._relevant_indices[s.stock_tckt])
+
+    def stock_and_local_index_from_global_index(self, index):
         stock = None
         for stock in self.stocks_list:
             if index < self.stock_effective_len(stock):
                 break
             index = index - self.stock_effective_len(stock)
 
-        # todo: somthing like:
-        #  index = self.get_stock_possible_indices[index]
+        return self._relevant_indices[stock.stock_tckt][index], stock
+
+    def __getitem__(self, index) -> dict:
+        o_index = index
+        index, stock = self.stock_and_local_index_from_global_index(index)
 
         inputs = copy(stock.feature_matrix[index: index + self.time_sample_length, :self.num_input_features])
         outputs = copy(stock.feature_matrix[index, self.num_input_features:])
