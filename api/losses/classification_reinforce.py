@@ -115,16 +115,36 @@ class ClassificationReinforceMetrics(Callback):
 
         uncertain_pred_indices = y_pred.argmax(axis=-1) == y_pred.shape[-1] - 1
         certain_pred_indices = np.logical_not(uncertain_pred_indices)
-        certain_pred = y_pred[certain_pred_indices]
-        certain_true = y_true[certain_pred_indices]
-        uncertain_pred = y_pred[uncertain_pred_indices]
 
-        metrics['total_sharpness'] = y_pred.max(axis=-1)
-        metrics['certainty_sharpness'] = certain_pred.max(axis=-1)
-        metrics['uncertainty_sharpness'] = uncertain_pred.max(axis=-1)
-        metrics['certain_predictions_acc'] = certain_true.argmax(axis=-1) == certain_pred.argmax(axis=-1)
-        metrics['uncertain_fraction'] = uncertain_pred_indices
+        metrics['sharpness'] = y_pred.max(axis=-1)
         metrics['acc'] = y_true.argmax(axis=-1) == y_pred.argmax(axis=-1)
+        
+        if not any(uncertain_pred_indices):
+            # always certain
+
+            metrics['certainty_sharpness'] = metrics['sharpness']
+            metrics['certain_predictions_acc'] = metrics['acc']
+            metrics['uncertainty_sharpness'] = 0
+            metrics['uncertain_fraction'] = 0
+            metrics['uncertain_2nd_acc'] = 0
+
+        else:
+            metrics['uncertain_2nd_acc'] = \
+                y_pred[uncertain_pred_indices][:, :-1].argmax(axis=-1) == y_true[uncertain_pred_indices].argmax(axis=-1)
+
+            if not any(certain_pred_indices):
+                # always uncertain
+
+                metrics['certainty_sharpness'] = 0
+                metrics['certain_predictions_acc'] = 0
+                metrics['uncertainty_sharpness'] = metrics['sharpness']
+                metrics['uncertain_fraction'] = 1
+
+            else:
+                metrics['certainty_sharpness'] = metrics['sharpness'][certain_pred_indices]
+                metrics['uncertainty_sharpness'] = metrics['sharpness'][uncertain_pred_indices]
+                metrics['certain_predictions_acc'] = metrics['acc'][certain_pred_indices]
+                metrics['uncertain_fraction'] = uncertain_pred_indices
 
         return {'val_' + metric_name: np.mean(value) for metric_name, value in metrics.items()}
 
