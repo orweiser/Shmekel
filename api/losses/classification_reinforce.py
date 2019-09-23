@@ -65,14 +65,21 @@ class ClassificationReinforceMetrics(Callback):
         # 4. log the metrics to history somehow
         pass
 
-    def compute_metrics(self, y_true, y_pred):
-        """
-        y shape: N [num samples] X 3 [rise, fall, don't know]
+    def compute_metrics(self, y_true: np.ndarray, y_pred: np.ndarray):
 
-        :type y_true: np.ndarray
-        :type y_pred: np.ndarray
-        :rtype: dict {
-                        metric: float
-                    }
-        """
-        raise NotImplementedError()
+        metrics = {}
+
+        uncertain_pred_indices = y_pred.argmax(axis=-1) == y_pred.shape[-1] - 1
+        certain_pred_indices = np.logical_not(uncertain_pred_indices)
+        certain_pred = y_pred[certain_pred_indices]
+        certain_true = y_true[certain_pred_indices]
+        uncertain_pred = y_pred[uncertain_pred_indices]
+
+        metrics['total_sharpness'] = y_pred.max(axis=-1)
+        metrics['certainty_sharpness'] = certain_pred.max(axis=-1)
+        metrics['uncertainty_sharpness'] = uncertain_pred.max(axis=-1)
+        metrics['certain_predictions_acc'] = certain_true.argmax(axis=-1) == certain_pred.argmax(axis=-1)
+        metrics['uncertain_fraction'] = uncertain_pred_indices
+        metrics['acc'] = y_true.argmax(axis=-1) == y_pred.argmax(axis=-1)
+
+        return {'val_' + metric_name: np.mean(value) for metric_name, value in metrics.items()}
