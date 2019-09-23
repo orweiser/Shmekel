@@ -42,6 +42,9 @@ class Trainer:
         # self._augmentations = {'train': None, 'val': None}
         self._augmentations = None
 
+        self.train_gen = None
+        self.val_gen = None
+
     @property
     def augmentations(self):
         if self._augmentations is None:
@@ -75,18 +78,18 @@ class Trainer:
         # todo: a compile method, either in Model or in Experiment
         model.compile(self.optimizer, loss, metrics, loss_weights=loss.loss_weights)
 
-        train_gen = batch_generator(train_dataset, batch_size=batch_size, randomize=self.randomize,
-                                    augmentations=self.augmentations['train'])
-        val_gen = batch_generator(val_dataset, batch_size=batch_size, randomize=self.randomize,
-                                  augmentations=self.augmentations['val'])
+        self.train_gen = batch_generator(train_dataset, batch_size=batch_size, randomize=self.randomize,
+                                         augmentations=self.augmentations['train'])
+        self.val_gen = batch_generator(val_dataset, batch_size=batch_size, randomize=self.randomize,
+                                       augmentations=self.augmentations['val'])
 
-        steps_per_epoch = self.steps_per_epoch or (len(train_dataset) // batch_size)
-        validation_steps = self.validation_steps or (len(val_dataset) // batch_size)
+        self.steps_per_epoch = self.steps_per_epoch or (len(train_dataset) // batch_size)
+        self.validation_steps = self.validation_steps or (len(val_dataset) // batch_size)
 
         logger.info('Enter fitting loop')
-        self._history = model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch,
+        self._history = model.fit_generator(self.train_gen, steps_per_epoch=self.steps_per_epoch,
                                             callbacks=self.callbacks,
-                                            validation_data=val_gen, validation_steps=validation_steps,
+                                            validation_data=self.val_gen, validation_steps=self.validation_steps,
                                             **self.params)
         logger.info('Exit fitting loop')
 

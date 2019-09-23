@@ -202,7 +202,7 @@ class Experiment:
     @property
     def loss(self):
         if not self._loss:
-            self._loss = get_loss(**self.loss_config)
+            self._loss = get_loss(experiment=self, **self.loss_config)
             self.loss_config = self._loss.config
 
         return self._loss
