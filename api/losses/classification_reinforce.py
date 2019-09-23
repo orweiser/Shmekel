@@ -108,6 +108,9 @@ class ClassificationReinforceMetrics(Callback):
         """ 5. erase the predict function from model """
         self.experiment.model.predict_function = None
 
+        """ 6. print metrics """
+        self.print_metrics(metrics_dict)
+
     @staticmethod
     def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray):
 
@@ -159,3 +162,10 @@ class ClassificationReinforceMetrics(Callback):
         predict_function = self.experiment.model.predict_function
 
         return predict_function([inputs])[0]
+
+    @staticmethod
+    def print_metrics(metrics: dict):
+        print(' ')
+        for key, val in metrics.items():
+            print(('%s: ' % key) + ('.' * (30 - len(key))) + ('%0.3f' % float(val)))
+        print(' ')
