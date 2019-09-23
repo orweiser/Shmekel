@@ -1,5 +1,7 @@
 from ..core.loss import Loss
 import keras.backend as K
+from keras.callbacks import Callback
+import numpy as np
 
 
 class ClassificationReinforce(Loss):
@@ -49,3 +51,28 @@ class ClassificationReinforce(Loss):
 
         reward = -reward
         return reward
+
+
+class ClassificationReinforceMetrics(Callback):
+    def __init__(self, experiment):
+        super(ClassificationReinforceMetrics, self).__init__()
+        self.experiment = experiment
+
+    def on_epoch_end(self, epoch, logs=None):
+        # 1. get validation dataset
+        # 2. predict on val
+        # 3. compute metrics
+        # 4. log the metrics to history somehow
+        pass
+
+    def compute_metrics(self, y_true, y_pred):
+        """
+        y shape: N [num samples] X 3 [rise, fall, don't know]
+
+        :type y_true: np.ndarray
+        :type y_pred: np.ndarray
+        :rtype: dict {
+                        metric: float
+                    }
+        """
+        raise NotImplementedError()
