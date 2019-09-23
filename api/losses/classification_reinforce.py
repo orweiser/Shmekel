@@ -52,6 +52,10 @@ class ClassificationReinforce(Loss):
         reward = -reward
         return reward
 
+    @property
+    def callbacks(self):
+        return [ClassificationReinforceMetrics(self.experiment)]
+
 
 class ClassificationReinforceMetrics(Callback):
     def __init__(self, experiment):
@@ -124,4 +128,4 @@ class ClassificationReinforceMetrics(Callback):
         self.experiment.model._make_predict_function()
         predict_function = self.experiment.model.predict_function
 
-        return predict_function(inputs)
+        return predict_function([inputs])[0]
