@@ -55,15 +55,52 @@ class ClassificationReinforce(Loss):
 
 class ClassificationReinforceMetrics(Callback):
     def __init__(self, experiment):
+        """
+        :type experiment: api.core.Experiment
+        """
         super(ClassificationReinforceMetrics, self).__init__()
         self.experiment = experiment
 
     def on_epoch_end(self, epoch, logs=None):
-        # 1. get validation dataset
-        # 2. predict on val
-        # 3. compute metrics
-        # 4. log the metrics to history somehow
-        pass
+        """
+
+        :param epoch:
+        :param logs:
+        :return:
+        """
+
+        """ 0. sanity - the predict function from model is None """
+        assert self.experiment.model.predict_function is None
+
+        """ 1. get validation dataset """
+        val_gen = self.experiment.trainer.val_gen
+        steps = self.experiment.trainer.validation_steps
+
+        """ 2. predict on val """
+        y_true_list = []
+        y_pred_list = []
+
+        for i, (x, y) in enumerate(val_gen):
+            pred = self.predict(x)
+
+            y_true_list.append(y)
+            y_pred_list.append(pred)
+
+            if i + 1 >= steps:
+                break
+
+        y_true = np.concatenate(y_true_list, axis=0)
+        y_pred = np.concatenate(y_pred_list, axis=0)
+        del y_true_list, y_pred_list
+
+        """ 3. compute metrics """
+        metrics_dict = self.compute_metrics(y_true, y_pred)
+
+        """ 4. log the metrics to history somehow """
+        self.log_metrics(metrics_dict)
+
+        """ 5. erase the predict function from model """
+        self.experiment.model.predict_function = None
 
     def compute_metrics(self, y_true, y_pred):
         """
@@ -76,3 +113,15 @@ class ClassificationReinforceMetrics(Callback):
                     }
         """
         raise NotImplementedError()
+
+    def log_metrics(self, metrics: dict):
+        history_callback = self.experiment.model.history
+
+        for k, v in metrics.items():
+            history_callback.history.setdefault(k, []).append(v)
+
+    def predict(self, inputs):
+        self.experiment.model._make_predict_function()
+        predict_function = self.experiment.model.predict_function
+
+        return predict_function(inputs)
