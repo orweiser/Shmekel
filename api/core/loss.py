@@ -16,6 +16,9 @@ class Loss:
         loss_weights
         callbacks
     """
+
+    is_computing_validation_metrics = False
+
     def __init__(self, loss='', experiment=None, **params):
         """
         a constructor method.

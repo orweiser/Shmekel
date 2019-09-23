@@ -86,10 +86,17 @@ class Trainer:
         self.steps_per_epoch = self.steps_per_epoch or (len(train_dataset) // batch_size)
         self.validation_steps = self.validation_steps or (len(val_dataset) // batch_size)
 
+        if loss.is_computing_validation_metrics:
+            validation_data = None
+            validation_steps = None
+        else:
+            validation_data = self.val_gen
+            validation_steps = self.validation_steps
+
         logger.info('Enter fitting loop')
         self._history = model.fit_generator(self.train_gen, steps_per_epoch=self.steps_per_epoch,
                                             callbacks=self.callbacks,
-                                            validation_data=self.val_gen, validation_steps=self.validation_steps,
+                                            validation_data=validation_data, validation_steps=validation_steps,
                                             **self.params)
         logger.info('Exit fitting loop')
 

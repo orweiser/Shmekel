@@ -11,6 +11,8 @@ class ClassificationReinforce(Loss):
     lose_reward: int
     mode: str
 
+    is_computing_validation_metrics = True
+
     def init(self, win_reward=1, lose_reward=0, additional_rewards=None, mode='log', as_tensors=False):
         assert not as_tensors, '"as_tensors" option is not yet supported'
         assert mode in ('linear', 'log')
@@ -106,7 +108,8 @@ class ClassificationReinforceMetrics(Callback):
         """ 5. erase the predict function from model """
         self.experiment.model.predict_function = None
 
-    def compute_metrics(self, y_true: np.ndarray, y_pred: np.ndarray):
+    @staticmethod
+    def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray):
 
         metrics = {}
 
