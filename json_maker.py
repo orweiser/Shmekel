@@ -284,11 +284,11 @@ def grid_jason_maker(main_dir):
 
         data['identifiers'] = get_config_identifiers(model_config)
 
-        # if model_config['num_of_rnn_layers'] == 0:
-        #     if 'time_sample_length' in data['train_dataset_config']:
-        #         data['train_dataset_config']['time_sample_length'] = 1
-        #     if 'time_sample_length' in data['val_dataset_config']:
-        #         data['val_dataset_config']['time_sample_length'] = 1
+        if model_config['num_of_rnn_layers'] == 0:
+            if 'time_sample_length' in data['train_dataset_config']:
+                data['train_dataset_config']['time_sample_length'] = 1
+            if 'time_sample_length' in data['val_dataset_config']:
+                data['val_dataset_config']['time_sample_length'] = 1
 
         with open(file_name, 'w') as outfile:
             json.dump(data, outfile)

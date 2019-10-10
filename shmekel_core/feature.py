@@ -103,18 +103,19 @@ class Feature:
 
         return f
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         """
         This is the core function of the feature. use it to define the feature's functionality
         NOTE: do not edit the code here, instead use inheritance to create sub classes with different
             "_compute_feature" definitions.
 
         ****This method must be overridden by children classes****
+        :param feature_list:
         :rtype: ndarray
         """
         raise NotImplementedError()
 
-    def get_feature(self, data, temporal_delay=0, neg_temporal_delay=0, normalization_type=None):
+    def get_feature(self, data, temporal_delay=0, neg_temporal_delay=0, normalization_type=None, feature_list=None):
         """
         compute feature on self.data
 
@@ -134,7 +135,7 @@ class Feature:
         if temporal_delay and (temporal_delay < self.time_delay):
             raise Exception('while using method "get_feature" temporal_delay can not be smaller than self.time_delay')
 
-        feature = self._compute_feature(data)
+        feature = self._compute_feature(data, feature_list=feature_list)
         feature = normalize(feature, normalization_type=normalization_type, time_sample_length=self.time_sample_length)
 
         if self.is_numerical and len(feature.shape) > 1 and self._feature_axis:
