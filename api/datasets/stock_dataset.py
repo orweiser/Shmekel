@@ -242,9 +242,10 @@ DEFAULT_FULL_SPLIT_STATISTICS = {
     'num_stocks_val': 770,
 }
 
-DEFAULT_INPUT_FEATURES = (('High', dict(normalization_type='convolve')), ('Open', dict(normalization_type='convolve')),
-                          ('Low', dict(normalization_type='convolve')), ('Close', dict(normalization_type='convolve')),
-                          ('Volume', dict(normalization_type='convolve')))
+# DEFAULT_INPUT_FEATURES = (('High', dict(normalization_type='convolve')), ('Open', dict(normalization_type='convolve')),
+#                           ('Low', dict(normalization_type='convolve')), ('Close', dict(normalization_type='convolve')),
+#                           ('Volume', dict(normalization_type='convolve')))
+DEFAULT_INPUT_FEATURES = ('High', 'Open', 'Low', 'Close', 'Volume')
 DEFAULT_OUTPUT_FEATURES = (('rise', dict(output_type='categorical', k_next_candle=1)),)
 
 
