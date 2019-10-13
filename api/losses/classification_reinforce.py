@@ -11,11 +11,12 @@ class ClassificationReinforce(Loss):
     lose_reward: int
     mode: str
 
+    KNOWN_MODES = ('linear', 'log')  # todo: add square loss
     is_computing_validation_metrics = True
 
     def init(self, win_reward=1, lose_reward=0, additional_rewards=None, mode='log', as_tensors=False):
         assert not as_tensors, '"as_tensors" option is not yet supported'
-        assert mode in ('linear', 'log')
+        assert mode in self.KNOWN_MODES
 
         self.as_tensors = as_tensors
         self.additional_rewards = additional_rewards or {}
@@ -60,6 +61,8 @@ class ClassificationReinforce(Loss):
 
 
 class ClassificationReinforceMetrics(Callback):
+    # todo add "loss" to metrics
+    #  add num_uncertain_samples to metrics
     def __init__(self, experiment):
         """
         :type experiment: api.core.Experiment
@@ -103,7 +106,7 @@ class ClassificationReinforceMetrics(Callback):
         metrics_dict = self.compute_metrics(y_true, y_pred)
 
         """ 4. log the metrics to history somehow """
-        self.log_metrics(metrics_dict)
+        self.log_metrics(metrics_dict, logs=logs)
 
         """ 5. erase the predict function from model """
         self.experiment.model.predict_function = None
@@ -151,11 +154,12 @@ class ClassificationReinforceMetrics(Callback):
 
         return {'val_' + metric_name: np.mean(value) for metric_name, value in metrics.items()}
 
-    def log_metrics(self, metrics: dict):
+    def log_metrics(self, metrics: dict, logs: dict=None):
         history_callback = self.experiment.model.history
 
         for k, v in metrics.items():
-            history_callback.history.setdefault(k, []).append(v)
+            for _dict in (history_callback.history, logs):
+                _dict.setdefault(k, []).append(v)
 
     def predict(self, inputs):
         self.experiment.model._make_predict_function()
