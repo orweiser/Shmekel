@@ -1,0 +1,77 @@
+{
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "project": "__ProjectName__",
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    },
+    "loss_config": {
+        "loss": "categorical_crossentropy"
+    },
+    "model_config": {
+        "base_activation": "relu",
+        "batch_norm_after_activation": true,
+        "batch_norm_before_output": false,
+        "batch_normalization": false,
+        "depth": __Depth__,
+        "input_shape": [
+            28,
+            28
+        ],
+        "model": "FullyConnected",
+        "name": null,
+        "output_activation": "softmax",
+        "output_shape": [
+            11
+        ],
+        "skip_connections": false,
+        "width": 32
+    },
+    "name": "__Name__",
+    "train_config": {
+        "train_augmentations": [["ConcatExtraNoiseSamples", {
+            "std": 1,
+            "fraction_to_added": __FracToAdd__
+        }]],
+        "val_augmentations": [["ConcatExtraNoiseSamples", {
+            "std": 1,
+            "fraction_to_added": __FracToAdd__
+        }]],
+        "batch_size": 1024,
+        "callbacks": null,
+        "epochs": __Epochs__,
+        "include_experiment_callbacks": true,
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "validation_steps": null
+    },
+    "train_dataset_config": {
+        "dataset": "MNIST",
+        "num_classes": 10,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "dataset": "MNIST",
+        "num_classes": 10,
+        "val_mode": true
+    }
+}
+__OVERRIDES__
+__Depth__: 1, 2
+__BNBool__: false
+__OutputShape__: [2]
+__SkipBool__: false
+__Width__: 64
+__ProjectName__: "test_concat_noise"
+__Epochs__: 50, 60
+__TrainAugmentations__: null
+__ValAugmentations__: null
+__FeatureList__: null
+__OutputFeatureList__: null
+__TimeSampleLength__: 5
+__FracToAdd__: 0.2, 0.5, 0.8
+
+__Name__: lambda depth_%--epoch_%--FracToAdd_% @__Depth__, __Epochs__, __FracToAdd__

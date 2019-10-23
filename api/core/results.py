@@ -18,9 +18,10 @@ class Results:
 
         fig = plt.figure()
         for metric in metrics:
-            plt.plot(self[metric])
+            plt.plot(range(1, len(self[metric]) + 1), self[metric])
         plt.legend(metrics)
         plt.show()
+        return fig
 
     def get_best_epoch(self, metric=None):
         # TODO ???
@@ -29,7 +30,10 @@ class Results:
         assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
 
         metric_history = np.array(self[metric])
-        return self[metric_history.argmax()+1]
+        try:
+            return self[np.nanargmax(metric_history) + 1]
+        except ValueError:
+            return self[1]
 
     def summary(self):
         print(self)
@@ -72,7 +76,7 @@ class Results:
 
     def get_single_epoch(self, epoch=-1):
         num_epochs = self.num_epochs
-        if epoch >= num_epochs:
+        if epoch > num_epochs:
             raise ValueError("max epoch is", num_epochs, "got", epoch)
         if epoch < 0:
             epoch = num_epochs + epoch

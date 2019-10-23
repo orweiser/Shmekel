@@ -1,0 +1,62 @@
+{
+  "model_config": {
+    "units": 64,
+    "input_shape": [5,5],
+    "output_shape": [2],
+    "output_activation": "softmax",
+    "model": "LSTM"
+  },
+  "loss_config": {
+    "win_reward": 1,
+    "lose_reward": __LoseReward__,
+    "additional_rewards": {"-1": __AdditionalReward__},
+    "mode": "log",
+    "as_tensors": false,
+    "loss": "ClassificationReinforce"
+  },
+  "train_dataset_config": {
+    "config_path": null,
+    "time_sample_length": 1,
+    "stock_name_list": null,
+    "feature_list": null,
+    "val_mode": false,
+    "output_feature_list": null,
+    "dataset": "StocksDataset"
+  },
+  "val_dataset_config": {
+    "config_path": null,
+    "time_sample_length": 1,
+    "stock_name_list": null,
+    "feature_list": null,
+    "val_mode": true,
+    "output_feature_list": null,
+    "dataset": "StocksDataset"
+  },
+  "train_config": {
+    "optimizer": "adam",
+    "batch_size": 2048,
+    "randomize": true,
+    "train_augmentations": null,
+    "val_augmentations": null,
+    "callbacks": null,
+    "include_experiment_callbacks": true,
+    "steps_per_epoch": null,
+    "validation_steps": null,
+    "epochs": __Epochs__
+  },
+  "backup_config": {
+    "project": "default_project",
+    "handler": "DefaultLocal",
+    "snapshot_backup_delta": 1,
+    "history_backup_delta": 1,
+    "save_snapshot_after_training": true,
+    "save_history_after_training": true
+  }
+}
+__OVERRIDES__
+
+__Epochs__: 10
+__LoseReward__: -5, -4.4, -3.8, -3.2, -2.6, -2, -1.4, -0.8, -0.2, 0.4
+__AdditionalReward__: -5, -4.4, -3.8, -3.2, -2.6, -2, -1.4, -0.8, -0.2, 0.4
+__ProjectName__: "hi"
+__Name__: lambda lr_% @ __LoseReward__

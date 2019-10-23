@@ -17,7 +17,7 @@ class GridSearch:
                     exp.run()
         2. to check status:
                 for exp in grid_search:
-                    exp.run()
+                    exp.status
         3. to get the best epoch out of every experiment:
                 best_epochs = []
                 for exp in grid_search:
@@ -186,6 +186,9 @@ class GridSearch:
 
         for f in os.listdir(configs_dir):
             if not f.endswith('.json'):
+                continue
+
+            if f.startswith('template'):
                 continue
 
             path = os.path.join(configs_dir, f)

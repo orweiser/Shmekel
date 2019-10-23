@@ -1,6 +1,7 @@
 from ..models import get as get_model
 from ..datasets import get as get_dataset
 from ..losses import get as get_loss
+from ..metrics import get as get_metrics
 from .results import Results
 from .trainer import Trainer
 from .backup_handler import get_handler
@@ -14,7 +15,7 @@ class Experiment:
     def __init__(self, name='default_exp',
                  model_config=None, loss_config=None,
                  train_dataset_config=None, val_dataset_config=None,
-                 train_config=None, backup_config=None):
+                 train_config=None, backup_config=None, metrics_list=None):
 
         self.model_config = model_config or {'model': 'LSTM'}
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
@@ -22,6 +23,7 @@ class Experiment:
         self.val_dataset_config = val_dataset_config or {'dataset': 'StocksDataset', 'val_mode': True}
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
+        self.metrics_list = metrics_list
 
         # todo: have 'project' be a field of experiment instead of backup_handler
         # todo: load existing config by experiment name?
@@ -37,6 +39,7 @@ class Experiment:
         self._loss = None
         self._trainer = None
         self._backup_handler = None
+        self._metrics = None
 
         # properties declarations
         self._history = None
@@ -100,6 +103,7 @@ class Experiment:
         self.trainer.fit()
 
     def run(self, backup=True):
+        logger.info('running %s', str(self))
         if backup:
             self.backup_handler.dump_config(self.config)
 
@@ -148,11 +152,17 @@ class Experiment:
             dataset = getattr(self, '%s_dataset' % mode)
             augmentation = self.trainer.augmentations[mode]
 
+            batch_axis = (10, )
+
             shapes = []
-            shapes.append((dataset.input_shape, dataset.output_shape))
+            shapes.append((batch_axis + tuple(dataset.input_shape),
+                           batch_axis + tuple(dataset.output_shape)))
             if augmentation:
                 shapes.append(augmentation.get_output_shapes(*shapes[-1]))
-            shapes.append((self.model._input_shape, self.model._output_shape))  # todo: put _shapes in model
+
+            shapes = [(s1[1:], s2[1:]) for s1, s2 in shapes]
+            shapes.append((tuple(self.model._input_shape), tuple(self.model._output_shape)))
+            # todo: put _shapes in model
             return shapes
 
         train = _get_mode_shapes('train')
@@ -162,7 +172,8 @@ class Experiment:
             assert s1 == s2, 'shapes in train and val mode dont match'
             assert len(s1) == 2
 
-        assert train[-1] == train[-2], 'model input and output shape dont match dataset + augmentations'
+        assert train[-1] == train[-2], 'model input and output shape dont match dataset + augmentations' \
+                                       '\nGot %s and %s' % (str(train[-1]), str(train[-2]))
 
     """ Sub-Modules: """
     @property
@@ -191,7 +202,7 @@ class Experiment:
     @property
     def loss(self):
         if not self._loss:
-            self._loss = get_loss(**self.loss_config)
+            self._loss = get_loss(experiment=self, **self.loss_config)
             self.loss_config = self._loss.config
 
         return self._loss
@@ -235,6 +246,7 @@ class Experiment:
         _ = self.val_dataset
         _ = self.model
         _ = self.backup_handler
+        _ = self.metrics
 
     @property
     def config(self):
@@ -245,14 +257,17 @@ class Experiment:
                     train_dataset_config=self.train_dataset_config,
                     val_dataset_config=self.val_dataset_config,
                     train_config=self.train_config,
-                    backup_config=self.backup_config)
+                    backup_config=self.backup_config,
+                    metrics_list=self.metrics_list)
 
     """ Extra properties: """
 
     @property
-    def metrics(self) -> list:
-        # todo: implement functionality
-        return ['acc']
+    def metrics(self):
+        if not self._metrics:
+            self._metrics = get_metrics(self.metrics_list)
+
+        return self._metrics
 
     @property
     def history(self) -> dict:
@@ -287,6 +302,3 @@ class Experiment:
     def compute_shapes(self):
         """ computes the input and output shapes (considering augmentations) """
         raise NotImplementedError()
-
-
-

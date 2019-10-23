@@ -1,0 +1,62 @@
+{
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "project": "__ProjectName__",
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    },
+    "loss_config": {
+        "additional_rewards": null,
+        "as_tensors": false,
+        "lose_reward": __LoseReward__,
+        "loss": "ClassificationReinforce",
+        "mode": "log",
+        "win_reward": 1
+    },
+    "model_config": {
+        "input_shape": [1,5],
+        "model": "LSTM",
+        "output_activation": "softmax",
+        "output_shape": [2],
+        "units": 64
+    },
+    "name": "__Name__",
+    "train_config": {
+        "batch_size": 2048,
+        "callbacks": null,
+        "epochs": __Epochs__,
+        "include_experiment_callbacks": true,
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": null,
+        "val_augmentations": null,
+        "validation_steps": null
+    },
+    "train_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 1,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": null,
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 1,
+        "val_mode": true
+    }
+}
+__OVERRIDES__
+
+__Epochs__: 10
+__LoseReward__: -5, -4.4, -3.8, -3.2, -2.6, -2, -1.4, -0.8, -0.2, 0.4
+__ProjectName__: "hi"
+__Name__: lambda lr_% @ __LoseReward__
