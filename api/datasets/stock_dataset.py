@@ -242,17 +242,10 @@ DEFAULT_FULL_SPLIT_STATISTICS = {
     'num_stocks_val': 770,
 }
 
-DEFAULT_INPUT_FEATURES = (('High', dict(normalization_type='convolve', time_sample_length=7)),
-                          ('Open', dict(normalization_type='convolve', time_sample_length=7)),
-                          ('Low', dict(normalization_type='convolve', time_sample_length=7)),
-                          ('Close', dict(normalization_type='convolve', time_sample_length=7)),
-                          ('Volume', dict(normalization_type='convolve', time_sample_length=7)))
-# DEFAULT_INPUT_FEATURES = ('High', 'Open', 'Low', 'Close', 'Volume')
-DEFAULT_OUTPUT_FEATURES = (('rise', dict(output_type='categorical', k_next_candle=1)),)
-
 
 class StocksDataset(Dataset):
     time_sample_length: int
+    normalization_window: int
     _val_mode: bool
     _stocks_list: (list, tuple)
     config_path: str
@@ -265,7 +258,8 @@ class StocksDataset(Dataset):
     _num_output_features: int
 
     def init(self, config_path=None, time_sample_length=5,
-             stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None):
+             stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None,
+             normalization_window=5):
 
         if config_path is None:
             config_path = 'Shmekel_config.txt'
@@ -274,13 +268,23 @@ class StocksDataset(Dataset):
         assert os.path.exists(config_path), 'didnt found file "Shmekel_config.txt", ' \
                                             'please specify the Shmekel config path'
 
+        default_input_features = (
+        ('High', dict(normalization_type='convolve', normalization_window=normalization_window)),
+        ('Open', dict(normalization_type='convolve', normalization_window=normalization_window)),
+        ('Low', dict(normalization_type='convolve', normalization_window=normalization_window)),
+        ('Close', dict(normalization_type='convolve', normalization_window=normalization_window)),
+        ('Volume', dict(normalization_type='convolve', normalization_window=normalization_window)))
+        # default_input_features = ('High', 'Open', 'Low', 'Close', 'Volume')
+        default_output_features = (('rise', dict(output_type='categorical', k_next_candle=0)),)
+
+        self.normalization_window = normalization_window
         self.time_sample_length = time_sample_length
         self._val_mode = val_mode
         self._stocks_list = None
         self.config_path = config_path
 
-        self.output_features = output_feature_list or DEFAULT_OUTPUT_FEATURES
-        self.input_features = feature_list or DEFAULT_INPUT_FEATURES
+        self.output_features = output_feature_list or default_output_features
+        self.input_features = feature_list or default_input_features
 
         self.stock_name_list = stock_name_list
         self.stock_name_list = self.stock_name_list or \
@@ -319,7 +323,7 @@ class StocksDataset(Dataset):
         return self._num_output_features
 
     def stock_effective_len(self, s):
-        return len(s) - self.time_sample_length + 1
+        return len(s) - self.time_sample_length - self.normalization_window + 1
 
     def __getitem__(self, index) -> dict:
         o_index = index
@@ -330,7 +334,11 @@ class StocksDataset(Dataset):
             index = index - self.stock_effective_len(stock)
 
         inputs = copy(stock.feature_matrix[index: index + self.time_sample_length, :self.num_input_features])
-        outputs = copy(stock.feature_matrix[index, self.num_input_features:])
+        outputs = None
+        try:
+            outputs = copy(stock.feature_matrix[index, self.num_input_features:])
+        except:
+            print("An exception occurred")
 
         item = {'inputs': inputs, 'outputs': outputs, 'id': o_index}
         for (s, _), f in zip(self._non_numerical_features, stock.not_numerical_feature_list):
