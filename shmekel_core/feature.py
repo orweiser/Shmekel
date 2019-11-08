@@ -9,10 +9,11 @@ import numpy as np
 # default_feature_axis = -1
 
 
-def normalize(feature, normalization_type=None, time_sample_length=5):
+def normalize(feature, normalization_type=None, normalization_window=5):
     """
     different normalization methods.
 
+    :param normalization_window: window for normalization
     :param feature: a numpy array to normalize
     :param normalization_type: some identification of the normalization type
     :return: a normalized numpy array of the same shape
@@ -30,7 +31,7 @@ def normalize(feature, normalization_type=None, time_sample_length=5):
 
         return (feature - mean) / std
     elif normalization_type == 'convolve':
-        return np.convolve(feature, np.ones((time_sample_length,)) / time_sample_length,
+        return np.convolve(feature, np.ones((normalization_window,)) / normalization_window,
                            mode='valid')
     else:
         raise RuntimeError()
@@ -44,7 +45,7 @@ class Feature:
     """
 
     def __init__(self, pattern=('open', 'high', 'low', 'close', 'volume'), feature_axis=-1, normalization_type=None,
-                 time_delay=0, num_features=1, is_numerical=True, time_sample_length=5):
+                 time_delay=0, num_features=1, is_numerical=True, normalization_window=5):
         """
         :param pattern: the pattern of the candle data inserted ('High', 'Low'...), as defined in the config file
         :type pattern: list
@@ -74,7 +75,7 @@ class Feature:
         self.is_numerical = is_numerical
         self.time_delay = time_delay
         self.num_features = num_features
-        self.time_sample_length = time_sample_length
+        self.normalization_window = normalization_window
 
     def _get_basic_feature(self, candles, key, keep_dims=False):
         """
@@ -136,7 +137,7 @@ class Feature:
             raise Exception('while using method "get_feature" temporal_delay can not be smaller than self.time_delay')
 
         feature = self._compute_feature(data, feature_list=feature_list)
-        feature = normalize(feature, normalization_type=normalization_type, time_sample_length=self.time_sample_length)
+        feature = normalize(feature, normalization_type=normalization_type, normalization_window=self.normalization_window)
 
         if self.is_numerical and len(feature.shape) > 1 and self._feature_axis:
             feature = np.swapaxes(feature, -1, self._feature_axis)
