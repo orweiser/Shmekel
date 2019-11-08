@@ -76,10 +76,13 @@ class Rise(Feature):
         feature_data = np.empty((feature_list[0].shape[0], input_features_num))
         for ind in range(input_features_num):
             feature_data[:, ind] = feature_list[ind]
-        open = self._get_basic_feature(feature_data, 'open')
-        close = self._get_basic_feature(feature_data, 'close')
+        open_list = self._get_basic_feature(feature_data, 'open')
 
-        diff = close - open
+        diff = np.insert(open_list[1:] - open_list[:-1], 0, 0)
+        # open_list = self._get_basic_feature(data[0], 'open')
+        # close = self._get_basic_feature(data[0], 'close')
+        #
+        # diff = close - open_list
 
         if self.output_type == 'regression':
             pass
@@ -96,4 +99,4 @@ class Rise(Feature):
         else:
             raise RuntimeError('unexpected "output_type": ' + self.output_type)
 
-        return diff[:-self.k_next_candle]
+        return diff if self.time_delay == 0 else diff[:self.time_delay]
