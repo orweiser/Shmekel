@@ -9,35 +9,40 @@ def ind_generator(num_samples, randomize=True):
             yield i
 
 
-def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None, augmentations=None):
+def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None, augmentations=None,
+                    ind_gen=None):
     # todo: add support for multiple inputs / outputs
 
     num_samples = num_samples or len(dataset)
 
-    ind_gen = ind_generator(num_samples=num_samples, randomize=randomize)
+    ind_gen = ind_gen or ind_generator(num_samples=num_samples, randomize=randomize)
 
     batch_x = np.ndarray((batch_size,) + dataset.input_shape)
     batch_y = np.ndarray((batch_size,) + dataset.output_shape)
 
-    while True:
-        for a in [batch_x, batch_y]:
-            if a is None:
-                continue
-            a[:] = 0
+    j = 0
+    try:
+        while True:
+            for a in [batch_x, batch_y]:
+                if a is None:
+                    continue
+                a[:] = 0
 
-        for i, ind in enumerate(ind_gen):
-            sample = dataset[ind]
+            for i, ind in enumerate(ind_gen):
+                j += 1
+                sample = dataset[ind]
 
-            # TODO: bug fix
-            batch_x[i] = sample['inputs']
-            batch_y[i] = sample['outputs']
+                batch_x[i] = sample['inputs']
+                batch_y[i] = sample['outputs']
 
-            if i == (batch_size - 1):
-                break
+                if i == (batch_size - 1):
+                    break
 
-        if augmentations:
-            batch_x_o, batch_y_o = augmentations(batch_x, batch_y)
-        else:
-            batch_x_o, batch_y_o = [batch_x, batch_y]
+            if augmentations:
+                batch_x_o, batch_y_o = augmentations(batch_x, batch_y)
+            else:
+                batch_x_o, batch_y_o = [batch_x, batch_y]
 
-        yield copy(batch_x_o), copy(batch_y_o)
+            yield copy(batch_x_o), copy(batch_y_o)
+    except StopIteration:
+        raise StopIteration('Got StopIteration after %d samples was generated. For Parsing:%d' % (j, j))
