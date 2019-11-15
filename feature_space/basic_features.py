@@ -23,6 +23,16 @@ class Candle(Feature):
         return a
 
 
+class RawCandle(Candle):
+    def __init__(self, *args, **kwargs):
+        super(RawCandle, self).__init__(*args, **kwargs)
+
+        self.is_numerical = False
+        self.normalization_type = None
+        self.with_volume = True
+        self.num_features = 5
+
+
 class DateTuple(Feature):
     def __init__(self, normalization_type=None, **kwargs):
         super(DateTuple, self).__init__(normalization_type=normalization_type, **kwargs)

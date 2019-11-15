@@ -127,7 +127,7 @@ class StocksDataset(Dataset):
         self.feature_list_with_params = [
             x if isinstance(x, (tuple, list)) else (x, {}) for x in self.input_features + self.output_features
         ]
-        self._non_numerical_features = [('DateTuple', {})]
+        self._non_numerical_features = [('DateTuple', {}), ('RawCandle', {})]
 
         self._num_input_features = None
         self._num_output_features = None
@@ -192,7 +192,7 @@ class StocksDataset(Dataset):
         inputs = copy(stock.feature_matrix[index: index + self.time_sample_length, :self.num_input_features])
         outputs = copy(stock.feature_matrix[index, self.num_input_features:])
 
-        item = {'inputs': inputs, 'outputs': outputs, 'id': o_index}
+        item = {'inputs': inputs, 'outputs': outputs, 'id': o_index, 'stock': stock, '_id': index}
         for (s, _), f in zip(self._non_numerical_features, stock.not_numerical_feature_list):
             item[s] = f[index]
 
