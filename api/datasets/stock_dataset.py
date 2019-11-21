@@ -190,11 +190,11 @@ class StocksDataset(Dataset):
         index, stock = self.stock_and_local_index_from_global_index(index)
 
         inputs = copy(stock.feature_matrix[index: index + self.time_sample_length, :self.num_input_features])
-        outputs = copy(stock.feature_matrix[index, self.num_input_features:])
+        outputs = copy(stock.feature_matrix[index + self.time_sample_length - 1, self.num_input_features:])
 
         item = {'inputs': inputs, 'outputs': outputs, 'id': o_index, 'stock': stock, '_id': index}
         for (s, _), f in zip(self._non_numerical_features, stock.not_numerical_feature_list):
-            item[s] = f[index]
+            item[s] = f[index + self.time_sample_length - 1]
 
         return item
 

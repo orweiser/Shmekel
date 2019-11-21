@@ -3,19 +3,19 @@ from copy import deepcopy as copy
 
 
 def ind_generator(num_samples, randomize=True):
-    f = np.random.permutation if randomize else range(num_samples)
+    f = np.random.permutation if randomize else range
     while True:
         for i in f(num_samples):
             yield i
 
 
-def batch_generator(dataset, batch_size=1024, randomize=None, num_samples=None, augmentations=None,
+def batch_generator(dataset, batch_size=1024, randomize=True, max_ind=None, augmentations=None,
                     ind_gen=None):
     # todo: add support for multiple inputs / outputs
 
-    num_samples = num_samples or len(dataset)
+    max_ind = max_ind or len(dataset)
 
-    ind_gen = ind_gen or ind_generator(num_samples=num_samples, randomize=randomize)
+    ind_gen = ind_gen or ind_generator(num_samples=max_ind, randomize=randomize)
 
     batch_x = np.ndarray((batch_size,) + dataset.input_shape)
     batch_y = np.ndarray((batch_size,) + dataset.output_shape)
