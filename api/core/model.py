@@ -16,7 +16,7 @@ class Model(KerasModel):
     optional methods for advanced training schemes:
         callbacks
     """
-    def __init__(self, model='', experiment=None, **params):
+    def __init__(self, model='', **params):
         """
         a constructor method.
         replaced by init() in subclasses.
@@ -29,7 +29,6 @@ class Model(KerasModel):
                 those key-words are passed to the init() method
         """
         if not model: logger.warning('Model parameter "model" is missing')
-        self.experiment = experiment
 
         self.config = copy(self.get_default_config())
         self.config.update(dict(model=model, **copy(params)))
