@@ -7,7 +7,7 @@ class Stock:
     this class represents a stock with it's features
     it holds the data and the computations
     """
-    def __init__(self, stock_tckt, data, feature_axis=None, feature_list=None):
+    def __init__(self, data, stock_tckt="", feature_axis=None, feature_list=None):
         """
         :param stock_tckt: just the name of the stock
         :param data: optional. if not given, it loads data automatically

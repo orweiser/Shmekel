@@ -73,6 +73,7 @@ class BaseBackupHandler(Callback):
                            save_history_after_training=save_history_after_training)
 
     """ Base Paths: """
+
     @property
     def res_dir_absolute_path(self):
         """
@@ -113,6 +114,7 @@ class BaseBackupHandler(Callback):
         raise NotImplementedError()
 
     """ Handle Snapshots: """
+
     @property
     def snapshots_dir_relative_path(self):
         """ returns the name of the snapshots dir. default: "snapshots" """
@@ -136,11 +138,15 @@ class BaseBackupHandler(Callback):
         """ method to implement the saving of snapshots """
         raise NotImplementedError()
 
+    def dump_model_architecture(self, model, directory=""):
+        raise NotImplementedError()
+
     def load_snapshot(self, model, epoch: int):
         """ method to implement the loading of snapshots """
         raise NotImplementedError()
 
     """ Handle history files: """
+
     @property
     def histories_dir_relative_path(self):
         """ returns the name of the histories directory. default: "histories" """
@@ -174,6 +180,7 @@ class BaseBackupHandler(Callback):
             of snapshots and histories during and 
             after training.
     """
+
     def on_train_begin(self, logs=None):
         self.train_logs = None
         if 'initial_epoch' in self.experiment.train_config.keys():
@@ -200,6 +207,7 @@ class BaseBackupHandler(Callback):
             self.dump_snapshot(self.experiment.model, epoch=epoch)
 
     """ More: """
+
     def erase(self):
         """ a method to erase the backup of an experiment. """
         raise NotImplementedError()
@@ -259,6 +267,21 @@ class DefaultLocal(BaseBackupHandler):
     def res_dir_absolute_path(self):
         return os.path.abspath(os.path.join(os.path.pardir, 'Shmekel_Results'))
 
+    def dump_model_architecture(self, model, file_name=""):
+        """
+        Dump model architecture to a json file
+        :param model: keras model
+        :type: Keras.Model
+        :param file_name: file name - should end with '.json'
+        :type file_name: str
+        """
+        directory = os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        if not os.path.exists(os.path.join(directory, file_name)):
+            with os.path.join(directory, file_name) as f:
+                f.write(model.to_json())
+
     def dump_snapshot(self, model, epoch: int):
         if not os.path.exists(os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path)):
             os.makedirs(os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path))
@@ -312,6 +335,7 @@ class DefaultLocal(BaseBackupHandler):
 
 class DefaultLossGroup(BaseBackupHandler):
     """ will be used to enforce backwards compatibility with loss group """
+
     def dump_config(self, config: dict):
         pass
 
