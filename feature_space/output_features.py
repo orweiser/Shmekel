@@ -92,4 +92,4 @@ class Rise(Feature):
         else:
             raise RuntimeError('unexpected "output_type": ' + self.output_type)
 
-        return diff[:-self.k_next_candle]
+        return diff[self.k_next_candle:]

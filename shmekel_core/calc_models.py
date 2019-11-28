@@ -80,7 +80,6 @@ class Stock:
                         f = np.swapaxes(f, 0, self._feature_axis)
 
                     f_list[i] = f
-
             self._feature_matrix = np.concatenate(f_list, axis=self._feature_axis)
             if self._linear_dim_reduction is not None:
                 self._feature_matrix = self._linear_dim_reduction(self._feature_matrix)

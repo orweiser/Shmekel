@@ -145,7 +145,7 @@ class Feature:
             neg_temporal_delay = neg_temporal_delay - abs(self.time_delay) * (neg_temporal_delay >= abs(self.time_delay))
 
         if neg_temporal_delay:
-            feature = feature[neg_temporal_delay:]
+            feature = feature[:-neg_temporal_delay]
 
         if self.is_numerical and len(feature.shape) > 1 and self._feature_axis:
             feature = np.swapaxes(feature, -1, self._feature_axis)
