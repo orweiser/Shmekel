@@ -29,6 +29,9 @@ def normalize(feature, normalization_type=None):
 
         return (feature - mean) / std
 
+    elif normalization_type == 'debug':
+        return feature + 1
+
     else:
         raise RuntimeError()
 

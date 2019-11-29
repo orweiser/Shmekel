@@ -95,13 +95,13 @@ class StocksDataset(Dataset):
     _non_numerical_features: (list, tuple)
     _num_input_features: int
     _num_output_features: int
-    split_by_year: bool
+    years: list
     _relevant_indices: dict
 
     # TODO: why is this not __init__?
-    def init(self, config_path=None, time_sample_length=5,
+    def init(self, config_path=None, time_sample_length=5,  # features_defaults=None,
              stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None,
-             split_by_year=False):
+             years=None):
 
         if config_path is None:
             config_path = 'Shmekel_config.txt'
@@ -114,7 +114,6 @@ class StocksDataset(Dataset):
         self._val_mode = val_mode
         self._stocks_list = None
         self.config_path = config_path
-        self.split_by_year = split_by_year
         self._relevant_indices = {}
 
         self.output_features = output_feature_list or DEFAULT_OUTPUT_FEATURES
@@ -127,10 +126,16 @@ class StocksDataset(Dataset):
         self.feature_list_with_params = [
             x if isinstance(x, (tuple, list)) else (x, {}) for x in self.input_features + self.output_features
         ]
+        # for f, params in self.feature_list_with_params:
+        #     for key, val in self.features_defaults.items():
+        #         f.setdefault(key, val)
+
         self._non_numerical_features = [('DateTuple', {}), ('RawCandle', {})]
 
         self._num_input_features = None
         self._num_output_features = None
+
+        self.years = None if years is None else sorted(years)
 
     def get_default_config(self) -> dict:
         return dict(config_path=None, time_sample_length=1, stock_name_list=None,
@@ -157,17 +162,27 @@ class StocksDataset(Dataset):
         return self._num_output_features
 
     def get_stock_possible_indices(self, s):
-        # todo: make sure to only make this calc once per stock
-        if not self.split_by_year:
+        if self.years is None:
             return [i for i in range(len(s) - self.time_sample_length + 1)]
 
-        set_year_list = DEFAULT_VAL_YEARS if self._val_mode else DEFAULT_TRAIN_YEARS
-        years = [(i, d[0]) for i, d in enumerate(s.not_numerical_feature_list[0]) if d[0] in set_year_list]
-        divided_years_indices = [[i for i, year in years if year == set_year] for set_year in set_year_list]
-        indices_groups = [year_indices[:-self.time_sample_length + 1]
-                          if (len(year_indices) - self.time_sample_length + 1) > 0
-                          else []
-                          for year_indices in divided_years_indices]
+        divided_years_indices_dict = {}
+        for i, date_tuple in enumerate(s.not_numerical_feature_list[0]):
+            divided_years_indices_dict.setdefault(date_tuple[0], []).append(i)
+
+        last_year = -2
+        groups = []
+        for year in self.years:
+            if year == last_year + 1:
+                groups[-1].extend(divided_years_indices_dict.get(year, []))
+            else:
+                groups.append(divided_years_indices_dict.get(year, []))
+            last_year = year
+
+        indices_groups = []
+        for group_indices in groups:
+            if (len(group_indices) - self.time_sample_length + 1) > 0:
+                indices_groups.append(group_indices[:-self.time_sample_length + 1])
+
         return sum(indices_groups, [])
 
     def stock_effective_len(self, s):
@@ -178,16 +193,19 @@ class StocksDataset(Dataset):
 
     def stock_and_local_index_from_global_index(self, index):
         stock = None
-        for stock in self.stocks_list:
-            if index < self.stock_effective_len(stock):
+        for _stock in self.stocks_list:
+            if index < self.stock_effective_len(_stock):
+                stock = _stock
                 break
-            index = index - self.stock_effective_len(stock)
+            index = index - self.stock_effective_len(_stock)
+
+        if stock is None:
+            raise IndexError
 
         return self._relevant_indices[stock.stock_tckt][index], stock
 
-    def __getitem__(self, index) -> dict:
-        o_index = index
-        index, stock = self.stock_and_local_index_from_global_index(index)
+    def __getitem__(self, o_index) -> dict:
+        index, stock = self.stock_and_local_index_from_global_index(o_index)
 
         inputs = copy(stock.feature_matrix[index: index + self.time_sample_length, :self.num_input_features])
         outputs = copy(stock.feature_matrix[index + self.time_sample_length - 1, self.num_input_features:])

@@ -2,26 +2,11 @@ from api.utils.data_utils import batch_generator
 import numpy as np
 from ..datasets import StocksDataset
 from itertools import product
+from time import sleep
+from copy import deepcopy
 
 
-def get_test_dataset():
-    """
-
-    config_path=None, time_sample_length=5,
-         stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None,
-         split_by_year=False
-    :return:
-    """
-    return StocksDataset('dataset', time_sample_length=2, feature_list=[('Candle', {})],
-                         stock_name_list=['fb', 'ab'], output_feature_list=[('Rise', {})])
-
-
-class TestStockDataset:
-
-    def __init__(self):
-        pass
-
-    TEST_CASES = {
+ORIGINAL_TEST_CASES = {
         0: {
             'inputs': np.array([[42.05,  45,     38,     38.23, 580438450],
                                 [36.53,  36.66,  33,     34.03,  169418988]]),
@@ -50,11 +35,85 @@ class TestStockDataset:
             'date': (2005, 2, 28),
             'stock': 'ab'
         },
-
+        1380: {
+            'inputs': np.array([[28.379, 28.666, 28.186, 28.264, 332954],
+                                [28.414, 28.637, 28.192, 28.254, 403173]]),
+            'output': np.array([1, 0]),
+            'date': (2005, 3, 1),
+            'stock': 'ab'
+        }
     }
 
+
+def _get_dataset_params(candle_params=None, **kwargs):
+    params = dict(time_sample_length=2,
+                  feature_list=[('Candle', candle_params or {})],
+                  stock_name_list=['fb', 'ab'], output_feature_list=[('Rise', {})])
+    params.update(kwargs)
+    return params
+
+
+def get_test_dataset(candle_params=None, **kwargs):
+    """
+
+    config_path=None, time_sample_length=5,
+         stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None,
+         split_by_year=False
+    :return:
+    """
+    params = _get_dataset_params(candle_params=candle_params, **kwargs)
+    return StocksDataset('dataset', **params)
+
+
+class TestStockDataset:
+
+    def __init__(self):
+        pass
+
+    TEST_CASES = deepcopy(ORIGINAL_TEST_CASES)
+
     def test_samples(self):
-        dataset = get_test_dataset()
+        return self._test_samples(self.TEST_CASES, candle_params=0)
+
+    def test_samples_pos_delay(self):
+        test_cases = {
+            0: self.TEST_CASES[1],
+            1377: self.TEST_CASES[1378],
+            1378: self.TEST_CASES[1380]
+        }
+
+        return self._test_samples(test_cases, candle_params={'time_delay': 1})
+
+    def test_years(self):
+        years_gen = (
+            (2015, 2010, 2200, 1900, 2005),
+            (),
+            (1000,),
+            [i for i in range(1980, 2020)]
+        )
+
+        had_samples = False
+        for years in years_gen:
+            dataset = get_test_dataset(years=years)
+            if len(dataset):
+                had_samples = True
+        assert had_samples
+
+        for years in years_gen:
+            dataset = get_test_dataset(years=years)
+            for i in range(len(dataset)):
+                sample = dataset[i]
+                assert sample['DateTuple'][0] in years
+
+            try:
+                _ = dataset[len(dataset)]
+            except IndexError:
+                pass
+            else:
+                raise AssertionError('Dataset has more samples than it reports')
+
+    def _test_samples(self, test_cases, candle_params):
+        dataset = get_test_dataset(candle_params)
 
         """
             Date,       Open,   High,   Low,    Close,  Volume, OpenInt
@@ -77,18 +136,13 @@ class TestStockDataset:
 
         """
 
-        for i, test_case in self.TEST_CASES.items():
+        for i, test_case in test_cases.items():
             sample = dataset[i]
 
             assert np.prod(sample['inputs'] == test_case['inputs']), '%d: %s' % (i, 'inputs')
             assert np.prod(sample['outputs'] == test_case['output']), '%d: %s' % (i, 'outputs')
             assert sample['DateTuple'] == test_case['date'], '%d: %s' % (i, 'outputs')
             assert sample['stock'].stock_tckt == test_case['stock'], '%d: %s' % (i, 'outputs')
-
-    """
-dataset, batch_size=1024, randomize=None, num_samples=None, augmentations=None,
-                    ind_gen=None
-"""
 
     def test_batch_generator(self):
         dataset = get_test_dataset()
@@ -142,10 +196,27 @@ dataset, batch_size=1024, randomize=None, num_samples=None, augmentations=None,
         assert last_sample is not None
         assert is_random
 
+    def test_normalization(self):
+        test_cases = {}
+        for ind, test_case in self.TEST_CASES.items():
+            new_case = deepcopy(test_case)
+            new_case['inputs'] += 1
+            test_cases[ind] = new_case
+
+        self._test_samples(test_cases, {'normalization_type': 'debug'})
+
     def run_all(self):
+        logs = []
         for k in dir(self):
             if k.startswith('test'):
-                getattr(self, k)()
+                try:
+                    getattr(self, k)()
+                except Exception as e:
+                    logs.append('FAILED: {0} \t\t {1}'.format(k, getattr(e, 'message', '')))
+                else:
+                    logs.append('PASSED: %s' % k)
+        sleep(0.001)
+        print(*logs, sep='\n')
 
 
 

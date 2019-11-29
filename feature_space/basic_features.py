@@ -3,24 +3,24 @@ import numpy as np
 
 
 class Candle(Feature):
-    def __init__(self, with_volume=True, **kwargs):
+    def __init__(self, with_volume=True, time_delay=0, **kwargs):
         super(Candle, self).__init__(**kwargs)
 
         self.is_numerical = True
-        self.time_delay = 0
+        self.time_delay = time_delay
         self.with_volume = with_volume
         self.num_features = 5 if with_volume else 4
 
     def _compute_feature(self, data):
         if self.with_volume:
-            return data[0]
+            return data[0][self.time_delay:]
 
         a = np.swapaxes(data[0], 0, self._feature_axis)
         ind = [i for i in range(len(self._pattern)) if i != self._pattern.index('volume')]
         a = a[ind]
 
         a = np.swapaxes(a, 0, self._feature_axis)
-        return a
+        return a[self.time_delay:]
 
 
 class RawCandle(Candle):

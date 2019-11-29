@@ -64,6 +64,11 @@ class Trainer:
 
         return self._history.history
 
+    def get_batch_generator(self, mode):
+        return batch_generator({'train': self.experiment.train_dataset, 'val': self.experiment.val_dataset}[mode],
+                               batch_size=self.batch_size, randomize=self.randomize,
+                               augmentations=self.augmentations[mode])
+
     @logger.info_dec
     def fit(self):
         exp = self.experiment
@@ -78,10 +83,8 @@ class Trainer:
         # todo: a compile method, either in Model or in Experiment
         model.compile(self.optimizer, loss, metrics, loss_weights=loss.loss_weights)
 
-        self.train_gen = batch_generator(train_dataset, batch_size=batch_size, randomize=self.randomize,
-                                         augmentations=self.augmentations['train'])
-        self.val_gen = batch_generator(val_dataset, batch_size=batch_size, randomize=self.randomize,
-                                       augmentations=self.augmentations['val'])
+        self.train_gen = self.get_batch_generator('train')
+        self.val_gen = self.get_batch_generator('val')
 
         self.steps_per_epoch = self.steps_per_epoch or (len(train_dataset) // batch_size)
         self.validation_steps = self.validation_steps or (len(val_dataset) // batch_size)

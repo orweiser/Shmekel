@@ -2,7 +2,8 @@ import numpy as np
 from Utils.logger import logger
 
 
-class InvalidShape(Exception): pass
+class InvalidShape(Exception):
+    pass
 
 
 def get_augmentation(aug):
