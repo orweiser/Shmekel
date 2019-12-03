@@ -23,7 +23,7 @@ class Experiment:
         self.val_dataset_config = val_dataset_config or {'dataset': 'StocksDataset', 'val_mode': True}
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
-        self.metrics_list = metrics_list
+        self.metrics_list = metrics_list or ['acc']
 
         # todo: have 'project' be a field of experiment instead of backup_handler
         # todo: load existing config by experiment name?
@@ -179,14 +179,6 @@ class Experiment:
     @property
     def model(self):
         if not self._model:
-            if any([key not in self.model_config for key in ['input_shape', 'output_shape']]):
-                shapes = [self.train_dataset.input_shape, self.train_dataset.output_shape]
-                if self.trainer.augmentations['train']:
-                    shapes = self.trainer.augmentations['train'].get_output_shapes(*shapes)
-
-                self.model_config['input_shape'] = shapes[0]
-                self.model_config['output_shape'] = shapes[1]
-
             self._model = get_model(**self.model_config)
             self.model_config = self._model.config
 

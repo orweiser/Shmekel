@@ -28,6 +28,8 @@ class MACD(Feature):
         price = (high + low + close) / 3.
         ema_12 = exponential_moving_average(price, 12)
         ema_26 = exponential_moving_average(price, 26)
+
+        # todo: fix. the arrays below have different shapes and cannot be summed
         macd = ema_12[:14] - ema_26
         if self._calc_signal_line:
             signal_line = exponential_moving_average(macd, 9)

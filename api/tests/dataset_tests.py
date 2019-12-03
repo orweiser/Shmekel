@@ -44,9 +44,8 @@ ORIGINAL_TEST_CASES = {
         }
     }
 
-
-def _get_dataset_params(candle_params=None, **kwargs):
-    params = dict(time_sample_length=2,
+def _get_dataset_params(candle_params=None, time_sample_length=2, **kwargs):
+    params = dict(dataset='StocksDataset', time_sample_length=time_sample_length,
                   feature_list=[('Candle', candle_params or {})],
                   stock_name_list=['fb', 'ab'], output_feature_list=[('Rise', {})])
     params.update(kwargs)
@@ -62,7 +61,7 @@ def get_test_dataset(candle_params=None, **kwargs):
     :return:
     """
     params = _get_dataset_params(candle_params=candle_params, **kwargs)
-    return StocksDataset('dataset', **params)
+    return StocksDataset(**params)
 
 
 class TestStockDataset:

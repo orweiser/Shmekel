@@ -97,8 +97,3 @@ class Loss:
     def loss_weights(self) -> (dict, None):
         """for later use of multiple losses"""
         return None
-
-    @property
-    def callbacks(self):
-        """for later use of advanced training schemes"""
-        return []

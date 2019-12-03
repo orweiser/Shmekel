@@ -3,7 +3,8 @@ from shmekel_core import Feature
 
 
 class MFI(Feature):
-    def __init__(self, days, **kwargs):
+    def __init__(self, days=2, **kwargs):
+        # todo: what is the days default? i just put 2, but i know nothing
         """
         use this method to define the parameters of the feature
         """

@@ -207,7 +207,7 @@ class BaseBackupHandler(Callback):
 
 class NullHandler(BaseBackupHandler):
     """
-    a null backup handler that doesnt backup or read anything,
+        a null backup handler that doesnt backup or read anything,
         to use in experiments you do not want to backup at all
     """
 

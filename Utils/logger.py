@@ -55,7 +55,7 @@ class ShmekelLogger:
                 outs = f(*args, **kwargs)
             except Exception as e:
                 self.logger.exception('Failed to execute %s' % loc)
-                raise e
+                raise
             else:
                 logging_func('Exited %s successfully' % loc)
                 return outs

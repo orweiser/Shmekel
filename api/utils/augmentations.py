@@ -99,6 +99,18 @@ class BaseAugmentation:
 """ Augmentations: """
 
 
+class Debug(BaseAugmentation):
+    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple):
+        inputs_shape = (2 * inputs_shape[0],) + inputs_shape[1:]
+        labels_shape = (2 * labels_shape[0],) + labels_shape[1:]
+
+        return inputs_shape, labels_shape
+
+    def call(self, batch_inputs, batch_labels):
+        return np.concatenate((batch_inputs, batch_inputs + 1), axis=0), \
+               np.concatenate((batch_labels, batch_labels + 1), axis=0)
+
+
 class GaussianNoise(BaseAugmentation):
     def __init__(self, mean=0, std=1, multiplicative=False):
         self.mean = mean

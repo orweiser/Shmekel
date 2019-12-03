@@ -2,10 +2,7 @@ from api.utils.augmentations import AugmentationList
 from api.utils.data_utils import batch_generator
 from Utils.logger import logger
 from keras import optimizers as keras_optimizers
-from keras import callbacks as keras_callbacks
-
-
-""" WELCOME TO THE TRAINER!!! """
+from api.utils.callbacks import parse_callback, _parse_item
 
 
 class Trainer:
@@ -30,10 +27,10 @@ class Trainer:
         self.validation_steps = validation_steps
 
         self.batch_size = batch_size
-        if not include_experiment_callbacks:
-            self.callbacks = callbacks
-        else:
+        if include_experiment_callbacks:
             self.callbacks = experiment.callbacks + (callbacks or [])
+        else:
+            self.callbacks = callbacks
 
         self.callbacks = [parse_callback(c) for c in self.callbacks]
 
@@ -104,18 +101,6 @@ class Trainer:
         logger.info('Exit fitting loop')
 
 
-def _parse_item(item):
-    if isinstance(item, str):
-        return item, {}
-    if isinstance(item, dict):
-        return item['name'], {key: val for key, val in item if key != 'name'}
-    if isinstance(item, (list, tuple)):
-        assert len(item) == 2
-        assert isinstance(item[0], str)
-        assert isinstance(item[1], dict)
-        return tuple(item)
-
-
 def parse_optimizer(item):
     if isinstance(item, keras_optimizers.Optimizer):
         return item
@@ -129,13 +114,4 @@ def parse_optimizer(item):
     module = getattr(keras_optimizers, opt_name)
     return module(**opt_params)
 
-
-def parse_callback(item):
-    if isinstance(item, keras_callbacks.Callback):
-        return item
-
-    c_name, c_params = _parse_item(item)
-
-    module = getattr(keras_callbacks, c_name)
-    return module(**c_params)
 
