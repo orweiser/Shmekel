@@ -79,8 +79,8 @@ DEFAULT_FULL_SPLIT_STATISTICS = {
 DEFAULT_INPUT_FEATURES = ('High', 'Open', 'Low', 'Close', 'Volume')
 DEFAULT_OUTPUT_FEATURES = (('rise', dict(output_type='categorical', k_next_candle=1)),)
 
-DEFAULT_TRAIN_YEARS = []
-DEFAULT_VAL_YEARS = []
+DEFAULT_TRAIN_YEARS = [x for x in range(1900, 2020) if x % 2]
+DEFAULT_VAL_YEARS = [x for x in range(1900, 2020) if not x % 2]
 
 
 class StocksDataset(Dataset):
