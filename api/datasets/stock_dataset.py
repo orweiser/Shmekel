@@ -1,11 +1,12 @@
 from ..core.dataset import Dataset
-from Utils.data import DataReader
+from Utils.data import load_stock, get_stock_path
+import constants
 from shmekel_core.calc_models import Stock
 from feature_space import get_feature
 from copy import deepcopy as copy
-import os
 from tqdm import tqdm
 from Utils.logger import logger
+import os
 
 
 N_train = 300
@@ -99,36 +100,41 @@ class StocksDataset(Dataset):
     _relevant_indices: dict
 
     # TODO: why is this not __init__?
-    def init(self, config_path=None, time_sample_length=5,  # features_defaults=None,
-             stock_name_list=None, feature_list=None, val_mode=False, output_feature_list=None,
-             years=None):
+    def init(self, basedir=None, time_sample_length=5, stocks_ext='us.txt',
+             input_features=None, output_features=None,
+             stock_name_list=None, val_mode=False,
+             years=None,
+             feature_list=None, output_feature_list=None, config_path=None):
 
-        if config_path is None:
-            config_path = 'Shmekel_config.txt'
-            if not os.path.exists(config_path):
-                config_path = os.path.join(os.path.pardir, config_path)
-        assert os.path.exists(config_path), 'didnt found file "Shmekel_config.txt", ' \
-                                            'please specify the Shmekel config path'
+        if feature_list:
+            logger.warning('parameter "%s" is deprecated. use "%s" instead' % ('feature_list', 'input_features'))
+            input_features = feature_list
+
+        if output_feature_list:
+            logger.warning('parameter "%s" is deprecated. use "%s" instead' % ('output_feature_list', 'output_features'))
+            output_features = output_feature_list
+
+        if config_path:
+            logger.warning('parameter "%s" is deprecated. use "%s" instead' % ('config_path', 'basedir'))
+            basedir = config_path
+
+        self.basedir = basedir or constants.DATA_PATH
+        self.stocks_ext = stocks_ext
 
         self.time_sample_length = time_sample_length
         self._val_mode = val_mode
         self._stocks_list = None
-        self.config_path = config_path
+        self.config_path = basedir
         self._relevant_indices = {}
 
-        self.output_features = output_feature_list or DEFAULT_OUTPUT_FEATURES
-        self.input_features = feature_list or DEFAULT_INPUT_FEATURES
+        self.output_features = output_features or DEFAULT_OUTPUT_FEATURES
+        self.input_features = input_features or DEFAULT_INPUT_FEATURES
 
-        self.stock_name_list = stock_name_list
-        self.stock_name_list = self.stock_name_list or \
-                               (DEFAULT_VAL_STOCK_LIST if val_mode else DEFAULT_TRAIN_STOCK_LIST)
+        self.stock_name_list = stock_name_list or (DEFAULT_VAL_STOCK_LIST if val_mode else DEFAULT_TRAIN_STOCK_LIST)
 
         self.feature_list_with_params = [
             x if isinstance(x, (tuple, list)) else (x, {}) for x in self.input_features + self.output_features
         ]
-        # for f, params in self.feature_list_with_params:
-        #     for key, val in self.features_defaults.items():
-        #         f.setdefault(key, val)
 
         self._non_numerical_features = [('DateTuple', {}), ('RawCandle', {})]
 
@@ -216,16 +222,19 @@ class StocksDataset(Dataset):
 
         return item
 
+    def gen_all_paths(self):
+        for tckt in tqdm(self.stock_name_list):
+            yield tckt, get_stock_path(self.basedir, tckt, self.stocks_ext)
+
     @property
     def stocks_list(self):
         if self._stocks_list is None:
-            reader = DataReader(self.config_path)
-
             logger.info('Loading Stocks:')
             self._stocks_list = []
-            for tckt in tqdm(self.stock_name_list):
-                self._stocks_list.append(Stock(tckt, reader.load_stock(tckt), feature_list=[get_feature(f_name, **params)
-                              for f_name, params in self.feature_list_with_params + self._non_numerical_features]))
+            for tckt, path in self.gen_all_paths():
+                self._stocks_list.append(
+                    Stock(tckt, load_stock(path),
+                          feature_list=[get_feature(f_name, **params) for f_name, params in self.feature_list_with_params + self._non_numerical_features]))
         return self._stocks_list
 
     @property
@@ -248,3 +257,18 @@ class StocksDataset(Dataset):
 
     def __bool__(self) -> bool:
         return bool(self.stock_name_list)
+
+
+class InferenceStocksDataset(StocksDataset):
+    def __init__(self, basedir, **kwargs):
+        super(InferenceStocksDataset, self).__init__(**kwargs)
+        self.basedir = basedir
+
+    def gen_all_paths(self):
+        for tckt_with_ext in os.listdir(self.basedir):
+            path = os.path.join(self.basedir, tckt_with_ext)
+            tckt = tckt_with_ext.split('.')[0]
+
+            yield tckt, path
+
+

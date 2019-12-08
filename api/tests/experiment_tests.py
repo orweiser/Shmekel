@@ -84,7 +84,7 @@ class TestExperiment:
                     logs.append('FAILED: {0} \t\t {1}'.format(k, getattr(e, 'message', '')))
                 else:
                     logs.append('PASSED: %s' % k)
-        sleep(0.001)
+        sleep(1)
         print(*logs, sep='\n')
 
 
