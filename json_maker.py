@@ -403,14 +403,11 @@ def insert_values_to_csv_cells(pth, find_by, row_tags, data):
     os.remove(pth)
     os.rename(pth + '_temp', pth)
 
+# ***************IMPORTANT CODE STARTS HERE***************************
 
 config_path = os.path.join(os.pardir, 'Shmekel_Results', 'default_project', 'configs')
 # grid_jason_maker(config_path)  # -- use this to create the configs
 
-# gs = GridSearch2(config_path)
-# for exp in gs.iter_fixed({'num_of_layers': 5}):
-#     exp.run()
-# gs.plot_all_parameters_slices(figs_dir='C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project\\Figs')
 
 metric = ('val_acc',)
 grid_results_path = os.path.join(config_path, 'grid_results')
