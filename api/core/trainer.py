@@ -73,6 +73,7 @@ class Trainer:
         metrics = exp.metrics
         train_dataset = exp.train_dataset
         val_dataset = exp.val_dataset
+        print('val_dataset: {}'.format(val_dataset))
         model = exp.model
 
         batch_size = self.batch_size

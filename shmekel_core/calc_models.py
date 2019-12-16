@@ -87,9 +87,20 @@ class Stock:
 
     def __get_features(self, numerical=True):
         f_list = [feature for feature in self.features if feature.is_numerical is numerical]
-        return [f.get_feature(data=self.data, normalization_type=f.normalization_type,
-                              temporal_delay=self.temporal_delays[0],
-                              neg_temporal_delay=self.temporal_delays[1]) for f in f_list]
+        features = None
+
+        for ind, f in enumerate(f_list):
+            # feature = f.get_feature(data=self.data, normalization_type=f.normalization_type,
+            #                         feature_list=features)
+            # TODO do we need temporal delays? talk to Or if needed
+            feature = f.get_feature(data=self.data, temporal_delay=self.temporal_delays[0],
+                                    neg_temporal_delay=self.temporal_delays[1], normalization_type=f.normalization_type,
+                                    feature_list=features)
+            if features is None:
+                features = [None] * len(f_list)
+            features[ind] = feature
+
+        return features
 
     @property
     def numerical_feature_list(self):

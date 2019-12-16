@@ -13,7 +13,7 @@ class ADX(Feature):
         self.time_delay = 2*period - 1
         self._period = period
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         close = self._get_basic_feature(data[0], 'close')
         low = self._get_basic_feature(data[0], 'low')
         high = self._get_basic_feature(data[0], 'high')

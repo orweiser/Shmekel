@@ -35,6 +35,16 @@ class Results:
         except ValueError:
             return self[1]
 
+    def get_best_epoch_number(self, metric=None):
+        # TODO ???
+        metric = metric or 'val_acc'
+        metric = metric or 'acc'
+        assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
+
+        metric_history = np.array(self[metric])
+        return metric_history.argmax()
+
+
     def summary(self):
         print(self)
         if self:

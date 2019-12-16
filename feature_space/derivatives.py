@@ -22,7 +22,7 @@ class Derivatives(Feature):
         self.with_volume = with_volume
         self.num_features = self._num_basic * self._deriv_order
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         data_mat = data[0]
         out_mat = numpy.zeros([data_mat.shape[0], self.num_features])
         for i in range(1, self._deriv_order + 1):

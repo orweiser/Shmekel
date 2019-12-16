@@ -11,7 +11,7 @@ class Candle(Feature):
         self.with_volume = with_volume
         self.num_features = 5 if with_volume else 4
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         if self.with_volume:
             return data[0][self.time_delay:]
 
@@ -41,7 +41,7 @@ class DateTuple(Feature):
         self.is_numerical = False
         self.num_features = 1
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         return data[1]
 
 
@@ -53,7 +53,7 @@ class High(Feature):
         self.is_numerical = True
         self.num_features = 1
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         return self._get_basic_feature(data[0], 'High')
 
 
@@ -65,7 +65,7 @@ class Low(Feature):
         self.is_numerical = True
         self.num_features = 1
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         return self._get_basic_feature(data[0], 'Low')
 
 
@@ -77,7 +77,7 @@ class Open(Feature):
         self.is_numerical = True
         self.num_features = 1
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         return self._get_basic_feature(data[0], 'Open')
 
 
@@ -89,7 +89,7 @@ class Close(Feature):
         self.is_numerical = True
         self.num_features = 1
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         return self._get_basic_feature(data[0], 'Close')
 
 
@@ -101,5 +101,5 @@ class Volume(Feature):
         self.is_numerical = True
         self.num_features = 1
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         return self._get_basic_feature(data[0], 'Volume')

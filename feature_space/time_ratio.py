@@ -12,7 +12,7 @@ class TimeRatio(Feature):
         self.time_delay = 1
         self.num_features = 5  # performed on the entire candle
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         candle = np.zeros((len(data[0]), 5))
         candle[:, 0] = self._get_basic_feature(data[0], 'open')
         candle[:, 1] = self._get_basic_feature(data[0], 'close')

@@ -44,6 +44,7 @@ class Loss:
         self.y_pred_tensor = None
 
         self.loss_tensor = None
+        self.__name__ = "Shmekeloss"
 
     def init(self, *args, **kwargs):
         """
