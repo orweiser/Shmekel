@@ -106,12 +106,15 @@ def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu
                                     'activation_function': activation_functions_combinations[index]
                                 }
                                 index += 1
-                                name += '_'.join([
+                                layer_identifier = '_'.join([
                                     layer_config['type'], str(layer_config['size']), layer_config['activation_function']
-                                ]) + '_'
+                                ])
+                                layer_config['name'] = 'Layer_' + str(layer_index) + '_' + layer_identifier
+                                name += layer_identifier + '_'
                                 new_model_config['layers'].append(layer_config)
                             else:
                                 name += layer['name'] + '_'
+                                layer['name'] = 'Layer_' + str(layer_index) + '_' + layer['name']
                                 new_model_config['layers'].append(layer)
                         if EARLY_STOP:
                             new_model_config['callbacks'] = 'early_stop'
@@ -290,7 +293,7 @@ def grid_jason_maker(main_dir):
             if 'time_sample_length' in data['val_dataset_config']:
                 data['val_dataset_config']['time_sample_length'] = 1
 
-        with open(file_name, 'w') as outfile:
+        with open(file_name, 'w+') as outfile:
             json.dump(data, outfile)
     return main_dir
 
@@ -403,33 +406,33 @@ def insert_values_to_csv_cells(pth, find_by, row_tags, data):
     os.remove(pth)
     os.rename(pth + '_temp', pth)
 
+
 # ***************IMPORTANT CODE STARTS HERE***************************
 
 config_path = os.path.join(os.pardir, 'Shmekel_Results', 'default_project', 'configs')
-# grid_jason_maker(config_path)  # -- use this to create the configs
+grid_jason_maker(config_path)  # -- use this to create the configs
 
-
-metric = ('val_acc',)
-grid_results_path = os.path.join(config_path, 'grid_results')
-if not os.path.exists(grid_results_path):
-    create_identifiers_csv(config_path)
-
-exp_results = pd.read_csv(grid_results_path)
-# for exp in gs.iter_modulo(rem=2):
-for exp_name in exp_results['name']:
-    config = load_config(os.path.join(config_path, 'config_' + exp_name + '.json'))
-    config.pop('identifiers')
-    exp = get_exp_from_config(config)
-    exp.run()
-    for m in metric:
-        num = exp.results.get_best_epoch_number()
-        val = exp.results.get_best_epoch()[m]
-        labels_value_dict = {'best epoch numebr by {metric}'.format(metric=m): num,
-                             'best epoch values by {metric}'.format(metric=m): val}
-        idx = exp_results.loc[exp_results['name'] == exp._name].index.values.astype(int)[0]
-        if exp_results.at[idx, 'status'] != 'Done':
-            insert_values_to_csv_cells(grid_results_path, find_by='name', row_tags=[exp._name], data=labels_value_dict)
-
-# main
-# print_statistics('C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project', 'size',
-#                  file='results.txt')
+# metric = ('val_acc',)
+# grid_results_path = os.path.join(config_path, 'grid_results')
+# if not os.path.exists(grid_results_path):
+#     create_identifiers_csv(config_path)
+#
+# exp_results = pd.read_csv(grid_results_path)
+# # for exp in gs.iter_modulo(rem=2):
+# for exp_name in exp_results['name']:
+#     config = load_config(os.path.join(config_path, 'config_' + exp_name + '.json'))
+#     config.pop('identifiers')
+#     exp = get_exp_from_config(config)
+#     exp.run()
+#     for m in metric:
+#         num = exp.results.get_best_epoch_number()
+#         val = exp.results.get_best_epoch()[m]
+#         labels_value_dict = {'best epoch numebr by {metric}'.format(metric=m): num,
+#                              'best epoch values by {metric}'.format(metric=m): val}
+#         idx = exp_results.loc[exp_results['name'] == exp._name].index.values.astype(int)[0]
+#         if exp_results.at[idx, 'status'] != 'Done':
+#             insert_values_to_csv_cells(grid_results_path, find_by='name', row_tags=[exp._name], data=labels_value_dict)
+#
+# # main
+# # print_statistics('C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project', 'size',
+# #                  file='results.txt')

@@ -21,7 +21,9 @@ class GeneralRnn(Model):
              output_activation='softmax', callbacks=None,
              dropout=True, dropout_rate=0.2, units=None):
         self.hidden_layers = layers or []
+        # TODO: calculate num_of_layers from list length
         self.num_of_layers = num_of_layers
+        # TODO: calculate num_of_rnn_layers with function that reads the list
         self.num_of_rnn_layers = num_of_rnn_layers
         self.output_activation = output_activation
         self._input_shape = input_shape
@@ -49,15 +51,16 @@ class GeneralRnn(Model):
         # x = RNN(cell)(input_layer)
 
         x = input_layer
+        num_of_rnn_layers = self.num_of_rnn_layers
         for layer in self.hidden_layers:
             if layer['type'] == 'KerasLSTM':
-                if self.num_of_rnn_layers > 1:
-                    x = KerasLSTM(layer['size'], return_sequences=True)(x)
-                    self.num_of_rnn_layers -= 1
+                if num_of_rnn_layers > 1:
+                    x = KerasLSTM(layer['size'], name=layer['name'], return_sequences=True)(x)
+                    num_of_rnn_layers -= 1
                 else:
-                    x = KerasLSTM(layer['size'], return_sequences=False)(x)
+                    x = KerasLSTM(layer['size'], name=layer['name'], return_sequences=False)(x)
             elif layer['type'] == 'Dense':
-                x = Dense(layer['size'], activation=layer['activation_function'])(x)
+                x = Dense(layer['size'], name=layer['name'], activation=layer['activation_function'])(x)
             if self.dropout:
                 x = Dropout(self.dropout_rate)(x)
 
