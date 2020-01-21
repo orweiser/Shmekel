@@ -86,6 +86,7 @@ class GeneralRnn(Model):
         if self.callbacks is None:
             self.callbacks = []
         if callback == 'early_stop':
-            self.callbacks.append(keras_callbacks.EarlyStopping(monitor='val_acc', min_delta=0.002, patience=2, verbose=0,
-                                                     mode='max', baseline=None, restore_best_weights=False))
+            self.callbacks.append(keras_callbacks.EarlyStopping(monitor='val_acc', min_delta=0.002,
+                                                                patience=2, verbose=0,
+                                                                mode='max', baseline=None))
         return self.callbacks

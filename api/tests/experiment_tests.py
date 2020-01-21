@@ -154,7 +154,6 @@ class TestExperiment:
             for attribute_name, value in attributes.items():
                 assert getattr(layer, attribute_name) == value
 
-
     def run_all(self):
         logs = []
         for k in dir(self):
