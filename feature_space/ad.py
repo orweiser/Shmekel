@@ -9,11 +9,12 @@ class AD(Feature):
         """
         super(AD, self).__init__(**kwargs)
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         """
         A/D (Accumulation/Distribution) indicator is a momentum indicator that attempts to gauge supply and demand
         data columns represent'Open', 'High', 'Low', 'Close', 'Volume'
                                 0       1       2       3         4
+                                :param feature_list:
         """
         close = self._get_basic_feature(data[0], 'close')
         low = self._get_basic_feature(data[0], 'low')

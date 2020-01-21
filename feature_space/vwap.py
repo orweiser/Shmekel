@@ -10,11 +10,12 @@ class VWAP(Feature):
         super(VWAP, self).__init__(**kwargs)
         self.time_delay = period
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         """
         VWAP (Volume Weighted Average Price)
         data columns represent'Open', 'High', 'Low', 'Close', 'Volume'
                                 0       1       2       3         4
+                                :param feature_list:
         """
         close = self._get_basic_feature(data[0], 'close')
         volume = self._get_basic_feature(data[0], 'volume')

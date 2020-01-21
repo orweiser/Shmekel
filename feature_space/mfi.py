@@ -14,7 +14,7 @@ class MFI(Feature):
 
         self._days = days
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         close = self._get_basic_feature(data[0], 'close')
         low = self._get_basic_feature(data[0], 'low')
         high = self._get_basic_feature(data[0], 'high')

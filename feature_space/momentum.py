@@ -11,12 +11,13 @@ class Momentum(Feature):
 
         self.time_delay = period
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         """
          momentum indicator compares the current price to selected number of previous prices.
          The function recieve Closer values and return each day (current close value) - sum(previous close values)
          data columns represent'Open', 'High', 'Low', 'Close', 'Volume'
                                 0       1       2       3         4
+                                :param feature_list:
         """
         close = self._get_basic_feature(data[0], 'close')
         N = self.time_delay

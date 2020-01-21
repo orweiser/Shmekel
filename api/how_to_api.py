@@ -30,8 +30,8 @@ Some possible future modules:
 # You may run this file in console and see the expected behavior by yourself.
 
 from api.core import Experiment
-my_exp = Experiment(name='my_exp')
-my_exp.print()
+# my_exp = Experiment(name='my_exp')
+# my_exp.print()
 
 """
 >>> Experiment : my_exp
@@ -44,7 +44,7 @@ my_exp.print()
 >>> status: 'initialized'
 """
 
-my_exp.run()
+# my_exp.run()
 
 """
 >>> ... keras progress bar ...
@@ -61,7 +61,7 @@ my_exp.run()
 >>> --> acc ........................... 0.936
 """
 
-print(my_exp.status)
+# print(my_exp.status)
 
 """
 >>> 'done'
@@ -72,7 +72,7 @@ at "../Shmekel_results/default_project/my_exp/"
 there's a special class to handle the results of an experiment:
 """
 
-results = my_exp.results
+# results = my_exp.results
 
 """
 check out the following methods:
@@ -93,11 +93,37 @@ But first, let's explore how the model's depth affects the experiment's results 
 fully connected models, and different depth.
 """
 
-fc_3 = Experiment(name='fc_3', model_config=dict(model='FullyConnected', depth=3))
-fc_5 = Experiment(name='fc_5', model_config=dict(model='FullyConnected', depth=5))
+# fc_3 = Experiment(name='fc_3', model_config=dict(model='FullyConnected', depth=3))
+# fc_5 = Experiment(name='fc_5', model_config=dict(model='FullyConnected', depth=5))
+# lstm_exp = Experiment(name='LSTM_compose', model_config=dict(model='LSTM_compose'),
+#                       train_dataset_config=dict(dataset='MNIST', val_mode=False),
+#                       val_dataset_config=dict(dataset='MNIST', val_mode=True),
+#                       backup_config=dict(handler='DefaultModelGroup'))
 
-print(fc_3.model)
-print(fc_5.model)
+# lstm_dropout_exp = Experiment(name='LSTM_compose', model_config=dict(model='LSTM_compose'),
+#                               train_dataset_config=dict(dataset='MNIST', val_mode=False),
+#                               val_dataset_config=dict(dataset='MNIST', val_mode=True),
+#                               backup_config=dict(handler='DefaultModelGroup'))
+
+# for exp in [lstm_exp, lstm_dropout_exp]:
+# print("printing! {}".format(exp.model.summary()))
+# exp.start()
+# exp.run()
+lstm_exp = Experiment(name='LSTM_compose', model_config=dict(model='LSTM_compose'),
+                              train_dataset_config=dict(dataset='MNIST', val_mode=False),
+                              val_dataset_config=dict(dataset='MNIST', val_mode=True))
+#lstm_exp.train_config['epochs'] = 0
+# lstm_exp.run()
+#lstm_exp.backup_handler.load_snapshot(lstm_exp.model, 1)
+print("printing! {}".format(lstm_exp.model.summary()))
+lstm_exp.run()
+
+
+# print(fc_3.model)
+# print(fc_5.model)
+#print(lstm_exp.model)
+# lstm_exp.train_config['epochs'] += 5
+# lstm_exp.start()
 
 """
 >>> fully_connected-depth_3-width_32

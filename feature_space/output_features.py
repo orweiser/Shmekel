@@ -71,11 +71,18 @@ class Rise(Feature):
         num_classes = num_classes or self.num_features
         return one_hot(y, num_classes)
 
-    def _compute_feature(self, data):
-        open = self._get_basic_feature(data[0], 'open')
+    def _compute_feature(self, data, feature_list=None):
+        # input_features_num = data[0].shape[1]
+        # feature_data = np.empty((feature_list[0].shape[0], input_features_num))
+        # for ind in range(input_features_num):
+        #     feature_data[:, ind] = feature_list[ind]
+        # open_list = self._get_basic_feature(feature_data, 'open')
+        #
+        # diff = np.insert(open_list[1:] - open_list[:-1], 0, 0)
+        open_list = self._get_basic_feature(data[0], 'open')
         close = self._get_basic_feature(data[0], 'close')
 
-        diff = close - open
+        diff = close - open_list
 
         if self.output_type == 'regression':
             pass

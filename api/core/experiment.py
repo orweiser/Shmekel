@@ -108,8 +108,6 @@ class Experiment:
         if backup:
             self.backup_handler.dump_config(self.config)
 
-        self._assert_shapes()
-
         status = self.status
         if status is 'done':
             logger.info('Experiment is done.')
@@ -180,6 +178,8 @@ class Experiment:
     @property
     def model(self):
         if not self._model:
+            self.model_config["input_shape"] = self.train_dataset.input_shape
+            self.model_config["output_shape"] = self.train_dataset.output_shape
             self._model = get_model(**self.model_config)
             self.model_config = self._model.config
 
