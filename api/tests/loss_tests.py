@@ -1,11 +1,10 @@
-from api.losses.classification_reinforce import ClassificationReinforce, ClassificationReinforceMetrics
-from keras import Model, Input
+from api.tests.base_class import Test
+from api.losses.classification_reinforce import ClassificationReinforce
 import keras.backend as K
 import numpy as np
-from time import sleep
 
 
-class TestExperiment:
+class TestLoss(Test):
 
     def __init__(self):
         pass
@@ -71,20 +70,4 @@ class TestExperiment:
         y_true, y_pred, outputs = batch
         outs = f(y_true, y_pred)
         assert np.all((outs - outputs) < 1e-6), '%s, %s' % (str(outs), str(outputs))
-
-    def run_all(self):
-        logs = []
-        for k in dir(self):
-            if k.startswith('test'):
-                try:
-                    getattr(self, k)()
-                except Exception as e:
-                    logs.append('FAILED: {0} \t\t {1}'.format(k, getattr(e, 'message', '')))
-                else:
-                    logs.append('PASSED: %s' % k)
-        sleep(1)
-        print(*logs, sep='\n')
-
-
-
 

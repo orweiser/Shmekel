@@ -1,8 +1,8 @@
+from api.tests.base_class import Test
 from api.utils.data_utils import batch_generator
 import numpy as np
 from ..datasets import StocksDataset
 from itertools import product
-from time import sleep
 from copy import deepcopy
 
 
@@ -64,7 +64,7 @@ def get_test_dataset(candle_params=None, **kwargs):
     return StocksDataset(**params)
 
 
-class TestStockDataset:
+class TestStockDataset(Test):
 
     def __init__(self):
         pass
@@ -203,21 +203,4 @@ class TestStockDataset:
             test_cases[ind] = new_case
 
         self._test_samples(test_cases, {'normalization_type': 'debug'})
-
-    def run_all(self):
-        logs = []
-        for k in dir(self):
-            if k.startswith('test'):
-                try:
-                    getattr(self, k)()
-                except Exception as e:
-                    logs.append('FAILED: {0} \t\t {1}'.format(k, getattr(e, 'message', '')))
-                else:
-                    logs.append('PASSED: %s' % k)
-        sleep(0.001)
-        print(*logs, sep='\n')
-
-
-
-
 

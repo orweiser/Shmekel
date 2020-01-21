@@ -1,15 +1,12 @@
+from api.tests.base_class import Test
 from api.core import Experiment
 import numpy as np
-from api.datasets import StocksDataset
-from itertools import product
-from time import sleep
-from copy import deepcopy
-from api.tests.dataset_tests import _get_dataset_params, ORIGINAL_TEST_CASES
+from api.tests.dataset_tests import _get_dataset_params
 from api.utils.callbacks import DebugCallback
 from api.core.backup_handler import BaseBackupHandler
 
 
-class TestExperiment:
+class TestExperiment(Test):
 
     def __init__(self):
         pass
@@ -153,16 +150,3 @@ class TestExperiment:
             layer = exp.model.get_layer(name=layer_name)
             for attribute_name, value in attributes.items():
                 assert getattr(layer, attribute_name) == value
-
-    def run_all(self):
-        logs = []
-        for k in dir(self):
-            if k.startswith('test'):
-                try:
-                    getattr(self, k)()
-                except Exception as e:
-                    logs.append('FAILED: {0} \t\t {1}'.format(k, getattr(e, 'message', '')))
-                else:
-                    logs.append('PASSED: %s' % k)
-        sleep(1)
-        print(*logs, sep='\n')
