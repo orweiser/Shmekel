@@ -120,5 +120,4 @@ class Stock:
         m = np.swapaxes(self.feature_matrix, 0, self._feature_axis)
         m = m[t_start:t_end]
         m = np.swapaxes(m, 0, self._feature_axis)
-
         return m

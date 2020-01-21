@@ -10,5 +10,5 @@ def get(model: str, **kwargs):
     if model == 'LSTM':
         return LSTM(model=model, **kwargs)
 
-    raise ValueError('Unexpected model, got ' + model)
+    raise ValueError('Unexpected model, got ' + str(model))
 

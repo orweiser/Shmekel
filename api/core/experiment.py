@@ -6,6 +6,7 @@ from .results import Results
 from .trainer import Trainer
 from .backup_handler import get_handler
 from Utils.logger import logger
+import json
 
 
 class Experiment:
@@ -294,3 +295,18 @@ class Experiment:
     def compute_shapes(self):
         """ computes the input and output shapes (considering augmentations) """
         raise NotImplementedError()
+
+    def export(self, epoch, path):  # todo: add defaults
+        export_config = {
+            'model': self.model_config,
+            'weights_path': self.backup_handler.get_snapshot_path(epoch),
+            'dataset': {
+                'time_sample_length': self.val_dataset.time_sample_length,
+                'input_features': self.val_dataset.input_features,
+                'output_features': self.val_dataset.output_features,
+            }
+            # todo: add val_augmentations
+        }
+
+        with open(path, 'w') as f:
+            json.dump(export_config, f, indent=4)
