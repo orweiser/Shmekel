@@ -23,7 +23,7 @@ MAX_DROPOUT = 0.3
 DENSE = 'Dense'
 LSTM = 'KerasLSTM'
 MAX_DEPTH = 20
-EARLY_STOP = True
+VERSION = 'version0.0.1'
 
 name2num = {'Yishai': 0, 'Michael': 1, 'Ron': 2, 'Rotem': 3}
 
@@ -54,72 +54,43 @@ def get_config_identifiers(model_config):
     return identifiers
 
 
-def generate_grid_models(layers_types=[LSTM, DENSE], activation_functions=['relu', 'sigmoid', 'tanh'], min_depth=3,
-                         max_depth=5, neurons=[], output_activation='softmax'):
+def _create_config(output_activation, layers_def, early_stop=True):
+    # neurons_combination[index]):
+
+    depth = len(layers_def)
+    model_config = {
+        'model': 'General_RNN',
+        'num_of_layers': depth,
+        'layers': [],
+        'num_of_rnn_layers': 0,
+        "output_activation": output_activation
+    }
+    name = ''
+    for index, (layer_type, size, activation) in enumerate(layers_def):
+
+        layer_config = {'type': layer_type, 'size': size, 'activation_function': activation,
+                        'name': '_'.join([layer_type, str(size), activation])}
+        name += layer_config['name'] + '_'
+        if layer_type == LSTM:
+            model_config['num_of_rnn_layers'] += 1
+        model_config['layers'].append(layer_config)
+    model_config['name'] = name
+    if early_stop:
+        model_config['callbacks'] = 'early_stop'
+    return model_config
+
+
+def get_random_sample(layers_types, activation_functions, min_depth, max_depth, neurons):
+    from random import choice
+    depth = choice(list(range(min_depth, max_depth + 1)))
+    return [map(choice, [layers_types, neurons, activation_functions]) for _ in range(depth)]
+
+
+def generate_grid_models(layers_types=(LSTM, DENSE), activation_functions=('relu', 'sigmoid', 'tanh'), min_depth=3,
+                         max_depth=5, neurons=(), output_activation='softmax', early_stop=True):
     models_configs = []
-    for depth in range(min_depth, max_depth + 1):
-        for layers_combination in list(product(layers_types, repeat=depth)):
-            for neurons_combination in list(product(neurons, repeat=depth)):
-                model_config = {
-                    'model': 'General_RNN',
-                    'num_of_layers': depth,
-                    'layers': [],
-                    'num_of_rnn_layers': 0,
-                    "output_activation": output_activation
-                }
-                name = ''
-                for index, layer in enumerate(layers_combination):
-                    if layer == DENSE:
-                        layer_config = None
-                    else:
-                        layer_config = {
-                            'type': layer,
-                            'size': neurons_combination[index],
-                        }
-                        layer_config['name'] = '_'.join([layer_config['type'], str(layer_config['size'])])
-                        name += layer_config['name'] + '_'
-                        model_config['num_of_rnn_layers'] += 1
-                    model_config['layers'].append(layer_config)
-                num_of_dense_layers = model_config['layers'].count(None)
-                if EARLY_STOP:
-                    model_config['callbacks'] = 'early_stop'
-                if num_of_dense_layers is 0:
-                    model_config['name'] = name
-                    models_configs.append(model_config)
-                else:
-                    for activation_functions_combinations in list(
-                            product(activation_functions, repeat=num_of_dense_layers)):
-                        new_model_config = {
-                            'model': 'General_RNN',
-                            'num_of_layers': depth,
-                            'layers': [],
-                            'num_of_rnn_layers': model_config['num_of_rnn_layers'],
-                            "output_activation": output_activation
-                        }
-                        index = 0
-                        name = ''
-                        for layer_index, layer in enumerate(model_config['layers']):
-                            if layer is None:
-                                layer_config = {
-                                    'type': DENSE,
-                                    'size': neurons_combination[layer_index],
-                                    'activation_function': activation_functions_combinations[index]
-                                }
-                                index += 1
-                                layer_identifier = '_'.join([
-                                    layer_config['type'], str(layer_config['size']), layer_config['activation_function']
-                                ])
-                                layer_config['name'] = 'Layer_' + str(layer_index) + '_' + layer_identifier
-                                name += layer_identifier + '_'
-                                new_model_config['layers'].append(layer_config)
-                            else:
-                                name += layer['name'] + '_'
-                                layer['name'] = 'Layer_' + str(layer_index) + '_' + layer['name']
-                                new_model_config['layers'].append(layer)
-                        if EARLY_STOP:
-                            new_model_config['callbacks'] = 'early_stop'
-                        new_model_config['name'] = name
-                        models_configs.append(new_model_config)
+    combs = get_random_sample(layers_types, activation_functions, min_depth, max_depth, neurons)
+    models_configs.append(_create_config(output_activation, combs, early_stop=early_stop))
     return models_configs
 
 
@@ -278,12 +249,10 @@ def grid_jason_maker(main_dir):
                         ('Volume', dict(normalization_type='convolve')))
 
         name = model_config.pop('name')
-        data = json_format(model_config=model_config, name=name,
-                           train_dataset_config=dict(dataset='StocksDataset', val_mode=False,
-                                                     time_sample_length=7),
-                           val_dataset_config=dict(dataset='StocksDataset', val_mode=True,
-                                                   time_sample_length=7)
-                           )
+        data = json_format(model_config=model_config, name=os.path.join(VERSION, name),
+                           train_dataset_config=dict(dataset='StocksDataset', val_mode=False, time_sample_length=7),
+                           val_dataset_config=dict(dataset='StocksDataset', val_mode=True, time_sample_length=7),
+                           backup_config=dict(handler='DefaultLocal2'))
 
         data['identifiers'] = get_config_identifiers(model_config)
 
@@ -409,8 +378,8 @@ def insert_values_to_csv_cells(pth, find_by, row_tags, data):
 
 # ***************IMPORTANT CODE STARTS HERE***************************
 
-config_path = os.path.join(os.pardir, 'Shmekel_Results', 'default_project', 'configs')
-grid_jason_maker(config_path)  # -- use this to create the configs
+# config_path = os.path.join(os.pardir, 'Shmekel_Results', 'default_project', 'configs')
+# grid_jason_maker(config_path)  # -- use this to create the configs
 
 # metric = ('val_acc',)
 # grid_results_path = os.path.join(config_path, 'grid_results')

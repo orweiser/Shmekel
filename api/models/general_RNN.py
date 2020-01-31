@@ -55,10 +55,10 @@ class GeneralRnn(Model):
         for layer in self.hidden_layers:
             if layer['type'] == 'KerasLSTM':
                 if num_of_rnn_layers > 1:
-                    x = KerasLSTM(layer['size'], name=layer['name'], return_sequences=True)(x)
+                    x = KerasLSTM(layer['size'], name=layer['name'], activation=layer['activation_function'], return_sequences=True)(x)
                     num_of_rnn_layers -= 1
                 else:
-                    x = KerasLSTM(layer['size'], name=layer['name'], return_sequences=False)(x)
+                    x = KerasLSTM(layer['size'], name=layer['name'], activation=layer['activation_function'], return_sequences=False)(x)
             elif layer['type'] == 'Dense':
                 x = Dense(layer['size'], name=layer['name'], activation=layer['activation_function'])(x)
             if self.dropout:

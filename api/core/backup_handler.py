@@ -312,6 +312,16 @@ class DefaultLocal(BaseBackupHandler):
         return c
 
 
+class DefaultLocal2(DefaultLocal):
+    @property
+    def exp_absolute_path(self):
+        """
+        :return: absolute path to the experiment backup directory.
+            default: res_dir/project/experiment
+        """
+        return os.path.join(self.res_dir_absolute_path, self.experiment.name)
+
+
 class DefaultLossGroup(BaseBackupHandler):
     """ will be used to enforce backwards compatibility with loss group """
     def dump_config(self, config: dict):
