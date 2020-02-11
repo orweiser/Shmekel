@@ -12,7 +12,7 @@ class RSI(Feature):
         self.time_delay = period
         self.is_numerical = True
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         close = self._get_basic_feature(data[0], 'close')
         dif = -np.diff(close)
         u = np.maximum(dif, 0)

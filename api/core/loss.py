@@ -16,6 +16,9 @@ class Loss:
         loss_weights
         callbacks
     """
+
+    is_computing_validation_metrics = False
+
     def __init__(self, loss='', experiment=None, **params):
         """
         a constructor method.
@@ -41,6 +44,7 @@ class Loss:
         self.y_pred_tensor = None
 
         self.loss_tensor = None
+        self.__name__ = "Shmekeloss"
 
     def init(self, *args, **kwargs):
         """
@@ -94,8 +98,3 @@ class Loss:
     def loss_weights(self) -> (dict, None):
         """for later use of multiple losses"""
         return None
-
-    @property
-    def callbacks(self):
-        """for later use of advanced training schemes"""
-        return []

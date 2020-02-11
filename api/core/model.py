@@ -82,11 +82,6 @@ class Model(KerasModel):
         """
         raise NotImplementedError()
 
-    @property
-    def callbacks(self):
-        """for later use of advanced training schemes"""
-        return []
-
     def get_default_config(self) -> dict:
         """
         :return: a default configuration dictionary.

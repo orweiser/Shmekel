@@ -80,7 +80,6 @@ class Stock:
                         f = np.swapaxes(f, 0, self._feature_axis)
 
                     f_list[i] = f
-
             self._feature_matrix = np.concatenate(f_list, axis=self._feature_axis)
             if self._linear_dim_reduction is not None:
                 self._feature_matrix = self._linear_dim_reduction(self._feature_matrix)
@@ -88,9 +87,20 @@ class Stock:
 
     def __get_features(self, numerical=True):
         f_list = [feature for feature in self.features if feature.is_numerical is numerical]
-        return [f.get_feature(data=self.data, normalization_type=f.normalization_type,
-                              temporal_delay=self.temporal_delays[0],
-                              neg_temporal_delay=self.temporal_delays[1]) for f in f_list]
+        features = None
+
+        for ind, f in enumerate(f_list):
+            # feature = f.get_feature(data=self.data, normalization_type=f.normalization_type,
+            #                         feature_list=features)
+            # TODO do we need temporal delays? talk to Or if needed
+            feature = f.get_feature(data=self.data, temporal_delay=self.temporal_delays[0],
+                                    neg_temporal_delay=self.temporal_delays[1], normalization_type=f.normalization_type,
+                                    feature_list=features)
+            if features is None:
+                features = [None] * len(f_list)
+            features[ind] = feature
+
+        return features
 
     @property
     def numerical_feature_list(self):
@@ -121,5 +131,4 @@ class Stock:
         m = np.swapaxes(self.feature_matrix, 0, self._feature_axis)
         m = m[t_start:t_end]
         m = np.swapaxes(m, 0, self._feature_axis)
-
         return m

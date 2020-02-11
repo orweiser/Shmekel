@@ -16,7 +16,7 @@ class BollingerBands(Feature):  # returns 2 degenerate fetures
         self._smoothing_period = smoothing_period
         self._number_of_SD = number_of_SD
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         close = self._get_basic_feature(data[0], 'close')
         low = self._get_basic_feature(data[0], 'low')
         high = self._get_basic_feature(data[0], 'high')

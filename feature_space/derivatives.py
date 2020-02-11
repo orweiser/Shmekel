@@ -2,7 +2,7 @@ from shmekel_core import Feature
 import numpy
 
 
-class CandleDerivatives(Feature):
+class Derivatives(Feature):
     def __init__(self, deriv_order=1, with_volume=True, **kwargs):
         """
         This feature computes the time derivatives (by time scale of data) of a stocks candle
@@ -12,7 +12,7 @@ class CandleDerivatives(Feature):
         :type with_volume: bool
         :param kwargs:
         """
-        super(CandleDerivatives, self).__init__(**kwargs)
+        super(Derivatives, self).__init__(**kwargs)
 
         self._deriv_order = deriv_order
         self._num_basic = int(len(self._pattern) - 1*(not with_volume))
@@ -22,7 +22,7 @@ class CandleDerivatives(Feature):
         self.with_volume = with_volume
         self.num_features = self._num_basic * self._deriv_order
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         data_mat = data[0]
         out_mat = numpy.zeros([data_mat.shape[0], self.num_features])
         for i in range(1, self._deriv_order + 1):

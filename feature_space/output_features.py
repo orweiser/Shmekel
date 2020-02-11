@@ -10,19 +10,19 @@ NEGATIVE TIME DELAY
 
 class Rise(Feature):
     """
-        indicates a rise in the NEXT day price ('Close' - 'High')
+        indicates a rise in the NEXT day price ('Close' - 'Open')
 
         "output_type": this feature supports various output types:
-            - 'regression': return the difference 'Close' - 'High'
+            - 'regression': return the difference 'Close' - 'Open'
             - 'binary':
-                    if 'close' > 'high':
+                    if 'close' > 'open':
                         return 1
                     else:
                         return 0
             - 'ternary':
-                if 'Close' - 'High' < "threshold":
+                if 'Close' - 'Open' < "threshold":
                     return 0
-                elif 'Close' > 'High':
+                elif 'Close' > 'Open':
                     return 1
                 else:
                     return -1
@@ -71,11 +71,18 @@ class Rise(Feature):
         num_classes = num_classes or self.num_features
         return one_hot(y, num_classes)
 
-    def _compute_feature(self, data):
-        open = self._get_basic_feature(data[0], 'open')
+    def _compute_feature(self, data, feature_list=None):
+        # input_features_num = data[0].shape[1]
+        # feature_data = np.empty((feature_list[0].shape[0], input_features_num))
+        # for ind in range(input_features_num):
+        #     feature_data[:, ind] = feature_list[ind]
+        # open_list = self._get_basic_feature(feature_data, 'open')
+        #
+        # diff = np.insert(open_list[1:] - open_list[:-1], 0, 0)
+        open_list = self._get_basic_feature(data[0], 'open')
         close = self._get_basic_feature(data[0], 'close')
 
-        diff = close - open
+        diff = close - open_list
 
         if self.output_type == 'regression':
             pass
@@ -92,4 +99,4 @@ class Rise(Feature):
         else:
             raise RuntimeError('unexpected "output_type": ' + self.output_type)
 
-        return diff[:-self.k_next_candle]
+        return diff[self.k_next_candle:]

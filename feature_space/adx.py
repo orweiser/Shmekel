@@ -13,7 +13,7 @@ class ADX(Feature):
         self.time_delay = 2*period - 1
         self._period = period
 
-    def _compute_feature(self, data):
+    def _compute_feature(self, data, feature_list=None):
         close = self._get_basic_feature(data[0], 'close')
         low = self._get_basic_feature(data[0], 'low')
         high = self._get_basic_feature(data[0], 'high')
@@ -25,6 +25,8 @@ class ADX(Feature):
                                        np.abs(low[:-1] - close[1:])]), axis=0)
         avg_true_range = math.smooth_moving_avg(true_range, self._period)
 
+        # todo: fix bug. the line below doesn't work because
+        #  "avg_true_range" is shorter than "up_move"
         dm_plus = up_move * (up_move > 0) * (up_move > down_move) / avg_true_range
         dm_minus = down_move * (down_move > 0) * (down_move > up_move) / avg_true_range
 
