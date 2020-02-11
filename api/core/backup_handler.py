@@ -31,7 +31,11 @@ def get_handler(handler='DefaultLocal', instantiate=True, **kwargs):
         'DefaultLossGroup': DefaultLossGroup,
         'DefaultModelGroup': DefaultModelGroup
     }
-    clas = handlers[handler]
+
+    try:
+        clas = handlers[handler]
+    except KeyError:
+        clas = globals()[handler]
 
     if instantiate:
         return clas(**kwargs)
@@ -40,7 +44,7 @@ def get_handler(handler='DefaultLocal', instantiate=True, **kwargs):
 
 
 class BaseBackupHandler(Callback):
-    def __init__(self, experiment, handler='DefaultLocal', project='',
+    def __init__(self, experiment, handler=None, project='',
                  snapshot_backup_delta=1, history_backup_delta=1,
                  save_history_after_training=True, save_snapshot_after_training=True):
         """
@@ -59,6 +63,8 @@ class BaseBackupHandler(Callback):
         :param save_snapshot_after_training: bool. whether or not to a snapshot at the end of training
         """
         super(BaseBackupHandler, self).__init__()
+
+        handler = handler or self.__class__.__name__
 
         self.experiment = experiment
         self.project = project

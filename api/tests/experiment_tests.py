@@ -154,39 +154,48 @@ class TestExperiment(Test):
             for attribute_name, value in attributes.items():
                 assert getattr(layer, attribute_name) == value
 
-    def test_json_maker(self):
+    def test_json_maker_create_config(self):
         layer_def = [
             ['Dense', 16, 'relu'],
             ['KerasLSTM', 64, 'sigmoid'],
+            ['Dense', 16, 'relu'],
             ['KerasLSTM', 32, 'tanh']
         ]
         config = _create_config(output_activation='debug_activation', layers_def=layer_def)
 
-        assert config == {
+        gt = {
             "model": "General_RNN",
-            "num_of_layers": 3,
+            "num_of_layers": 4,
             "layers": [
                 {
                     "type": "Dense",
                     "size": 16,
                     "activation_function": "relu",
-                    "name": "Dense_16_relu"
+                    "name": "l0_Dense_16_relu"
                 },
                 {
                     "type": "KerasLSTM",
                     "size": 64,
                     "activation_function": "sigmoid",
-                    "name": "KerasLSTM_64_sigmoid"
+                    "name": "l1_KerasLSTM_64_sigmoid"
+                },
+                {
+                    "type": "Dense",
+                    "size": 16,
+                    "activation_function": "relu",
+                    "name": "l2_Dense_16_relu"
                 },
                 {
                     "type": "KerasLSTM",
                     "size": 32,
                     "activation_function": "tanh",
-                    "name": "KerasLSTM_32_tanh"
+                    "name": "l3_KerasLSTM_32_tanh"
                 }
             ],
             "num_of_rnn_layers": 2,
             "output_activation": "debug_activation",
-            "name": "Dense_16_relu_KerasLSTM_64_sigmoid_KerasLSTM_32_tanh_",
+            "experiment_name": "l0_Dense_16_relu--l1_KerasLSTM_64_sigmoid--l2_Dense_16_relu--l3_KerasLSTM_32_tanh",
             "callbacks": "early_stop"
         }
+
+        assert config == gt
