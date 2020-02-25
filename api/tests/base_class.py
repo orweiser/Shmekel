@@ -14,9 +14,9 @@ class Test:
                 try:
                     getattr(self, k)()
                 except Exception as e:
-                    logs.append('FAILED: {0} \t\t {1}'.format(k, getattr(e, 'message', '')))
+                    logs.append('*** FAILED: {0} \t\t {1}'.format(k, getattr(e, 'message', '')))
                 else:
-                    logs.append('PASSED: %s' % k)
+                    logs.append('\tPASSED: %s' % k)
         sleep(1)
 
         if verbose:

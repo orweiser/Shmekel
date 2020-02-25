@@ -298,7 +298,7 @@ class Experiment:
         """ computes the input and output shapes (considering augmentations) """
         raise NotImplementedError()
 
-    def export(self, epoch, path=None):  # todo: add defaults
+    def export(self, epoch):
         export_config = {
             'model': self.model_config,
             'weights_path': self.backup_handler.get_snapshot_path(epoch),
@@ -309,9 +309,5 @@ class Experiment:
             }
             # todo: add val_augmentations
         }
-
-        if path:
-            with open(path, 'w') as f:
-                json.dump(export_config, f, indent=4)
 
         return export_config

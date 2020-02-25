@@ -181,6 +181,27 @@ class BaseBackupHandler(Callback):
         """ method to implement the reading of saved histories """
         raise NotImplementedError()
 
+    """ """
+    @property
+    def exported_dir_relative_path(self):
+        return 'exported_configs'
+
+    def get_exported_path(self, epoch: int):
+        """ get a training history path according to epoch_number (counting starts from 1) """
+        if epoch < 0:
+            epoch = self.experiment.train_config['epochs'] + epoch + 1
+
+        return os.path.join(self.exp_absolute_path, self.exported_dir_relative_path,
+                            "exported_EPOCH.json".replace('EPOCH', str(epoch)))
+
+    def dump_exported(self, epoch: int):
+        """ method to implement the saving of training histories """
+        raise NotImplementedError()
+
+    def load_exported(self, epoch: int):
+        """ method to implement the reading of saved histories """
+        raise NotImplementedError()
+
     """ Callback methods: """
     """
             below are methods that implement the saving 
@@ -212,6 +233,8 @@ class BaseBackupHandler(Callback):
                 (backup_last and self.save_snapshot_after_training):
             self.dump_snapshot(self.experiment.model, epoch=epoch)
 
+        self.dump_exported(epoch)
+
     """ More: """
     def erase(self):
         """ a method to erase the backup of an experiment. """
@@ -223,6 +246,12 @@ class NullHandler(BaseBackupHandler):
         a null backup handler that doesnt backup or read anything,
         to use in experiments you do not want to backup at all
     """
+
+    def dump_exported(self, epoch: int):
+        pass
+
+    def load_exported(self, epoch: int):
+        pass
 
     def dump_config(self, config: dict):
         pass
@@ -260,6 +289,20 @@ class DefaultLocal(BaseBackupHandler):
         -- configs are saved as json files
         -- histories are saved as "h5" files
     """
+
+    def dump_exported(self, epoch: int):
+        exported_config = self.experiment.export(epoch)
+        if not os.path.exists(os.path.join(self.exp_absolute_path, self.exported_dir_relative_path)):
+            os.makedirs(os.path.join(self.exp_absolute_path, self.exported_dir_relative_path))
+        with open(self.get_exported_path(epoch), 'w') as f:
+            self.json.dump(exported_config, f, indent=4)
+
+    def load_exported(self, epoch: int):
+        with open(self.get_exported_path(epoch)) as f:
+            h = self.json.load(f)
+
+        return h
+
     import shutil
     import pickle
     import json
