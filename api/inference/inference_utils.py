@@ -36,7 +36,6 @@ def main(exported_config_path, folder, out_folder=None):
     main_(config, folder, out_folder)
 
 
-
 def flatten_dictionaries(dict_list):
     out = {key: [] for key in dict_list[0]}
     for d in dict_list:
@@ -70,7 +69,7 @@ def predict_on_dataset(dataset, model, out_folder, batch_size=512):
 
     predictions = []
     for batch_in, batch_out in tqdm(generator):
-        predictions.extend(list(model.predict(batch_in)))
+        predictions.extend(list(model.predict_on_batch(batch_in)))
 
     assert len(predictions) == len(dataset), '{}  {}'.format(len(predictions), len(dataset))
     csv_data = {}

@@ -38,12 +38,15 @@ def batch_generator(dataset, batch_size=1024, randomize=True, max_ind=None, augm
             if i == (batch_size - 1):
                 break
 
-        if augmentations:
-            batch_x_o, batch_y_o = augmentations(batch_x, batch_y)
-        else:
-            batch_x_o, batch_y_o = [batch_x, batch_y]
+        batch_x_o = copy(batch_x[:i + 1])
+        batch_y_o = copy(batch_y[:i + 1])
 
-        yield copy(batch_x_o[:i + 1]), copy(batch_y_o[:i + 1])
+        if augmentations:
+            batch_x_o, batch_y_o = augmentations(batch_x_o, batch_y_o)
+        else:
+            batch_x_o, batch_y_o = [batch_x_o, batch_y_o]
+
+        yield batch_x_o, batch_y_o
 
         if i < (batch_size - 1):
             break

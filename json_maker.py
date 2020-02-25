@@ -22,21 +22,9 @@ default_train_config = {
     "steps_per_epoch": None,
     "validation_steps": None
 }
-default_backup_config = dict(handler='DefaultLocal2')
+default_backup_config = dict(handler='DefaultLocal')
 default_train_dataset_config = dict(dataset='StocksDataset', val_mode=False, time_sample_length=7)
 default_val_dataset_config = dict(dataset='StocksDataset', val_mode=True, time_sample_length=7)
-# default_model_config = {
-#     # "input_shape": [
-#     #     7,
-#     #     4
-#     # ],
-#     "model": "LSTM",
-#     "output_activation": "softmax",
-#     "output_shape": [
-#         2
-#     ],
-#     "units": 128
-# }
 
 
 DEFAULT = dict(

@@ -5,6 +5,7 @@ Backup handlers to store and read experiments and handle paths
 from keras.callbacks import Callback
 from keras.models import load_model
 import os
+from Utils.logger import logger
 
 
 def get_handler(handler='DefaultLocal', instantiate=True, **kwargs):
@@ -44,9 +45,9 @@ def get_handler(handler='DefaultLocal', instantiate=True, **kwargs):
 
 
 class BaseBackupHandler(Callback):
-    def __init__(self, experiment, handler=None, project='',
+    def __init__(self, experiment, handler=None,
                  snapshot_backup_delta=1, history_backup_delta=1,
-                 save_history_after_training=True, save_snapshot_after_training=True):
+                 save_history_after_training=True, save_snapshot_after_training=True, project=None):
         """
         :type experiment: api.core.Experiment
 
@@ -64,17 +65,21 @@ class BaseBackupHandler(Callback):
         """
         super(BaseBackupHandler, self).__init__()
 
+        if project is not None:
+            raise RuntimeError('"project" argument is deprecated - please remove it from the config. '
+                               'instead, use project/exp_name '
+                               'convention in experiment.name')
+
         handler = handler or self.__class__.__name__
 
         self.experiment = experiment
-        self.project = project
 
         self.snapshot_backup_delta = snapshot_backup_delta
         self.history_backup_delta = history_backup_delta
         self.save_history_after_training = save_history_after_training
         self.save_snapshot_after_training = save_snapshot_after_training
 
-        self.config = dict(project=project, handler=handler,
+        self.config = dict(handler=handler,
                            snapshot_backup_delta=snapshot_backup_delta,
                            history_backup_delta=history_backup_delta,
                            save_snapshot_after_training=save_snapshot_after_training,
@@ -93,9 +98,9 @@ class BaseBackupHandler(Callback):
     def exp_absolute_path(self):
         """
         :return: absolute path to the experiment backup directory.
-            default: res_dir/project/experiment
+            default: res_dir/experiment
         """
-        return os.path.join(self.res_dir_absolute_path, self.project, str(self.experiment))
+        return os.path.join(self.res_dir_absolute_path, self.experiment.name)
 
     """ Handle Config: """
 
@@ -267,17 +272,24 @@ class DefaultLocal(BaseBackupHandler):
     def res_dir_absolute_path(self):
         return os.path.abspath(os.path.join(os.path.pardir, 'Shmekel_Results'))
 
+    @logger.debug_dec
     def dump_snapshot(self, model, epoch: int):
         if not os.path.exists(os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path)):
             os.makedirs(os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path))
 
-        model.save_weights(self.get_snapshot_path(epoch))
+        path = self.get_snapshot_path(epoch)
+        logger.debug('saving snapshot epoch %d at %s', epoch, path)
+        model.save_weights(path)
 
+    @logger.debug_dec
     def load_snapshot(self, model, epoch: int):
-        if not os.path.exists(self.get_snapshot_path(epoch)):
+        path = self.get_snapshot_path(epoch)
+
+        if not os.path.exists(path):
             return None
 
-        model.load_weights(self.get_snapshot_path(epoch))
+        logger.debug('loading snapshot epoch %d from %s', epoch, path)
+        model.load_weights(path)
 
     def dump_history(self, history: dict, epoch: int):
         if not os.path.exists(os.path.join(self.exp_absolute_path, self.histories_dir_relative_path)):
@@ -316,16 +328,6 @@ class DefaultLocal(BaseBackupHandler):
             data = f.read()
             c = json.loads(data)
         return c
-
-
-class DefaultLocal2(DefaultLocal):
-    @property
-    def exp_absolute_path(self):
-        """
-        :return: absolute path to the experiment backup directory.
-            default: res_dir/project/experiment
-        """
-        return os.path.join(self.res_dir_absolute_path, self.experiment.name)
 
 
 class DefaultLossGroup(BaseBackupHandler):
@@ -370,6 +372,7 @@ class DefaultLossGroup(BaseBackupHandler):
 
     def erase(self):
         self.rmtree(self.exp_absolute_path)
+
 
 class DefaultModelGroup(BaseBackupHandler):
     """

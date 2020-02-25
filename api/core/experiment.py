@@ -23,7 +23,7 @@ class Experiment:
         self.train_dataset_config = train_dataset_config or {'dataset': 'StocksDataset', 'val_mode': False}
         self.val_dataset_config = val_dataset_config or {'dataset': 'StocksDataset', 'val_mode': True}
         self.train_config = train_config or {}
-        self.backup_config = backup_config or dict(project='default_project', handler='DefaultLocal')
+        self.backup_config = backup_config or dict(handler='DefaultLocal')  # , project='default_project')
         self.metrics_list = metrics_list or ['acc']
 
         # todo: have 'project' be a field of experiment instead of backup_handler
@@ -111,6 +111,8 @@ class Experiment:
         status = self.status
         if status is 'done':
             logger.info('Experiment is done.')
+            self.backup_handler.load_snapshot(self.model, -1)
+            backup = False
 
         elif status is 'initialized':
             self.start()
