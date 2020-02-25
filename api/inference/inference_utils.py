@@ -1,6 +1,13 @@
 from api.datasets.stock_dataset import InferenceStocksDataset
 from api.models import get as get_model
 import json
+from api.core.trader import Trader
+from api.datasets import StocksDataset
+from shmekel_core import Stock
+from api.utils.data_utils import batch_generator
+import os
+from tqdm import tqdm
+import numpy as np
 
 
 def read_json_path(path):
@@ -18,18 +25,59 @@ def get_dataset(config, folder):
     return InferenceStocksDataset(basedir=folder, **config['dataset'])
 
 
-def get_model_and_dataset(exported_config_path, folder):
-    config = read_json_path(exported_config_path)
-
+def main_(config, folder, out_folder):
     model = get_model_from_config(config)
     dataset = get_dataset(config, folder)
+    predict_on_dataset(dataset, model, out_folder)
 
-    return model, dataset
+
+def main(exported_config_path, folder, out_folder=None):
+    config = read_json_path(exported_config_path)
+    main_(config, folder, out_folder)
 
 
-def predict_on_item(model, dataset, index):
-    sample = dataset[index]
-    x = sample['inputs'][None]
-    sample['prediction'] = model.predict(x)
-    return sample
 
+def flatten_dictionaries(dict_list):
+    out = {key: [] for key in dict_list[0]}
+    for d in dict_list:
+        for key in d:
+            out[key].append(d[key])
+    return out
+
+
+title = ('Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'prediction')
+
+
+def dump_to_csv(path, dict):
+    raw_candle = np.array(dict['RawCandle'])
+    new_dict = {
+        'Open': raw_candle[:, 0],
+        'High': raw_candle[:, 1],
+        'Low': raw_candle[:, 2],
+        'Close': raw_candle[:, 3],
+        'Volume': raw_candle[:, 4],
+        'Date': ['/'.join(map(str, date)) for date in dict['DateTuple']],
+        'prediction': np.array(dict['prediction'])[:, 1]}
+    data = np.array([[v for v in new_dict[key]] for key in title]).T
+    data = [','.join([str(x) for x in line]) for line in [title] + list(data)]
+    with open(path, 'w') as f:
+        f.write('\n'.join(data))
+
+
+def predict_on_dataset(dataset, model, out_folder, batch_size=512):
+    generator = batch_generator(dataset, batch_size=batch_size, randomize=False,
+                                ind_gen=(i for i in range(len(dataset))))
+
+    predictions = []
+    for batch_in, batch_out in tqdm(generator):
+        predictions.extend(list(model.predict(batch_in)))
+
+    assert len(predictions) == len(dataset), '{}  {}'.format(len(predictions), len(dataset))
+    csv_data = {}
+    for pred, sample in zip(predictions, dataset):
+        sample['prediction'] = pred
+        csv_data.setdefault(sample['stock'], []).append(sample)
+    csv_data = {key: flatten_dictionaries(val) for key, val in csv_data.items()}
+
+    for stock, dict in csv_data.items():
+        dump_to_csv(os.path.join(out_folder, stock.stock_tckt + '.csv'), dict)

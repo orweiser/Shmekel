@@ -1,3 +1,4 @@
+import os
 from api.tests.base_class import Test
 from api.core import Experiment
 import numpy as np
@@ -5,6 +6,7 @@ from api.tests.dataset_tests import _get_dataset_params
 from api.utils.callbacks import DebugCallback
 from api.core.backup_handler import BaseBackupHandler
 from json_maker import _create_config
+from api.inference.inference_utils import main_
 
 
 class TestExperiment(Test):
@@ -12,7 +14,7 @@ class TestExperiment(Test):
     def __init__(self):
         pass
 
-    def get_experiment(self, batch_size=1, epochs=1, add_augmentations=False,
+    def get_experiment(self, batch_size=1, epochs=1, add_augmentations=False, backup=False,
                        time_sample_length=2, add_callback=False, model_config=None) -> Experiment:
 
         augmentatins_config = [('Debug', {})] if add_augmentations else None
@@ -30,9 +32,10 @@ class TestExperiment(Test):
             val_dataset_config=_get_dataset_params(time_sample_length=time_sample_length),
             train_config={'batch_size': batch_size, 'epochs': epochs, 'callbacks': callback_config,
                           'train_augmentations': augmentatins_config,
-                          'val_augmentations': augmentatins_config},
-            backup_config={'handler': 'NullHandler'}, metrics_list=None
+                          'val_augmentations': augmentatins_config}, metrics_list=None
         )
+        if not backup:
+            params['backup_config'] = {'handler': 'NullHandler'}
 
         params['train_dataset_config'].update({'val_mode': False})
         params['val_dataset_config'].update({'val_mode': True})
@@ -199,3 +202,15 @@ class TestExperiment(Test):
         }
 
         assert config == gt
+
+    def test_predict(self):
+        exp = self.get_experiment(backup=True)
+        exp.run()
+        print(1)
+        config = exp.export(1)
+        print(2)
+        main_(config,
+              os.path.join(__file__, os.path.pardir, 'test_sample', 'inputs'),
+              os.path.join(__file__, os.path.pardir, 'test_sample', 'outputs'))
+        print(3)
+
