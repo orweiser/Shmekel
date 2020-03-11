@@ -1,6 +1,11 @@
 import sys
 import os
 sys.path.append(os.getcwd())
+
+
+path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(path)
+
 from api.datasets.stock_dataset import InferenceStocksDataset
 from api.models import get as get_model
 import json
@@ -83,7 +88,6 @@ def predict_on_dataset(dataset, model, out_folder, batch_size=512):
 
     for stock, dict in csv_data.items():
         dump_to_csv(os.path.join(out_folder, stock.stock_tckt + '.csv'), dict)
-
 
 if __name__ == "__main__":
     import argparse
