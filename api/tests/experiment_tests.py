@@ -1,3 +1,4 @@
+import os
 from api.tests.base_class import Test
 from api.core import Experiment
 import numpy as np
@@ -5,6 +6,7 @@ from api.tests.dataset_tests import _get_dataset_params
 from api.utils.callbacks import DebugCallback
 from api.core.backup_handler import BaseBackupHandler
 from json_maker import _create_config
+from api.inference.inference_utils import main_ as main_predict
 
 
 class TestExperiment(Test):
@@ -12,7 +14,7 @@ class TestExperiment(Test):
     def __init__(self):
         pass
 
-    def get_experiment(self, batch_size=1, epochs=1, add_augmentations=False,
+    def get_experiment(self, name, batch_size=1, epochs=1, add_augmentations=False, backup=False,
                        time_sample_length=2, add_callback=False, model_config=None) -> Experiment:
 
         augmentatins_config = [('Debug', {})] if add_augmentations else None
@@ -21,7 +23,7 @@ class TestExperiment(Test):
         ] if add_callback else None
 
         params = dict(
-            name='test_experiment',
+            name='test_experiment--%s' % name,
             model_config={
                 'input_shape': (time_sample_length, 5), 'model': 'LSTM',
             } if model_config is None else model_config,
@@ -30,9 +32,10 @@ class TestExperiment(Test):
             val_dataset_config=_get_dataset_params(time_sample_length=time_sample_length),
             train_config={'batch_size': batch_size, 'epochs': epochs, 'callbacks': callback_config,
                           'train_augmentations': augmentatins_config,
-                          'val_augmentations': augmentatins_config},
-            backup_config={'handler': 'NullHandler'}, metrics_list=None
+                          'val_augmentations': augmentatins_config}, metrics_list=None
         )
+        if not backup:
+            params['backup_config'] = {'handler': 'NullHandler'}
 
         params['train_dataset_config'].update({'val_mode': False})
         params['val_dataset_config'].update({'val_mode': True})
@@ -44,7 +47,8 @@ class TestExperiment(Test):
         time_sample_length = 2
         epsilon = 1e-8
         for batch_size in [1, 100]:
-            exp = self.get_experiment(add_augmentations=True,
+            exp = self.get_experiment(name='test_augmentations',
+                                      add_augmentations=True,
                                       batch_size=batch_size,
                                       time_sample_length=time_sample_length)
 
@@ -53,14 +57,15 @@ class TestExperiment(Test):
                     if i > 1000:
                         break
 
-                    assert inputs.shape == (2 * batch_size, time_sample_length, 5)
+                    assert inputs.shape == (2 * batch_size, time_sample_length, 5), \
+                        f'{inputs.shape}  {(2 * batch_size, time_sample_length, 5)}'
                     assert outputs.shape == (2 * batch_size, 2)
 
                     assert np.abs(outputs[:batch_size] == outputs[batch_size:]).max() < epsilon
                     assert np.abs(inputs[:batch_size] - inputs[batch_size:] + 1).max() < epsilon
 
     def test_callbacks(self):
-        exp = self.get_experiment(add_callback=True)
+        exp = self.get_experiment(name='test_callbacks', add_callback=True)
 
         assert len(exp.callbacks) == 1
         assert isinstance(exp.callbacks[0], BaseBackupHandler)
@@ -113,7 +118,7 @@ class TestExperiment(Test):
             "output_activation": "softmax",
             "callbacks": "early_stop"
         }
-        exp = self.get_experiment(model_config=model_config)
+        exp = self.get_experiment(name='test_model', model_config=model_config)
 
         exp.model.summary()
         assert exp.model.num_of_layers == model_config['num_of_layers']
@@ -199,3 +204,12 @@ class TestExperiment(Test):
         }
 
         assert config == gt
+
+    def test_predict(self):
+        exp = self.get_experiment(name='test_predict', backup=True)
+        exp.run()
+        config = exp.export(1)
+        main_predict(config,
+              os.path.join(__file__, os.path.pardir, 'test_sample', 'inputs'),
+              os.path.join(__file__, os.path.pardir, 'test_sample', 'outputs'))
+

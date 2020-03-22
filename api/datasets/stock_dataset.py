@@ -250,7 +250,7 @@ DEFAULT_VAL_YEARS = [x for x in range(1900, 2020) if not x % 2]
 
 class StocksDataset(Dataset):
     time_sample_length: int
-    normalization_window: int
+    # normalization_window: int
     _val_mode: bool
     _stocks_list: (list, tuple)
     config_path: str
@@ -268,7 +268,7 @@ class StocksDataset(Dataset):
     def init(self, basedir=None, time_sample_length=5, stocks_ext='us.txt',
              input_features=None, output_features=None,
              stock_name_list=None, val_mode=False,
-             years=None, normalization_window=5,
+             years=None, normalization_window=None,
              feature_list=None, output_feature_list=None, config_path=None):
 
         if feature_list:
@@ -286,16 +286,24 @@ class StocksDataset(Dataset):
         self.basedir = basedir or constants.DATA_PATH
         self.stocks_ext = stocks_ext
 
-        default_input_features = (
-        ('High', dict(normalization_type='convolve', normalization_window=normalization_window)),
-        ('Open', dict(normalization_type='convolve', normalization_window=normalization_window)),
-        ('Low', dict(normalization_type='convolve', normalization_window=normalization_window)),
-        ('Close', dict(normalization_type='convolve', normalization_window=normalization_window)),
-        ('Volume', dict(normalization_type='convolve', normalization_window=normalization_window)))
-        # default_input_features = ('High', 'Open', 'Low', 'Close', 'Volume')
-        default_output_features = (('rise', dict(output_type='categorical', k_next_candle=0)),)
+        if normalization_window is not None:
+            # todo: fix bug
+            #  needs to trim outputs to be the same length as inputs.
+            #  do not change k_next_candle to zero just to get over the bug
+            #  also "normalization_window" is kind of an ambiguous name for a parameter
+            #  also also, consider removing this from the init function of the dataset alltogether.
+            #  just send the list below in your config instead
+            # default_input_features = (
+            # ('High', dict(normalization_type='convolve', normalization_window=normalization_window)),
+            # ('Open', dict(normalization_type='convolve', normalization_window=normalization_window)),
+            # ('Low', dict(normalization_type='convolve', normalization_window=normalization_window)),
+            # ('Close', dict(normalization_type='convolve', normalization_window=normalization_window)),
+            # ('Volume', dict(normalization_type='convolve', normalization_window=normalization_window)))
+            # self.normalization_window = normalization_window
+            raise NotImplementedError('convolve normalization is not supported. please fix the bug in "convolve"')
+        default_input_features = ('High', 'Open', 'Low', 'Close', 'Volume')
+        default_output_features = (('rise', dict(output_type='categorical', k_next_candle=1)),)
 
-        self.normalization_window = normalization_window
         self.time_sample_length = time_sample_length
         self._val_mode = val_mode
         self._stocks_list = None

@@ -1,6 +1,6 @@
 import os
+import sys
 import warnings
-
 
 def get_config(config_path):
     def _read_a_file(fname):
@@ -52,7 +52,7 @@ def get_config(config_path):
 
 
 def get_data_path():
-    config_path = 'Shmekel_config.txt'
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'Shmekel_config.txt')
     if not os.path.exists(config_path):
         config_path = os.path.join(os.path.pardir, config_path)
 

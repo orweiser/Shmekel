@@ -21,28 +21,32 @@ def batch_generator(dataset, batch_size=1024, randomize=True, max_ind=None, augm
     batch_y = np.ndarray((batch_size,) + dataset.output_shape)
 
     j = 0
-    try:
-        while True:
-            for a in [batch_x, batch_y]:
-                if a is None:
-                    continue
-                a[:] = 0
+    while True:
+        for a in [batch_x, batch_y]:
+            if a is None:
+                continue
+            a[:] = 0
 
-            for i, ind in enumerate(ind_gen):
-                j += 1
-                sample = dataset[ind]
+        i = None
+        for i, ind in enumerate(ind_gen):
+            j += 1
+            sample = dataset[ind]
 
-                batch_x[i] = sample['inputs']
-                batch_y[i] = sample['outputs']
+            batch_x[i] = sample['inputs']
+            batch_y[i] = sample['outputs']
 
-                if i == (batch_size - 1):
-                    break
+            if i == (batch_size - 1):
+                break
 
-            if augmentations:
-                batch_x_o, batch_y_o = augmentations(batch_x, batch_y)
-            else:
-                batch_x_o, batch_y_o = [batch_x, batch_y]
+        batch_x_o = copy(batch_x[:i + 1])
+        batch_y_o = copy(batch_y[:i + 1])
 
-            yield copy(batch_x_o), copy(batch_y_o)
-    except StopIteration:
-        raise StopIteration('Got StopIteration after %d samples was generated. For Parsing:%d' % (j, j))
+        if augmentations:
+            batch_x_o, batch_y_o = augmentations(batch_x_o, batch_y_o)
+        else:
+            batch_x_o, batch_y_o = [batch_x_o, batch_y_o]
+
+        yield batch_x_o, batch_y_o
+
+        if i < (batch_size - 1):
+            break
