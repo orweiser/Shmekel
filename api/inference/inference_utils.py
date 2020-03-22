@@ -1,3 +1,11 @@
+import sys
+import os
+sys.path.append(os.getcwd())
+
+
+path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(path)
+
 from api.datasets.stock_dataset import InferenceStocksDataset
 from api.models import get as get_model
 import json
@@ -80,3 +88,17 @@ def predict_on_dataset(dataset, model, out_folder, batch_size=512):
 
     for stock, dict in csv_data.items():
         dump_to_csv(os.path.join(out_folder, stock.stock_tckt + '.csv'), dict)
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(usage="This module performs inference on stock data\n"
+                                           "inference_utils.py -c <config_path> -i <input_dir> -o <output_dir>",
+                                     prog="inference_utils.py",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-c", "--config", dest="config_path", help="Path to a Shmekel config file", required=True)
+    parser.add_argument("-i", "--input", dest="input_dir", help="Path to input folder", required=True)
+    parser.add_argument("-o", "--output", dest="output_dir", help="Path to output folder", required=True)
+
+    args = parser.parse_args()
+
+    main(args.config_path, args.input_dir, args.output_dir)
