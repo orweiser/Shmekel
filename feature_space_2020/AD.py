@@ -1,7 +1,7 @@
 import numpy as np
 from shmekel_core import Feature
 
-
+# TODO: not complite
 class AD(Feature):
     def __init__(self, period=None, data=None, normalization_type=None, time_delay=0):
         # self.range = period
