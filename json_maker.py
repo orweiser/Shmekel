@@ -3,6 +3,7 @@ from copy import deepcopy
 from api.core import get_exp_from_config
 
 
+
 DENSE = 'Dense'
 LSTM = 'KerasLSTM'
 VERSION = 'version-0.0.1'
@@ -130,7 +131,7 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
 # MIN_DROPOUT = 0.1
 # MAX_DROPOUT = 0.3
 # MAX_DEPTH = 20
-
+#
 # def print_statistics(path, compare, fixed_values={}, metric='val_acc', file=None):
 #     results = {}
 #     for dir in os.listdir(path):
@@ -168,8 +169,8 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
 #                                                                      file=os.path.join(os.pardir, file)))
 #             print('echo total nets: %d;  max: %f;   avg: %f; min: %f > %s' % (
 #                 size, best, avg, worst, os.path.join(os.pardir, file)))
-
-
+#
+#
 # def create_identifiers_csv(pth, metric=('val_acc',)):
 #     # create DataFrame labels
 #     df = pd.DataFrame(columns=['name', 'num_of_layers', 'num_of_rnn_layers'])
@@ -237,10 +238,10 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
 
 
 # ***************IMPORTANT CODE STARTS HERE***************************
-
+#
 # config_path = os.path.join(os.pardir, 'Shmekel_Results', 'default_project', 'configs')
 # grid_jason_maker(config_path)  # -- use this to create the configs
-
+#
 # metric = ('val_acc',)
 # grid_results_path = os.path.join(config_path, 'grid_results')
 # if not os.path.exists(grid_results_path):
