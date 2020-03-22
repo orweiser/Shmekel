@@ -3,3 +3,4 @@ data/*
 */__pycache__/*
 /*/*/__pycache__/*
 api/tests/test_sample/outputs/fb.csv
+Shmekel_config.txt
