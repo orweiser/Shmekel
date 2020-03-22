@@ -2,11 +2,14 @@ import pandas as pd
 import numpy as np
 from feature_space_2020.RSI import RSI
 from feature_space_2020.SMA import SMA
+from feature_space_2020.momentum import MOMENTUM
 from shmekel_core import Stock
 from numpy import genfromtxt
 
-source_root = "D:\shmekels\downloads\price-volume-data-for-all-us-stocks-etfs\Data\Stocks\\"
-destination_root = "D:\\shmekels\\uploads\\feature_test\\"
+# source_root = "D:\shmekels\downloads\price-volume-data-for-all-us-stocks-etfs\Data\Stocks\\"
+# destination_root = "D:\\shmekels\\uploads\\feature_test\\"
+destination_root = "C:\\shmekel\\feature_test\\"
+source_root = "c:\\Shmekel\\stocks_data\\Stocks\\"
 
 
 def TestStock(stock_name):
@@ -32,6 +35,14 @@ def TestStock(stock_name):
         table[label] = rsi
         print("adding " + label)
 
+    # add momentum
+    mom_ranges = [7, 14, 21]
+    for mom_range in mom_ranges:
+        label = 'momentum_' + str(mom_range)
+        mom = GetMom(source_file, mom_range)
+        table[label] = mom
+        print("adding " + label)
+
     table.to_csv(destination_file)
 
 
@@ -47,4 +58,9 @@ def GetRsi(srcFile,range):
     return rsi.process(close[1:])
 
 
-TestStock("fb")
+def GetMom(srcFile,range):
+    close = genfromtxt(srcFile, delimiter=',', usecols=(4))
+    mom = MOMENTUM(period=range)
+    return mom.process(close[1:])
+
+TestStock("fbc")
