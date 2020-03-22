@@ -67,15 +67,15 @@ def _create_config(output_activation, layers_def, early_stop=True):
     return model_config
 
 
-def get_random_sample(layers_types, activation_functions, min_depth, max_depth, neurons):
+def get_random_sample(layers_types, activation_functions, depths, neurons):
     from random import choice
-    depth = choice(list(range(min_depth, max_depth + 1)))
+    depth = choice(list(depths))
     return [map(choice, [layers_types, neurons, activation_functions]) for _ in range(depth)]
 
 
-def generate_grid_model(layers_types=(LSTM, DENSE), activation_functions=('relu', 'sigmoid', 'tanh'), min_depth=3,
-                         max_depth=5, neurons=(8, 32, 128), output_activation='softmax', early_stop=True):
-    combs = get_random_sample(layers_types, activation_functions, min_depth, max_depth, neurons)
+def generate_grid_model(layers_types=(LSTM, DENSE), activation_functions=('relu', 'sigmoid', 'tanh'),
+                        depth=(3, 5, 7, 10), neurons=(8, 32, 128), output_activation='softmax', early_stop=True):
+    combs = get_random_sample(layers_types, activation_functions, depth, neurons)
     return _create_config(output_activation, combs, early_stop=early_stop)
 
 
@@ -105,7 +105,7 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
         if amount_of_experiments > 0:
             amount_of_experiments -= 1
 
-
+grid_jason_maker()
 """ Rotem? """
 # EXP_CONFIG = None
 # MIN_SIZE = 3
