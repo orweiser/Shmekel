@@ -12,7 +12,6 @@ default_loss_config = {
     "loss": "categorical_crossentropy"
 }
 default_train_config = {
-    "augmentations": None,
     "batch_size": 1024,
     "callbacks": None,
     "epochs": 20,
