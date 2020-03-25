@@ -74,7 +74,7 @@ def get_random_sample(layers_types, activation_functions, depths, neurons):
 
 
 def generate_grid_model(layers_types=(LSTM, DENSE), activation_functions=('relu', 'sigmoid', 'tanh'),
-                        depth=(20, ), neurons=(8, 32, 128), output_activation='softmax', early_stop=True):
+                        depth=(3, 5, 10, 15, 20), neurons=(8, 32, 128), output_activation='softmax', early_stop=True):
     combs = get_random_sample(layers_types, activation_functions, depth, neurons)
     return _create_config(output_activation, combs, early_stop=early_stop)
 
