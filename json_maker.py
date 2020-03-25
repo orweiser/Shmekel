@@ -74,7 +74,7 @@ def get_random_sample(layers_types, activation_functions, depths, neurons):
 
 
 def generate_grid_model(layers_types=(LSTM, DENSE), activation_functions=('relu', 'sigmoid', 'tanh'),
-                        depth=(3, 5, 7, 10), neurons=(8, 32, 128), output_activation='softmax', early_stop=True):
+                        depth=(20, ), neurons=(8, 32, 128), output_activation='softmax', early_stop=True):
     combs = get_random_sample(layers_types, activation_functions, depth, neurons)
     return _create_config(output_activation, combs, early_stop=early_stop)
 
@@ -83,6 +83,7 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
     while amount_of_experiments == -1 or amount_of_experiments > 0:
         model_config = generate_grid_model(**kwargs)
         name = model_config.pop('experiment_name')
+        name = give_nickname(name)
 
         data = deepcopy(DEFAULT)
         data.update(defaults_override or {})
@@ -105,7 +106,21 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
         if amount_of_experiments > 0:
             amount_of_experiments -= 1
 
-grid_jason_maker()
+
+def give_nickname(name):
+    name = name.replace('KerasLSTM', 'kLS')
+    name = name.replace('Dense', 'Dns')
+    name = name.replace('relu', 'ru')
+    name = name.replace('tanh', 'th')
+    name = name.replace('sigmoid', 'sg')
+    name = name.replace('_', '')
+    name = name.replace('-', '')
+    name = name.replace('l', 'L')
+
+    return name
+
+
+# grid_jason_maker()
 """ Rotem? """
 # EXP_CONFIG = None
 # MIN_SIZE = 3
