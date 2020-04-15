@@ -1,14 +1,6 @@
 import numpy as np
 
 
-#
-# feature_axis = get_config()['feature_axis']
-# pattern = get_config()['pattern']
-
-# default_pattern = ('Open', 'High', 'Low', 'Close', 'Volume')
-# default_feature_axis = -1
-
-
 def normalize(feature, normalization_type=None, normalization_window=5):
     """
     different normalization methods.
@@ -120,7 +112,7 @@ class Feature:
         """
         raise NotImplementedError()
 
-    def get_feature(self, data, temporal_delay=0, neg_temporal_delay=0, normalization_type=None, feature_list=None):
+    def get_feature(self, data, temporal_delay=0, neg_temporal_delay=0, feature_list=None):
         """
         compute feature on self.data
 
@@ -141,7 +133,7 @@ class Feature:
             raise Exception('while using method "get_feature" temporal_delay can not be smaller than self.time_delay')
 
         feature = self._compute_feature(data, feature_list=feature_list)
-        feature = normalize(feature, normalization_type=normalization_type, normalization_window=self.normalization_window)
+        feature = normalize(feature, normalization_type=self.normalization_type, normalization_window=self.normalization_window)
 
         if self.is_numerical and len(feature.shape) > 1 and self._feature_axis:
             feature = np.swapaxes(feature, -1, self._feature_axis)
