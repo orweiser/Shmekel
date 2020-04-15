@@ -263,8 +263,9 @@ class StocksDataset(Dataset):
     _num_output_features: int
     years: list
     _relevant_indices: dict
+    basedir: str
+    stocks_ext: str
 
-    # TODO: why is this not __init__?
     def init(self, basedir=None, time_sample_length=5, stocks_ext='us.txt',
              input_features=None, output_features=None,
              stock_name_list=None, val_mode=False,
@@ -316,7 +317,7 @@ class StocksDataset(Dataset):
         self.stock_name_list = stock_name_list or (DEFAULT_VAL_STOCK_LIST if val_mode else DEFAULT_TRAIN_STOCK_LIST)
 
         self.feature_list_with_params = [
-            x if isinstance(x, (tuple, list)) else (x, {}) for x in self.input_features + self.output_features
+            x if isinstance(x, (tuple, list)) else (x, {}) for x in list(self.input_features) + list(self.output_features)
         ]
 
         self._non_numerical_features = [('DateTuple', {}), ('RawCandle', {})]
