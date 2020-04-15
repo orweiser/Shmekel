@@ -61,6 +61,8 @@ metrics_mapping = {
 def get(requested_metrics, **kwargs):
     metrics = ['acc']
     for metric in requested_metrics or []:
+        if metric in metrics:
+            continue
         if metric in metrics_mapping:
             metrics.append(metrics_mapping[metric])
         else:
