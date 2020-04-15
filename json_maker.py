@@ -6,10 +6,8 @@ import numpy as np
 import json
 from api.core import Experiment
 
-
 DENSE = 'Dense'
 LSTM = 'KerasLSTM'
-VERSION = 'version-0.0.1'
 
 
 default_loss_config = {
@@ -123,20 +121,6 @@ def give_nickname(name):
     return name
 
 
-# grid_jason_maker()
-""" Rotem? """
-EXP_CONFIG = None
-MIN_SIZE = 3
-MAX_SIZE = 7
-MAX_NUM_OF_LAYERS = 20
-LAYERS_TYPES = ['KerasLSTM', 'Dense']
-ALL_DENSE_SAME = False
-ACTIVATION_FUNCTIONS = ['relu', 'sigmoid', 'tanh']
-DROPOUT_CHANCE = 0.7
-MIN_DROPOUT = 0.1
-MAX_DROPOUT = 0.3
-MAX_DEPTH = 20
-
 # def print_statistics(path, compare, fixed_values={}, metric='val_acc', file=None):
 #     results = {}
 #     for dir in os.listdir(path):
@@ -176,95 +160,8 @@ MAX_DEPTH = 20
 #                 size, best, avg, worst, os.path.join(os.pardir, file)))
 
 
-def create_identifiers_csv(pth, metric=('val_acc',)):
-    # create DataFrame labels
-    df = pd.DataFrame(columns=['name', 'num_of_layers', 'num_of_rnn_layers'])
-    for i in range(MAX_NUM_OF_LAYERS):
-        df['layer{num} type'.format(num=i + 1)] = ''
-        df['layer{num} size'.format(num=i + 1)] = ''
-        df['layer{num} activation_function'.format(num=i + 1)] = ''
-    for m in metric:
-        df['best epoch number by {metric}'.format(metric=m)] = ''
-        df['best epoch values by {metric}'.format(metric=m)] = ''
-    df['status'] = ''
-    # Creating a dictionary containing keys as in the DataFrame
-    milon = {}
-    for col in df:
-        milon[col] = None
 
 
-
-
-    # Looping over all config files in the directory and appending the model config to the DataFrame
-    experiment_list = os.listdir(pth)
-    for experiment_name in experiment_list:
-        config_full_path = os.path.join(pth, experiment_name, 'config.json')
-        history_path = os.path.join(pth, experiment_name, 'histories')
-        # config_full_path = pth + '\\' + experiment_name + '\\' 'config.json'
-
-        if os.path.exists(config_full_path) and os.path.exists(history_path):
-            with open(config_full_path, 'r') as f:
-                config = json.load(f)
-            milon['name'] = config['name']
-            milon['num_of_layers'] = config['model_config']['num_of_layers']
-            milon['num_of_rnn_layers'] = config['model_config']['num_of_rnn_layers']
-            for i, layer in enumerate(config['model_config']['layers']):
-                milon['layer{num} type'.format(num=i + 1)] = layer['type']
-                milon['layer{num} size'.format(num=i + 1)] = layer['size']
-                if 'activation_function' in layer:
-                    milon['layer{num} activation_function'.format(num=i + 1)] = layer['activation_function']
-            milon['status'] = 'waiting'
-            df = df.append(pd.Series(milon), ignore_index=True)
-            milon = dict.fromkeys(milon, None)
-
-            exp = Experiment(**config)
-            exp.run()
-
-        # history_path = pth + '\\' + experiment_name + '\\' 'config.json'
-        # if os.path.exists(config_full_path):
-
-    # df.to_csv(os.path.join(pth, 'grid_results'), index=False)
-    print("DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
-
-def insert_values_to_csv_cells(pth, find_by, row_tags, data):
-    '''
-
-    :param pth: csv path
-    :param find_by: a string of one of the csv column label
-    :param row_tags: list containing some value to unikly specify certain rows
-    :param data: dictionary containing keys as the csv file columns name
-    :return: modify a csv file
-    '''
-
-    # Loading a csv file to a dataframe and modify the wanted values
-    csv_data = pd.read_csv(pth)
-    for r in row_tags:
-        idx = csv_data.loc[csv_data[find_by] == r].index.values.astype(int)[0]
-        for key, val in data.items():
-            csv_data.at[idx, key] = val
-        csv_data.at[idx, 'status'] = 'Done'
-
-    # save the modified data frame to a new csv file, delete the old file and rename the new file
-    csv_data.to_csv(pth + '_temp', index=False)
-    os.remove(pth)
-    os.rename(pth + '_temp', pth)
-
-
-""""""
-
-
-# ***************IMPORTANT CODE STARTS HERE***************************
-#
-config_path = os.path.join(os.pardir, 'Shmekel_Results', VERSION)
-# grid_jason_maker(config_path)  # -- use this to create the configs
-
-metric = ('val_acc',)
-grid_results_path = os.path.join(config_path, 'results')
-if not os.path.exists(grid_results_path):
-    create_identifiers_csv(config_path)
-
-exp_results = pd.read_csv(grid_results_path)
 # # for exp in gs.iter_modulo(rem=2):
 # for exp_name in exp_results['name']:
 #     config = load_config(os.path.join(config_path, 'config_' + exp_name + '.json'))
@@ -283,3 +180,34 @@ exp_results = pd.read_csv(grid_results_path)
 # # main
 # # print_statistics('C:\\Shmekel\\local_repository\\Shmekel_Results\\default_project', 'size',
 # #                  file='results.txt')
+
+if __name__ == '__main__':
+
+    # Set version name and parameters to create a new models group
+    VERSION = 'version-0.0.1'
+    config_path = os.path.join(os.pardir, 'Shmekel_Results', VERSION)
+
+    depth = (3, 5, 10, 15, 20)
+    version_parameters = {
+        "EXP_CONFIG": None,
+        "MIN_SIZE": 3,
+        "MAX_SIZE": 7,
+        "MAX_NUM_OF_LAYERS": max(depth),
+        "LAYERS_TYPES": ['KerasLSTM', 'Dense'],
+        "ALL_DENSE_SAME": False,
+        "ACTIVATION_FUNCTIONS": ['relu', 'sigmoid', 'tanh'],
+        "DROPOUT_CHANCE": 0.7,
+        "MIN_DROPOUT": 0.1,
+        "MAX_DROPOUT": 0.3,
+        "MAX_DEPTH": 20,
+        "NUM_OF_EPOCHS": 20
+    }
+
+    # Save version config in version folder
+    if not os.path.exists(os.path.join(config_path, 'version_parameters')):
+        with open(os.path.join(config_path, 'version_parameters'), 'w') as outfile:
+            json.dump(version_parameters, outfile)
+
+    # Run version
+    grid_jason_maker(depth=depth)
+
