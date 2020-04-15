@@ -136,7 +136,7 @@ class Experiment:
 
         self.results.summary()
         if backup:
-            self.backup()
+            self.backup(False)
 
     def erase(self, force=False):
         if not force:
@@ -266,7 +266,7 @@ class Experiment:
 
     @property
     def history(self) -> dict:
-        if self._history is None:
+        if self._history is None or self._history == {}:
             if self.trainer._history:
                 self._history = self.trainer._history.history
             else:
@@ -288,9 +288,11 @@ class Experiment:
         return self._callbacks
 
     """ Paths property and methods. might be moved to a Project class in the future """
-    def backup(self):
-        self.backup_handler.dump_history(self.history or {}, epoch=-1)
-        self.backup_handler.dump_snapshot(self.model, epoch=-1)
+    def backup(self, only_config=True):
+        if not only_config:
+            self.backup_handler.dump_history(self.history or {}, epoch=-1)
+            self.backup_handler.dump_snapshot(self.model, epoch=-1)
+
         self.backup_handler.dump_config(self.config)
 
     """ Methods yet to be implemented: """
