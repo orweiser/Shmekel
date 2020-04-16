@@ -187,12 +187,12 @@ if __name__ == '__main__':
     VERSION = 'version-0.0.1'
     config_path = os.path.join(os.pardir, 'Shmekel_Results', VERSION)
 
-    depth = (3, 5, 10, 15, 20)
+    depth_list = (3, 5, 10, 15, 20)
     version_parameters = {
         "EXP_CONFIG": None,
         "MIN_SIZE": 3,
         "MAX_SIZE": 7,
-        "MAX_NUM_OF_LAYERS": max(depth),
+        "MAX_NUM_OF_LAYERS": max(depth_list),
         "LAYERS_TYPES": ['KerasLSTM', 'Dense'],
         "ALL_DENSE_SAME": False,
         "ACTIVATION_FUNCTIONS": ['relu', 'sigmoid', 'tanh'],
@@ -209,5 +209,5 @@ if __name__ == '__main__':
             json.dump(version_parameters, outfile)
 
     # Run version
-    grid_jason_maker(depth=depth)
+    grid_jason_maker(depth=depth_list)
 
