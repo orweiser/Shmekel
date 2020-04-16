@@ -40,40 +40,31 @@ def create_identifiers_csv(pth, parameters, metric=('val_acc',)):
 
 
 def append_exp_to_df(df, config, exp_dir, parameters, metric):
-
-    df_labels = {}
+    df_dict = {}
     for col in df:
-        df_labels[col] = None
+        df_dict[col] = None
 
-    df_labels['name'] = config['name']
-    df_labels['num_of_layers'] = config['model_config']['num_of_layers']
-    df_labels['num_of_rnn_layers'] = config['model_config']['num_of_rnn_layers']
+    df_dict['name'] = config['name']
+    df_dict['num_of_layers'] = config['model_config']['num_of_layers']
+    df_dict['num_of_rnn_layers'] = config['model_config']['num_of_rnn_layers']
 
     for i, layer in enumerate(config['model_config']['layers']):
-        df_labels['layer{num} type'.format(num=i + 1)] = layer['type']
-        df_labels['layer{num} size'.format(num=i + 1)] = layer['size']
+        df_dict['layer{num} type'.format(num=i + 1)] = layer['type']
+        df_dict['layer{num} size'.format(num=i + 1)] = layer['size']
         if 'activation_function' in layer:
-            df_labels['layer{num} activation_function'.format(num=i + 1)] = layer['activation_function']
+            df_dict['layer{num} activation_function'.format(num=i + 1)] = layer['activation_function']
 
-    # exp = core.get_exp_from_config(core.load_config(exp_dir))
-    # model_timestamp = '123123'  # FAKE TIMESTAMP
-    # model_raw_stats = {
-    #          "timestamp": model_timestamp,
-    #          "name": exp.name,
-    #          "model": exp.model_config,
-    #          "results": exp.results,
-    #          "loss": exp.loss_config}
-    # model_stats = get_model_stats(model_raw_stats, metrics=metric)
-    # for m in metric:
-    #     df['best epoch number by {metric}'.format(metric=m)] = ''
-    #     df['best epoch values by {metric}'.format(metric=m)] = ''
+    exp = core.get_exp_from_config(config)
+    for m in metric:
+        df_dict['best epoch number by {metric}'.format(metric=m)] = exp.results.get_best_epoch_number(metric=m)
+        df_dict['best epoch values by {metric}'.format(metric=m)] = exp.results.get_best_epoch(metric=m).scores[m]
 
     n_complited_epoch = len(os.listdir(os.path.join(exp_dir, 'histories')))
     if n_complited_epoch < parameters["NUM_OF_EPOCHS"]:
-        df_labels['status'] = 'waiting'
+        df_dict['status'] = 'waiting'
     else:
-        df_labels['status'] = 'Done'
-    df = df.append(pd.Series(df_labels), ignore_index=True)
+        df_dict['status'] = 'Done'
+    df = df.append(pd.Series(df_dict), ignore_index=True)
 
     return df
 
@@ -112,19 +103,11 @@ if __name__ == '__main__':
         parameters = json.load(json_file)
 
     # Create version data set
-    metric = ('val_acc',)
+    metric = ('acc', 'loss', 'val_acc', 'val_loss')
     grid_results_path = os.path.join(config_path, 'Results', 'grid_results')
     if not os.path.exists(grid_results_path):
-        create_identifiers_csv(config_path, parameters=parameters)
+        create_identifiers_csv(config_path, parameters=parameters, metric=metric)
 
-    # Insert missing experiment data to data set
     exp_results = pd.read_csv(grid_results_path)
-    # experiment_list = os.listdir(config_path)
-    # for experiment_name in experiment_list:
-    #     config_full_path = os.path.join(config_path, experiment_name, 'config.json')
-    #     history_path = os.path.join(config_path, experiment_name, 'histories')
-    #
-    #     if os.path.exists(config_full_path) and os.path.exists(history_path):
-    #         pass
 
 
