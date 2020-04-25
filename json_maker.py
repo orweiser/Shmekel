@@ -93,11 +93,12 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
             name=os.path.join(VERSION, name),
         ))
 
-        # if model_config['num_of_rnn_layers'] == 0:
-        #     if 'time_sample_length' in data['train_dataset_config']:
-        #         data['train_dataset_config']['time_sample_length'] = 1
-        #     if 'time_sample_length' in data['val_dataset_config']:
-        #         data['val_dataset_config']['time_sample_length'] = 1
+        # if no rnn layers, data set should not be a time series
+        if model_config['num_of_rnn_layers'] == 0:
+            if 'time_sample_length' in data['train_dataset_config']:
+                data['train_dataset_config']['time_sample_length'] = 1
+            if 'time_sample_length' in data['val_dataset_config']:
+                data['val_dataset_config']['time_sample_length'] = 1
 
         exp = get_exp_from_config(data)
         exp.backup()
@@ -109,11 +110,11 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
 
 
 def give_nickname(name):
-    name = name.replace('KerasLSTM', 'kLS')
-    name = name.replace('Dense', 'Dns')
-    name = name.replace('relu', 'ru')
-    name = name.replace('tanh', 'th')
-    name = name.replace('sigmoid', 'sg')
+    name = name.replace('KerasLSTM', 'LS')
+    name = name.replace('Dense', 'D')
+    name = name.replace('relu', 'r')
+    name = name.replace('tanh', 't')
+    name = name.replace('sigmoid', 's')
     name = name.replace('_', '')
     name = name.replace('-', '')
     name = name.replace('l', 'L')
