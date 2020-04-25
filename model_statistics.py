@@ -33,9 +33,13 @@ def create_identifiers_csv(pth, parameters, metric=('val_acc',)):
                 config = json.load(f)
             df = append_exp_to_df(df, config, os.path.join(pth, exp_name), parameters, metric)
 
+    # Fill all empty cells with None
+    df.fillna(value=-1, inplace=True)
+
     if not os.path.exists(os.path.join(pth, 'Results')):
         os.mkdir(os.path.join(pth, 'Results'))
     df.to_csv(os.path.join(pth, 'Results', 'grid_results'), index=False)
+
     print("DONE!")
 
 
@@ -109,5 +113,6 @@ if __name__ == '__main__':
         create_identifiers_csv(config_path, parameters=parameters, metric=metric)
 
     exp_results = pd.read_csv(grid_results_path)
+    z=3
 
 
