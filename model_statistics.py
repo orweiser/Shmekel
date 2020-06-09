@@ -99,7 +99,7 @@ def append_exp_to_df(df, config, exp_dir, parameters, metric):
 
 if __name__ == '__main__':
 
-    VERSION = 'version-0.0.1'
+    VERSION = 'version-0.0.2'
     config_path = os.path.join(os.pardir, 'Shmekel_Results', VERSION)
 
     # Load version configuration
@@ -113,6 +113,5 @@ if __name__ == '__main__':
         create_identifiers_csv(config_path, parameters=parameters, metric=metric)
 
     exp_results = pd.read_csv(grid_results_path)
-    z=3
 
 
