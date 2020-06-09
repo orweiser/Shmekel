@@ -11,6 +11,7 @@ import os
 N_train = 80
 N_val = 20
 
+
 DEFAULT_TRAIN_STOCK_LIST = tuple(
     ['anh', 'artx', 'brt', 'sfl', 'nsit', 'sbac', 'ssb', 'myj', 'cev', 'itrn', 'nly', 'gef', 'oiim', 'olp', 'fcbc',
      'syt', 'igld', 'ltbr', 'pbr', 'ohi', 'bpop', 'rwt', 'sam', 'amn', 'cnxn', 'bwinb', 'fund', 'scs', 'hpf', 'mrvl',
@@ -172,6 +173,7 @@ DEFAULT_TRAIN_STOCK_LIST = tuple(
      'sqm', 'syk', 'aes', 'dgica', 'srt', 'mscc', 'ba', 'exr', 'gass', 'kmm', 'wtr', 'iec', 'eth', 'ldr', 'rdc', 'algn',
      'ccoi', 'cto', 'ufs', 'rtk', 'leg', 'gldd', 'itus', 'lts', 'strt', 'ssp', 'gco', 'iex', 'wtm', 'ffbc', 'jps',
      'jci', 'amx', ])[:N_train]
+
 DEFAULT_VAL_STOCK_LIST = tuple(
     ['ni', 'evj', 'bhb', 'amrn', 'celg', 'avx', 'tkr', 'nymx', 'ifon', 'ccc', 'mvf', 'mas', 'cbrl', 'este', 'ibkc',
      'sprt', 'pbct', 'dynt', 'vivo', 'ancx', 'lii', 'chnr', 'aav', 'twin', 'mlp', 'pacw', 'pui', 'ads', 'cbm', 'pran',
