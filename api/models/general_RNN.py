@@ -1,7 +1,7 @@
 from keras import Input
 from keras import callbacks as keras_callbacks
 from keras.layers import LSTM as KerasLSTM
-from keras.layers import Dense, Reshape, Dropout  # , RNN
+from keras.layers import Dense, Reshape, Dropout, Flatten
 from api.core import Model
 import numpy as np
 import random
@@ -50,7 +50,12 @@ class GeneralRnn(Model):
         #
         # x = RNN(cell)(input_layer)
 
-        x = input_layer
+        if len(input_shape) > 1:
+            x = Flatten()(input_layer)
+        else:
+            x = input_layer
+
+        # x = input_layer
         num_of_rnn_layers = self.num_of_rnn_layers
         for layer in self.hidden_layers:
             if layer['type'] == 'KerasLSTM':
