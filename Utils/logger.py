@@ -2,7 +2,7 @@ import logging
 import os
 
 FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-STREAM_LEVEL = 'debug'
+STREAM_LEVEL = 'info'
 LOG_LEVEL = None
 DECORATOR_LEVEL = 'debug'
 
