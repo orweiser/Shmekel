@@ -37,6 +37,7 @@ class GeneralRnn(Model):
     def get_input_output_tensors(self):
         input_shape = self._input_shape
         output_shape = self._output_shape
+        num_of_rnn_layers = self.num_of_rnn_layers
 
         input_layer = Input(input_shape)
 
@@ -50,13 +51,12 @@ class GeneralRnn(Model):
         #
         # x = RNN(cell)(input_layer)
 
-        if len(input_shape) > 1:
+        if len(input_shape) > 1 and num_of_rnn_layers == 0:
             x = Flatten()(input_layer)
         else:
             x = input_layer
 
-        # x = input_layer
-        num_of_rnn_layers = self.num_of_rnn_layers
+
         for layer in self.hidden_layers:
             if layer['type'] == 'KerasLSTM':
                 if num_of_rnn_layers > 1:
