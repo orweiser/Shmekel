@@ -16,7 +16,7 @@ default_loss_config = {
 default_train_config = {
     "batch_size": 1024,
     "callbacks": None,
-    "epochs": 200,
+    "epochs": 1000,
     "include_experiment_callbacks": True,
     "optimizer": "adam",
     "randomize": True,
@@ -78,7 +78,7 @@ def get_random_sample(layers_types, activation_functions, depths, neurons):
     return [map(choice, [layers_types, neurons, activation_functions]) for _ in range(depth)]
 
 
-def generate_grid_model(layers_types=(DENSE, ), activation_functions=('relu', 'sigmoid', 'tanh'),
+def generate_grid_model(layers_types=(DENSE, LSTM), activation_functions=('relu', 'sigmoid', 'tanh'),
                         depth=(3, 5, 10, 15, 20), neurons=(8, 32, 128), output_activation='softmax',
                         dropout=True, dropout_rate=0.2, early_stop=True):
     combs = get_random_sample(layers_types, activation_functions, depth, neurons)
@@ -97,13 +97,6 @@ def grid_jason_maker(amount_of_experiments=-1, run_experiments=True, defaults_ov
             model_config=model_config,
             name=os.path.join(VERSION, name),
         ))
-
-        # if no rnn layers, data set should not be a time series
-        if model_config['num_of_rnn_layers'] == 0:
-            if 'time_sample_length' in data['train_dataset_config']:
-                data['train_dataset_config']['time_sample_length'] = 1
-            if 'time_sample_length' in data['val_dataset_config']:
-                data['val_dataset_config']['time_sample_length'] = 1
 
         exp = get_exp_from_config(data)
         exp.backup()
