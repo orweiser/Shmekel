@@ -8,9 +8,6 @@ from tqdm import tqdm
 from Utils.logger import logger
 import os
 
-N_train = 80
-N_val = 20
-
 DEFAULT_TRAIN_STOCK_LIST = [
     'aapl', 'adbe', 'adsk',
     'akam', 'algt', 'amwd',
