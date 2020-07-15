@@ -50,13 +50,6 @@ DEFAULT_VAL_STOCK_LIST = [
     'uhal', 'vrtx', 'wltw'
 ]
 
-DEFAULT_FULL_SPLIT_STATISTICS = {
-    'num_train_timestamps': 7547941,
-    'num_val_timestamps': 2904434,
-    'num_stocks_train': 2000,
-    'num_stocks_val': 770,
-}
-
 
 DEFAULT_TRAIN_YEARS = [x for x in range(1900, 2020) if x % 2]
 DEFAULT_VAL_YEARS = [x for x in range(1900, 2020) if not x % 2]
