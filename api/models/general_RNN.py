@@ -78,6 +78,7 @@ class GeneralRnn(Model):
     def __str__(self):
         return 'LSTM_compose'
 
+
     def get_default_config(self) -> dict:
         return dict(units=128, input_shape=(10, 1000), output_shape=(3,), output_activation='softmax')
 
