@@ -1,0 +1,51 @@
+{
+    "name": "michael/length_6.json",
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    },
+    "loss_config": {"loss": "categorical_crossentropy"},
+    "metrics_list": ["acc"],
+    "model_config": {
+        "model": "FullyConnected",
+        "input_shape": [6, 5],
+        "output_activation": "softmax",
+        "output_shape": [2],
+        "depth": 3,
+        "width": 128
+    },
+    "train_config": {
+        "batch_size": 1024,
+        "callbacks": null,
+        "epochs": 1000,
+        "include_experiment_callbacks": true,
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": null,
+        "val_augmentations": null,
+        "validation_steps": null,
+        "verbose": 2
+    },
+    "train_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": [["SMA", {"range": 10}], ["SMA", {"range": 25}], ["SMA", {"range": 50}], ["RSI", {"range": 14}], ["RSI", {"range": 21}]],
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 6,
+        "val_mode": true
+    },
+    "val_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": [["SMA", {"range": 10}], ["SMA", {"range": 25}], ["SMA", {"range": 50}], ["RSI", {"range": 14}], ["RSI", {"range": 21}]],
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 6,
+        "val_mode": true
+    }
+}
