@@ -19,7 +19,11 @@ class Results:
         fig = plt.figure()
         for metric in metrics:
             plt.plot(range(1, len(self[metric]) + 1), self[metric])
+
+        plt.xlabel('#Epoch')
+        plt.title(self.experiment.name)
         plt.legend(metrics)
+        plt.grid()
         plt.show()
         return fig
 
@@ -43,7 +47,6 @@ class Results:
 
         metric_history = np.array(self[metric])
         return metric_history.argmax()
-
 
     def summary(self):
         print(self)
