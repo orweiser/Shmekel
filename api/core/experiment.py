@@ -289,8 +289,9 @@ class Experiment:
 
     """ Paths property and methods. might be moved to a Project class in the future """
     def backup(self):
-        self.backup_handler.dump_history(self.history or {}, epoch=-1)
-        self.backup_handler.dump_snapshot(self.model, epoch=-1)
+        # todo: needed bug fix, overwriting results
+        # self.backup_handler.dump_history(self.history or {}, epoch=-1)
+        # self.backup_handler.dump_snapshot(self.model, epoch=-1)
         self.backup_handler.dump_config(self.config)
 
     """ Methods yet to be implemented: """

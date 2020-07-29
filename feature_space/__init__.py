@@ -11,6 +11,8 @@ from .momentum import Momentum
 from .vwap import VWAP
 from .time_ratio import TimeRatio
 from .stochastic import Stochastic
+from .rsi import RSI
+from .sma import SMA
 from Utils.logger import logger
 
 
@@ -34,6 +36,8 @@ mapping = {
     'momentum': Momentum,
     'vwap': VWAP,
     'time_ratio': TimeRatio,
+    'rsi': RSI,
+    'sma': SMA,
     # 'stochastic': Stochastic,  # todo: uncomment when it is fixed
 }
 

@@ -68,11 +68,12 @@ class GridSearch:
             values = [lambda x: format % tuple([x[key] for key in keys])]
 
         else:
-            var, values = line.split(':')
+            var, *values = line.split(':')
+            values = ':'.join(values)
             var = var.strip(' ')
 
             values = json.loads('[%s]' % values)
-            values = [str(v) for v in values]
+            values = [json.dumps(v) for v in values]
 
         return var, values
 

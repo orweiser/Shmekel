@@ -94,7 +94,7 @@ class Stock:
             #                         feature_list=features)
             # TODO do we need temporal delays? talk to Or if needed
             feature = f.get_feature(data=self.data, temporal_delay=self.temporal_delays[0],
-                                    neg_temporal_delay=self.temporal_delays[1], normalization_type=f.normalization_type,
+                                    neg_temporal_delay=self.temporal_delays[1],
                                     feature_list=features)
             if features is None:
                 features = [None] * len(f_list)
