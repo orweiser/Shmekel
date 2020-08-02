@@ -24,7 +24,7 @@ def main(paths, metrics=None):
     for exp in exps:
         for metric in metrics:
             plt.plot(range(1, len(exp.results[metric]) + 1), exp.results[metric])
-            legend.append(f'{exp}--{metric}')
+            legend.append(f'{os.path.basename(exp.name).rsplit(".", 1)[0]}--{metric}')
     plt.legend(legend)
     plt.xlabel('#Epoch')
     plt.title('Learning Curves Comparison')
