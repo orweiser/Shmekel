@@ -9,13 +9,12 @@ from api.core import get_exp_from_config, load_config # this must be under 'sys.
 
 
 def _get_attribute_from_config(config, attr):
-    print(attr)
     attr_keys = attr.split("-")
     for key in attr_keys:
         if key in config:
             config = config[key]
         else:
-            raise Exception("attribute " + attr + " doesn't exist in config")
+            raise KeyError("attribute " + attr + " doesn't exist in config")
 
     return config
 
@@ -40,7 +39,15 @@ def main(paths, metrics=None, attr=None):
             for exp in exps:
                 x.append(_get_attribute_from_config(exp.config, attr))
                 y.append(exp.results.get_best_epoch(metric).scores[metric])
-            plt.plot(x, y)
+            sorted_x = sorted(x)
+            sorted_y = []
+            for x_val in sorted_x:
+                index = x.index(x_val)
+                sorted_y.append(y[index])
+                del x[index]
+                del y[index]
+
+            plt.plot(sorted_x, sorted_y)
             legend.append(f'{attr}--{metric}')
         plt.xlabel(attr)
     else:
