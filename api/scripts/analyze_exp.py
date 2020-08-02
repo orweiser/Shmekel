@@ -3,9 +3,9 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
-from api.core import get_exp_from_config, load_config
 
 sys.path.insert(0, os.path.join('..', '..', '..', __file__))
+from api.core import get_exp_from_config, load_config # this must be under 'sys.path.insert'
 
 
 def _get_attribute_from_config(config, attr):
