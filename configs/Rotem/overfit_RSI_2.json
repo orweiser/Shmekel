@@ -1,5 +1,5 @@
 {
-    "name": "extra/research_kickstart/overfit_RSI_6.json",
+    "name": "extra/research_kickstart/overfit_RSI_2.json",
     "backup_config": {
         "handler": "DefaultLocal",
         "history_backup_delta": 1,
@@ -11,7 +11,7 @@
     "metrics_list": ["acc"],
     "model_config": {
         "model": "FullyConnected",
-        "input_shape": [5, 6],
+        "input_shape": [5, 2],
         "output_activation": "softmax",
         "output_shape": [2],
         "depth": 3,
@@ -42,8 +42,7 @@
     "val_dataset_config": {
         "config_path": null,
         "dataset": "StocksDataset",
-        "feature_list": [["RSI", {"range": 3}], ["RSI", {"range": 7}], ["RSI", {"range": 14}], ["RSI", {"range": 21}],
-                        ["RSI", {"range": 28}], ["RSI", {"range": 35}]],
+        "feature_list": [["RSI", {"range": 14}], ["RSI", {"range": 21}]],
         "output_feature_list": null,
         "stock_name_list": null,
         "time_sample_length": 5,
