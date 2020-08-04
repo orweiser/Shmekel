@@ -4,6 +4,7 @@ import numpy as np
 from api.tests.dataset_tests import _get_dataset_params
 from api.utils.callbacks import DebugCallback
 from api.core.backup_handler import BaseBackupHandler
+from json_maker import _create_config
 
 
 class TestExperiment(Test):
@@ -86,12 +87,14 @@ class TestExperiment(Test):
                 {
                     "type": "KerasLSTM",
                     "size": 8,
-                    "name": "Layer_1_KerasLSTM_8"
+                    "name": "Layer_1_KerasLSTM_8_relu",
+                    "activation_function": "relu",
                 },
                 {
                     "type": "KerasLSTM",
                     "size": 128,
-                    "name": "Layer_2_KerasLSTM_128"
+                    "name": "Layer_2_KerasLSTM_128_relu",
+                    "activation_function": "relu",
                 },
                 {
                     "type": "Dense",
@@ -122,14 +125,14 @@ class TestExperiment(Test):
                 'input_shape': (None, 2, 5),
                 'output_shape': (None, 2, 128),
             },
-            'Layer_1_KerasLSTM_8': {
+            'Layer_1_KerasLSTM_8_relu': {
                 'units': 8,
                 'input_shape': (None, 2, 128),
                 'output_shape': (None, 2, 8),
                 'return_sequences': True
 
             },
-            'Layer_2_KerasLSTM_128': {
+            'Layer_2_KerasLSTM_128_relu': {
                 'units': 128,
                 'input_shape': (None, 2, 8),
                 'output_shape': (None, 128),
@@ -150,3 +153,49 @@ class TestExperiment(Test):
             layer = exp.model.get_layer(name=layer_name)
             for attribute_name, value in attributes.items():
                 assert getattr(layer, attribute_name) == value
+
+    def test_json_maker_create_config(self):
+        layer_def = [
+            ['Dense', 16, 'relu'],
+            ['KerasLSTM', 64, 'sigmoid'],
+            ['Dense', 16, 'relu'],
+            ['KerasLSTM', 32, 'tanh']
+        ]
+        config = _create_config(output_activation='debug_activation', layers_def=layer_def)
+
+        gt = {
+            "model": "General_RNN",
+            "num_of_layers": 4,
+            "layers": [
+                {
+                    "type": "Dense",
+                    "size": 16,
+                    "activation_function": "relu",
+                    "name": "l0_Dense_16_relu"
+                },
+                {
+                    "type": "KerasLSTM",
+                    "size": 64,
+                    "activation_function": "sigmoid",
+                    "name": "l1_KerasLSTM_64_sigmoid"
+                },
+                {
+                    "type": "Dense",
+                    "size": 16,
+                    "activation_function": "relu",
+                    "name": "l2_Dense_16_relu"
+                },
+                {
+                    "type": "KerasLSTM",
+                    "size": 32,
+                    "activation_function": "tanh",
+                    "name": "l3_KerasLSTM_32_tanh"
+                }
+            ],
+            "num_of_rnn_layers": 2,
+            "output_activation": "debug_activation",
+            "experiment_name": "l0_Dense_16_relu--l1_KerasLSTM_64_sigmoid--l2_Dense_16_relu--l3_KerasLSTM_32_tanh",
+            "callbacks": "early_stop"
+        }
+
+        assert config == gt
