@@ -6,6 +6,7 @@ from .results import Results
 from .trainer import Trainer
 from .backup_handler import get_handler
 from Utils.logger import logger
+import os
 import json
 
 
@@ -312,3 +313,15 @@ class Experiment:
         }
 
         return export_config
+
+    def get_avg_runtime(self):
+        first_time = os.path.getmtime(self.backup_handler.get_history_path(1))
+        second_time = os.path.getmtime(self.backup_handler.get_history_path(2))
+        first_period = second_time - first_time
+        first_time = os.path.getmtime(self.backup_handler.get_history_path(self.results.num_epochs - 1))
+        second_time = os.path.getmtime(self.backup_handler.get_history_path(self.results.num_epochs))
+        second_period = second_time - first_time
+        if first_period * 5 < second_period or second_period * 5 < first_period:
+            return min(first_period, second_period)
+        return (first_period + second_period) * 0.5
+
