@@ -1,7 +1,7 @@
 from keras import Input
 from keras import callbacks as keras_callbacks
 from keras.layers import LSTM as KerasLSTM
-from keras.layers import Dense, Reshape, Dropout  # , RNN
+from keras.layers import Dense, Reshape, Dropout, Flatten
 from api.core import Model
 import numpy as np
 import random
@@ -37,6 +37,7 @@ class GeneralRnn(Model):
     def get_input_output_tensors(self):
         input_shape = self._input_shape
         output_shape = self._output_shape
+        num_of_rnn_layers = self.num_of_rnn_layers
 
         input_layer = Input(input_shape)
 
@@ -50,8 +51,12 @@ class GeneralRnn(Model):
         #
         # x = RNN(cell)(input_layer)
 
-        x = input_layer
-        num_of_rnn_layers = self.num_of_rnn_layers
+        if len(input_shape) > 1 and num_of_rnn_layers == 0:
+            x = Flatten()(input_layer)
+        else:
+            x = input_layer
+
+
         for layer in self.hidden_layers:
             if layer['type'] == 'KerasLSTM':
                 if num_of_rnn_layers > 1:
@@ -72,6 +77,7 @@ class GeneralRnn(Model):
 
     def __str__(self):
         return 'LSTM_compose'
+
 
     def get_default_config(self) -> dict:
         return dict(units=128, input_shape=(10, 1000), output_shape=(3,), output_activation='softmax')
