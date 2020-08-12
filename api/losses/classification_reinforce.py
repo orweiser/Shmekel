@@ -17,6 +17,8 @@ class ClassificationReinforce(Loss):
     def init(self, win_reward=1, lose_reward=0, additional_rewards=None, mode='log', as_tensors=False):
         assert not as_tensors, '"as_tensors" option is not yet supported'
         assert mode in self.KNOWN_MODES
+        assert lose_reward >= 0 and win_reward >= 0
+        assert all([r >= 0 for r in (additional_rewards or {}).values()])
 
         self.as_tensors = as_tensors
         self.additional_rewards = additional_rewards or {}
@@ -123,6 +125,7 @@ class ClassificationReinforceMetrics(Callback):
         certain_pred_indices = np.logical_not(uncertain_pred_indices)
 
         metrics['sharpness'] = y_pred.max(axis=-1)
+        # todo: test if shapes are correct below
         metrics['acc'] = y_true.argmax(axis=-1) == y_pred.argmax(axis=-1)
         
         if not any(uncertain_pred_indices):
