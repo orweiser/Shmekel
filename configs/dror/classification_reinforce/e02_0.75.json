@@ -1,5 +1,5 @@
 {
-    "name": "configs/dror/classification_reinforce/e00_0.json",
+    "name": "configs/dror/classification_reinforce/e02_0.75.json",
     "backup_config": {
         "handler": "DefaultLocal",
         "history_backup_delta": 1,
@@ -8,9 +8,7 @@
         "snapshot_backup_delta": 1
     },
     "loss_config": {
-        "additional_rewards": {
-            "-1": 0
-        },
+        "additional_rewards": {"-1": 0.75},
         "as_tensors": false,
         "lose_reward": 0,
         "loss": "ClassificationReinforce",
