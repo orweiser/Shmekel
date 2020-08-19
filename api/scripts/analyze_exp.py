@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.join('..', '..', '..', __file__))
 from api.core import get_exp_from_config, load_config # this must be under 'sys.path.insert'
 
 
-def _get_attribute_from_config(config, attr):
-    attr_keys = attr.split("-")
+def _get_attribute_from_config(config, attr, sep):
+    attr_keys = attr.split(sep)
     for key in attr_keys:
         if key in config:
             config = config[key]
@@ -25,7 +25,7 @@ def _print_exp_metric(exp, metric):
     exp.results.get_best_epoch(metric).print()
 
 
-def main(paths, metrics=None, attr=None):
+def main(paths, metrics=None, attr=None, sep='-'):
     exps = [get_exp_from_config(load_config(path)) for path in paths]
 
     metrics = metrics or ['val_acc']
@@ -37,7 +37,7 @@ def main(paths, metrics=None, attr=None):
             x = []
             y = []
             for exp in exps:
-                x.append(_get_attribute_from_config(exp.config, attr))
+                x.append(_get_attribute_from_config(exp.config, attr, sep=sep))
                 y.append(exp.results.get_best_epoch(metric).scores[metric])
             sorted_x = sorted(x)
             sorted_y = []
@@ -72,7 +72,8 @@ if __name__ == '__main__':
     parser.add_argument('config_paths', nargs='+')
     parser.add_argument('--metrics', nargs='*', type=str, help='metrics to plot')
     parser.add_argument('--attr', type=str, help='plot best epoch metrics by attribute')
+    parser.add_argument('--sep', type=str, default='-', help='separator of keys. default is  "-"')
     args = parser.parse_args()
 
     params = {}
-    main(args.config_paths, metrics=args.metrics, attr=args.attr)
+    main(args.config_paths, metrics=args.metrics, attr=args.attr, sep=args.sep)
