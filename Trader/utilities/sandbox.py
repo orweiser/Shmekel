@@ -1,6 +1,14 @@
+class Prediction:
+    def __init__(self, rise_in_k_candle):
+        self.rise = {}
+        self.ks = []
+        for k, rise in rise_in_k_candle:
+            self.rise[k] = rise
+            self.ks.append(k)
+
 
 class Candle:
-    def __init__(self, datetime, open, high, low, close, volume, prediction=0, previous=None):
+    def __init__(self, datetime, open, high, low, close, volume, prediction=None, previous=None):
         self.datetime = datetime
         self.open = open
         self.high = high
