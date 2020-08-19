@@ -180,8 +180,8 @@ class Experiment:
     @property
     def model(self):
         if not self._model:
-            self.model_config["input_shape"] = self.train_dataset.input_shape
-            self.model_config["output_shape"] = self.train_dataset.output_shape
+            self.model_config.setdefault('input_shape', self.train_dataset.input_shape)
+            self.model_config.setdefault('output_shape', self.train_dataset.output_shape)
             self._model = get_model(**self.model_config)
             self.model_config = self._model.config
 

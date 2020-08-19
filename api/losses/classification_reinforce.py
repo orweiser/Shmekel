@@ -19,7 +19,8 @@ class ClassificationReinforce(Loss):
         assert mode in self.KNOWN_MODES
         assert lose_reward >= 0 and win_reward >= 0
         assert all([r >= 0 for r in (additional_rewards or {}).values()])
-        assert self.experiment.model.output_shape == 2 + len(additional_rewards or {})
+        assert self.experiment.model.output_shape[-1] == 2 + len(additional_rewards or {}), \
+            str(self.experiment.model.output_shape[-1]) + ', ' + str(len(additional_rewards or {}))
 
         self.as_tensors = as_tensors
         self.additional_rewards = additional_rewards or {}
