@@ -14,6 +14,10 @@ def _print_exp_metric(exp, metric):
     exp.results.get_best_epoch(metric).print()
 
 
+def get_legend_name(name):
+    return name[name.rfind('/')+1: name.rfind('.')]
+
+
 def main(paths, metrics=None):
     exps = [get_exp_from_config(load_config(path)) for path in paths]
 
