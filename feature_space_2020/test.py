@@ -3,6 +3,7 @@ import numpy as np
 from feature_space_2020.RSI import RSI
 from feature_space_2020.SMA import SMA
 from feature_space_2020.momentum import MOMENTUM
+from feature_space.cci import CCI
 from shmekel_core import Stock
 from numpy import genfromtxt
 
