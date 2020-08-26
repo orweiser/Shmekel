@@ -3,26 +3,25 @@ from shmekel_core import Feature, math
 
 
 class CCI(Feature):
+    def __init__(self, range=14, normalization_type='default'):
+        super(CCI, self).__init__(normalization_type=normalization_type, is_numerical=True, time_delay=range)
 
-    def __init__(self, period=14, **kwargs):
-        """
-        use this method to define the parameters of the feature
-        """
-        super(CCI, self).__init__(**kwargs)
-
-        self.time_delay = period - 1
-
-        self._period = period
+        self.range = range
 
     def _compute_feature(self, data, feature_list=None):
-        close = self._get_basic_feature(data[0], 'close')
-        low = self._get_basic_feature(data[0], 'low')
         high = self._get_basic_feature(data[0], 'high')
+        low = self._get_basic_feature(data[0], 'low')
+        close = self._get_basic_feature(data[0], 'close')
 
+        return self.process(high, low, close)
+
+    def process(self, high, low, close):
         typical_price = (high + low + close) / 3
-        sma = math.smooth_moving_avg(typical_price, self._period)
-        mean_abs_val = np.mean(np.abs(typical_price - np.mean(typical_price)))
+        ma = math.smooth_moving_avg(typical_price, self.range)
+        ma_size = np.size(ma)
+        ma_abs_val = math.smooth_moving_avg(np.abs(typical_price[ma_size] - ma), self.range)
+        deviation = np.divide(ma_abs_val, self.range)  # period - 1 might be more suitable here
 
-        cci = (typical_price[:np.size(sma)] - sma)/(0.015*mean_abs_val)
+        cci = (typical_price[:ma_size] - ma)/(0.015*deviation)
 
         return cci
