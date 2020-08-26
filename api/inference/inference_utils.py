@@ -20,6 +20,7 @@ import numpy as np
 
 def read_json_path(path):
     with open(path) as f:
+        print(path)
         return json.load(f)
 
 
