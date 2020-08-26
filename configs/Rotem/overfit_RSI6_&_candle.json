@@ -1,5 +1,5 @@
 {
-    "name": "extra/research_kickstart/overfit_RSI6_candle.json",
+    "name": "extra/research_kickstart/RSI6_candle.json",
     "backup_config": {
         "handler": "DefaultLocal",
         "history_backup_delta": 1,
