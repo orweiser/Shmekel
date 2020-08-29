@@ -1,6 +1,6 @@
 import numpy as np
 from shmekel_core import Feature
-from shmekel_core.math import exponential_moving_average
+from shmekel_core.math import exponential_moving_average_investopedia
 
 
 class MACD(Feature):
@@ -15,26 +15,30 @@ class MACD(Feature):
         super(MACD, self).__init__(normalization_type=normalization_type, is_numerical=True)
         self._calc_signal_line = calc_signal_line
 
-        self.time_delay = 26
+        self.range1 = 12
+        self.range2 = 26
+        self.range_signal = 9
+        self.time_delay = self.range2
+        self.num_features = 1
         if calc_signal_line:
-            self.time_delay += 9
+            self.time_delay += self.range_signal
+            self.num_features = 2
 
     def _compute_feature(self, data, feature_list=None):
 
         close = self._get_basic_feature(data[0], 'close')
-        low = self._get_basic_feature(data[0], 'low')
-        high = self._get_basic_feature(data[0], 'high')
-        return self.process(high, low, close)
+        return self.process(close)
 
-    def process(self, high, low, close): #  Should we use typical price or other candle components (didn't find instructions online)
+    def process(self, close): #  Should we use "close" or "typical price" (typical price = (close + low + high)/3 )
 
-        typical_price = (high + low + close) / 3.
-        ema_12 = exponential_moving_average(typical_price, 12)
-        ema_26 = exponential_moving_average(typical_price, 26)
+        range1, range2, range_s = self.range1, self.range2, self.range_signal
+        ema_12 = exponential_moving_average_investopedia(close, range1)
+        ema_26 = exponential_moving_average_investopedia(close, range2)
+        macd = ema_12[range2 - range1:] - ema_26
 
-        macd = ema_12[:14] - ema_26
         if self._calc_signal_line:
-            signal_line = exponential_moving_average(macd, 9)
-            macd_dive_conv = macd[:9] - signal_line
-            return macd_dive_conv
+            signal_line = exponential_moving_average_investopedia(macd, range_s)
+            macd_plus_signal = np.concatenate((np.expand_dims(macd[range_s - 1:], 1), np.expand_dims(signal_line, 1)), axis=1)
+            return macd_plus_signal
+
         return macd
