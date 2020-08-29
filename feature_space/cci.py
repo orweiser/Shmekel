@@ -17,11 +17,12 @@ class CCI(Feature):
 
     def process(self, high, low, close):
         typical_price = (high + low + close) / 3
-        ma = math.smooth_moving_avg(typical_price, self.range)
+        ma = math.smooth_moving_avg_investopedia(typical_price, self.range)
         ma_size = np.size(ma)
-        ma_abs_val = math.smooth_moving_avg(np.abs(typical_price[ma_size] - ma), self.range)
-        deviation = np.divide(ma_abs_val, self.range)  # period - 1 might be more suitable here
+        deviation = np.zeros((ma_size, 1))
+        for i in range(ma_size):
+            ma_abs_val = np.abs(typical_price[i: i+self.range] - ma[i])
+            deviation[i] = np.sum(ma_abs_val) / self.range  # range - 1 might be more suitable here
 
-        cci = (typical_price[:ma_size] - ma)/(0.015*deviation)
-
+        cci = (typical_price[self.range-1:] - ma)/(0.015*deviation)
         return cci
