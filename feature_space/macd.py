@@ -18,7 +18,7 @@ class MACD(Feature):
         self.range1 = 12
         self.range2 = 26
         self.range_signal = 9
-        self.time_delay = self.range2
+        self.time_delay = self.range2 - 1
         self.num_features = 1
         if calc_signal_line:
             self.time_delay += self.range_signal
