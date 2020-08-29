@@ -4,7 +4,7 @@ from shmekel_core import Feature, math
 
 class CCI(Feature):
     def __init__(self, range=14, normalization_type='default'):
-        super(CCI, self).__init__(normalization_type=normalization_type, is_numerical=True, time_delay=range)
+        super(CCI, self).__init__(normalization_type=normalization_type, is_numerical=True, time_delay=range-1)
 
         self.range = range
         self.auto_fill = True
