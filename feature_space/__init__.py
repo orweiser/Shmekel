@@ -31,7 +31,7 @@ mapping = {
     # 'adx': ADX,  # todo: uncomment when adx is fixed
     'cci': CCI,
     'derivatives': Derivatives,
-    # 'macd': MACD,  # todo: uncomment when macd is fixed
+    'macd': MACD,
     'mfi': MFI,
     'momentum': Momentum,
     'vwap': VWAP,
