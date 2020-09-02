@@ -100,3 +100,24 @@ class Rise(Feature):
             raise RuntimeError('unexpected "output_type": ' + self.output_type)
 
         return diff[self.k_next_candle:]
+
+
+class HighOpenRatio(Feature):
+
+    def __init__(self, output_type='categorical', threshold=None, k_next_candle=1, normalization_type=None, **kwargs):
+        assert not all((threshold is None, output_type == 'ternary')), 'when using "outpit_type" == "ternary", ' \
+                                                                       'must specify threshold'
+
+        super(HighOpenRatio, self).__init__(normalization_type=normalization_type, **kwargs)
+        self.time_delay = -k_next_candle
+        self.num_features = 1 if output_type != 'categorical' else (2 if threshold is None else 3)
+
+        self.output_type = output_type
+        self.threshold = threshold
+        self.k_next_candle = k_next_candle
+
+    def _compute_feature(self, data, feature_list=None):
+        high_list = self._get_basic_feature(data[0], 'high')
+        open_list = self._get_basic_feature(data[0], 'open')
+        high_open_ratio = high_list / open_list - 1
+        return high_open_ratio[self.k_next_candle:]

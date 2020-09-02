@@ -36,6 +36,38 @@ def main(paths, metrics=None):
             _print_exp_metric(exp, metric)
 
 
+# specific for depth/width variation, and val_acc/runtime metrics
+def scatter_map(paths):
+    exps = [get_exp_from_config(load_config(path)) for path in paths]
+
+    metrics = ['acc', 'runtime']
+
+    fig, ax = plt.subplots()
+    x = []
+    y = []
+    sizes = []
+    colors = []
+    for exp in exps:
+        if (exp.results):
+            best_epoch = exp.results.get_best_epoch(metrics[0])
+        else:
+            continue
+        x.append(exp.get_avg_runtime())
+        y.append(best_epoch['val_acc'])
+        sizes.append(exp.model_config['width'])
+        colors.append(exp.model_config['depth'])
+
+    scatter = plt.scatter(x, y, s=sizes, c=colors, alpha=0.7)
+    legend1 = ax.legend(*scatter.legend_elements(prop="sizes"), loc="lower left", title="width")
+    ax.add_artist(legend1)
+    legend2 = ax.legend(*scatter.legend_elements(prop="colors"), loc="upper right", title="depth")
+    ax.add_artist(legend2)
+    plt.xlabel('runtime')
+    plt.ylabel('val_acc')
+    plt.title('acc vs runtime comparison')
+    plt.grid()
+    plt.show()
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 

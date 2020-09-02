@@ -39,6 +39,7 @@ mapping = {
     'rsi': RSI,
     'sma': SMA,
     # 'stochastic': Stochastic,  # todo: uncomment when it is fixed
+    'hor': HighOpenRatio,
 }
 
 
