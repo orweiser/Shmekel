@@ -1,5 +1,6 @@
 data/*
 .idea/*
+/__pycache__/*
 */__pycache__/*
 /*/*/__pycache__/*
 api/tests/test_sample/outputs/fb.csv
