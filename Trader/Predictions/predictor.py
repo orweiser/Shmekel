@@ -1,48 +1,55 @@
+from api.models import get as get_model
+import numpy as np
+import Trader.utilities.sandbox as sb
+import json
 
-class Candle:
-    def __init__(self, datetime, open, high, low, close, volume, prediction=0, previous=None):
-        self.datetime = datetime
-        self.open = open
-        self.high = high
-        self.low = low
-        self.close = close
-        self.volume = volume
-        self.prediction = prediction
-        self.previous = previous
-        self.o2h = (self.high - self.open) / self.open
-        self.o2c = (self.close - self.open) / self.open
-        self.o2l = (self.low - self.open) / self.open
-        if previous:
-            self.prev_close_2_open = (self.open - self.previous.close) / self.previous.close
-        else:
-            self.prev_close_2_open = 0
-
-    def set_previous(self, previous):
-        self.previous = previous
-        self.prev_close_2_open = (self.open - self.previous.close) / self.previous.close
-
-    # def __repr__(self):
-    #     return ""
+INPUTS = {
+    "open":  open,
+    "close": close,
+    "high":  high,
+    "low":   low
+}
+OUTPUTS = ["rise"]
 
 
-class Asset:
-    def __init__(self, name, asset_type, sector, candles=[]):
-        self.name = name
-        self.type = asset_type
-        self.sector = sector
-        self.candles = candles
+def read_json_path(path):
+    with open(path) as f:
+        return json.load(f)
 
 
-class Trade:
-    def __init__(self, entry_price, stop_loss, take_profit, cost_per_share, shares=0):
-        self.status = "pending"
-        self.shares = shares
-        self.entry_price = entry_price
-        self.stop_loss = stop_loss
-        self.take_profit = take_profit
-        self.no_action_counter = 0
-        self.no_action_time = 0
-        self.profit_loss = 0
-        self.cost_per_share = cost_per_share
+def get_model_from_config(config):
+    model = get_model(**config['model'])
+    model.load_weights(config['weights_path'])
+    return model
 
 
+class Predictor:
+    def __init__(self, cfg_path):
+        self.cfg = read_json_path(cfg_path)
+        self.model = get_model_from_config(self.cfg)
+        self.candles = {}
+
+    def get_time_sample_length(self):
+        return self.cfg["time sample length"]
+
+    def get_model(self):
+        return self.model
+
+    def set_candles(self, candles):
+        for i in range(self.cfg["time sample length"]):
+            for input_feature in self.cfg["input features"]:
+                self.candles[input_feature].append(candles[-(i+1)].INPUTS[input_feature])
+        return self.get_prediction()
+
+    def new_candle(self, candle):
+        for input_feature in self.cfg["input features"]:
+            self.candles[input_feature] = [candle.INPUTS[input_feature]] + self.candles[input][0:-1]
+        return self.get_prediction()
+
+    def get_prediction(self):
+        data = np.array([[v for v in self.candles[key]] for key in self.cfg["input features"]]).T
+        predicts = self.model.predict_on_batch(data)
+        out_predicts = {out: [] for out in OUTPUTS}
+        for i, out in enumerate(self.cfg["dataset"]["output_features"]):
+            out_predicts[out[0]].append((out[1]["k_next_candle"], predicts[i][1]))
+        return [Prediction(out, out_predicts[out] for out in OUTPUTS]

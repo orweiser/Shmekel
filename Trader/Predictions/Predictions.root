@@ -1,1 +1,6 @@
-#get_history_length
+#get_history_length - how many candles needed for prediction
+#get inputs
+#get outputs
+#load model
+#get next predictions (candles list)
+#get all predictions (stock)

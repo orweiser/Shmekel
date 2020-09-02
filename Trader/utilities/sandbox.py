@@ -1,7 +1,7 @@
 class Prediction:
-    def __init__(self, rise_in_k_candle, prediction_type):
+    def __init__(self, prediction_type, rise_in_k_candle):
         self.type = prediction_type
-        self.rise = {}
+        self.value = {}
         self.ks = []
         for k, rise in rise_in_k_candle:
             self.rise[k] = rise
