@@ -1,7 +1,7 @@
 from keras import Input
 from keras import callbacks as keras_callbacks
 from keras.layers import LSTM as KerasLSTM
-from keras.layers import Dense, Reshape, Dropout  # , RNN
+from keras.layers import Dense, Reshape, Dropout, Flatten  # , RNN
 from api.core import Model
 import numpy as np
 import random
@@ -39,6 +39,11 @@ class GeneralRnn(Model):
         output_shape = self._output_shape
 
         input_layer = Input(input_shape)
+        num_of_rnn_layers = self.num_of_rnn_layers
+        if len(input_shape) > 1 and num_of_rnn_layers == 0:
+            x = Flatten()(input_layer)
+        else:
+            x = input_layer
 
         # will make more complex cell, might be interesting but not what we meant
         # model = None
@@ -50,8 +55,6 @@ class GeneralRnn(Model):
         #
         # x = RNN(cell)(input_layer)
 
-        x = input_layer
-        num_of_rnn_layers = self.num_of_rnn_layers
         for layer in self.hidden_layers:
             if layer['type'] == 'KerasLSTM':
                 if num_of_rnn_layers > 1:
@@ -61,6 +64,8 @@ class GeneralRnn(Model):
                     x = KerasLSTM(layer['size'], name=layer['name'], activation=layer['activation_function'], return_sequences=False)(x)
             elif layer['type'] == 'Dense':
                 x = Dense(layer['size'], name=layer['name'], activation=layer['activation_function'])(x)
+            else:
+                raise NotImplementedError
             if self.dropout:
                 x = Dropout(self.dropout_rate)(x)
 

@@ -66,11 +66,18 @@ class Trainer:
                                batch_size=self.batch_size, randomize=self.randomize,
                                augmentations=self.augmentations[mode])
 
+    def compile(self):
+        exp = self.experiment
+        loss = exp.loss
+        metrics = exp.metrics
+        model = exp.model
+
+        model.compile(self.optimizer, loss, metrics, loss_weights=loss.loss_weights)
+
     @logger.info_dec
     def fit(self):
         exp = self.experiment
         loss = exp.loss
-        metrics = exp.metrics
         train_dataset = exp.train_dataset
         val_dataset = exp.val_dataset
         print('val_dataset: {}'.format(val_dataset))
@@ -78,14 +85,13 @@ class Trainer:
 
         batch_size = self.batch_size
 
-        # todo: a compile method, either in Model or in Experiment
-        model.compile(self.optimizer, loss, metrics, loss_weights=loss.loss_weights)
+        self.compile()
 
         self.train_gen = self.get_batch_generator('train')
         self.val_gen = self.get_batch_generator('val')
 
-        self.steps_per_epoch = self.steps_per_epoch or (len(train_dataset) // batch_size)
-        self.validation_steps = self.validation_steps or (len(val_dataset) // batch_size)
+        self.steps_per_epoch = self.steps_per_epoch or max(1, (len(train_dataset) // batch_size))
+        self.validation_steps = self.validation_steps or max(1, (len(val_dataset) // batch_size))
 
         if loss.is_computing_validation_metrics:
             validation_data = None

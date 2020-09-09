@@ -1,0 +1,143 @@
+{
+  "name": "michael/general_rnn_tests/lstm_lstm_lstm.json",
+  "backup_config": {
+    "handler": "DefaultLocal",
+    "history_backup_delta": 1,
+    "save_history_after_training": true,
+    "save_snapshot_after_training": true,
+    "snapshot_backup_delta": 1
+  },
+  "loss_config": {
+    "loss": "categorical_crossentropy"
+  },
+  "metrics_list": [
+    "acc"
+  ],
+  "model_config": {
+    "num_of_layers": 3,
+    "num_of_rnn_layers": 3,
+    "model": "General_RNN",
+    "input_shape": [
+      5,
+      5
+    ],
+    "output_activation": "softmax",
+    "output_shape": [
+      2
+    ],
+    "dropout": false,
+    "layers": [
+      {
+        "type": "KerasLSTM",
+        "size": 128,
+        "name": "Layer_0_KerasLSTM_128_relu",
+        "activation_function": "relu"
+      },
+      {
+        "type": "KerasLSTM",
+        "size": 128,
+        "name": "Layer_1_KerasLSTM_128_relu",
+        "activation_function": "relu"
+      },
+      {
+        "type": "KerasLSTM",
+        "size": 128,
+        "name": "Layer_2_KerasLSTM_128_relu",
+        "activation_function": "relu"
+      }
+    ]
+  },
+  "train_config": {
+    "batch_size": 1024,
+    "callbacks": null,
+    "epochs": 1000,
+    "include_experiment_callbacks": true,
+    "optimizer": "adam",
+    "randomize": true,
+    "steps_per_epoch": null,
+    "train_augmentations": null,
+    "val_augmentations": null,
+    "validation_steps": null,
+    "verbose": 2
+  },
+  "train_dataset_config": {
+    "config_path": null,
+    "dataset": "StocksDataset",
+    "feature_list": [
+      [
+        "SMA",
+        {
+          "range": 10
+        }
+      ],
+      [
+        "SMA",
+        {
+          "range": 25
+        }
+      ],
+      [
+        "SMA",
+        {
+          "range": 50
+        }
+      ],
+      [
+        "RSI",
+        {
+          "range": 14
+        }
+      ],
+      [
+        "RSI",
+        {
+          "range": 21
+        }
+      ]
+    ],
+    "output_feature_list": null,
+    "stock_name_list": null,
+    "time_sample_length": 5,
+    "val_mode": true
+  },
+  "val_dataset_config": {
+    "config_path": null,
+    "dataset": "StocksDataset",
+    "feature_list": [
+      [
+        "SMA",
+        {
+          "range": 10
+        }
+      ],
+      [
+        "SMA",
+        {
+          "range": 25
+        }
+      ],
+      [
+        "SMA",
+        {
+          "range": 50
+        }
+      ],
+      [
+        "RSI",
+        {
+          "range": 14
+        }
+      ],
+      [
+        "RSI",
+        {
+          "range": 21
+        }
+      ]
+    ],
+    "output_feature_list": null,
+    "stock_name_list": null,
+    "time_sample_length": 5,
+    "val_mode": true
+  }
+}

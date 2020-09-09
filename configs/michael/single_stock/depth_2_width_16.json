@@ -1,5 +1,5 @@
 {
-    "name": "michael/length_4.json",
+    "name": "michael/single_stock/depth_2_width_16.json",
     "backup_config": {
         "handler": "DefaultLocal",
         "history_backup_delta": 1,
@@ -11,16 +11,16 @@
     "metrics_list": ["acc"],
     "model_config": {
         "model": "FullyConnected",
-        "input_shape": [4, 5],
+        "input_shape": [5, 5],
         "output_activation": "softmax",
         "output_shape": [2],
-        "depth": 3,
-        "width": 128
+        "depth": 2,
+        "width": 16
     },
     "train_config": {
         "batch_size": 1024,
         "callbacks": null,
-        "epochs": 1000,
+        "epochs": 750,
         "include_experiment_callbacks": true,
         "optimizer": "adam",
         "randomize": true,
@@ -35,17 +35,19 @@
         "dataset": "StocksDataset",
         "feature_list": [["SMA", {"range": 10}], ["SMA", {"range": 25}], ["SMA", {"range": 50}], ["RSI", {"range": 14}], ["RSI", {"range": 21}]],
         "output_feature_list": null,
-        "stock_name_list": null,
-        "time_sample_length": 4,
-        "val_mode": true
+        "stock_name_list": ["fb"],
+        "years": [2012, 2013, 2014],
+        "time_sample_length": 5,
+        "val_mode": false
     },
     "val_dataset_config": {
         "config_path": null,
         "dataset": "StocksDataset",
         "feature_list": [["SMA", {"range": 10}], ["SMA", {"range": 25}], ["SMA", {"range": 50}], ["RSI", {"range": 14}], ["RSI", {"range": 21}]],
         "output_feature_list": null,
-        "stock_name_list": null,
-        "time_sample_length": 4,
+        "stock_name_list": ["fb"],
+        "years": [2015, 2016, 2017],
+        "time_sample_length": 5,
         "val_mode": true
     }
 }
