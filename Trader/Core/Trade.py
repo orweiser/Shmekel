@@ -12,9 +12,3 @@ class Trade:
         self.no_action_time = 0
         self.profit_loss = 0
         self.cost_per_share = cost_per_share
-
-
-myorder = Order(OrderType.limit)
-status = myorder.status
-print(status)
-

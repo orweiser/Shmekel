@@ -56,3 +56,4 @@ def load_candles(file_path):
                         row['Volume'])
         candles.append(candle)
     return candles
+
