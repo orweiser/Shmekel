@@ -1,3 +1,5 @@
+def initialize_predictors():
+    print("initialize predictors")
 
 
 class Asset:
@@ -6,3 +8,4 @@ class Asset:
         self.type = asset_type
         self.sector = sector
         self.candles = candles
+        self.predictors = []

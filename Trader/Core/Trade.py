@@ -14,7 +14,5 @@ class Trade:
         self.cost_per_share = cost_per_share
 
 
-myorder = Order(OrderType.limit)
-status = myorder.status
-print(status)
+
 

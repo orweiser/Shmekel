@@ -25,18 +25,5 @@ class Candle:
     def set_previous(self, previous):
         self.prev_close_2_open = (self.open - self.previous.close) / self.previous.close
 
-    def fake_predict(self):
-        fake_input = []
-        k_array = [1, 2, 3, 4, 5, 10]
-        for k in k_array:
-            val = 1 / random.randrange(1, 10)
-            fake_input.append((k, val))
-        prediction_type = PredictionType.rise
-        self.prediction = Prediction(fake_input, prediction_type)
 
-
-time = datetime.datetime.now()
-
-myCandle = Candle(time, 95.1, 98.7, 94.6, 97.2, 1000)
-myCandle.fake_predict()
 
