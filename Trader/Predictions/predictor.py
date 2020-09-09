@@ -51,5 +51,8 @@ class Predictor:
         predicts = self.model.predict_on_batch(data)
         out_predicts = {out: [] for out in OUTPUTS}
         for i, out in enumerate(self.cfg["dataset"]["output_features"]):
-            out_predicts[out[0]].append((out[1]["k_next_candle"], predicts[i][1]))
+            if out[1]["output_type"] == "categorical":
+                out_predicts[out[0]].append((out[1]["k_next_candle"], predicts[i][1]))
+            else:
+                out_predicts[out[0]].append((out[1]["k_next_candle"], predicts[i]))
         return [Prediction(out, out_predicts[out] for out in OUTPUTS]
