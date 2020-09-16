@@ -35,7 +35,7 @@ class Rise(Feature):
 
     def __init__(self, output_type='categorical', threshold=None, k_next_candle=1, normalization_type=None, **kwargs):
         assert output_type in self.SUPPORTED_OUTPUT_TYPES
-        assert not all((threshold is None, output_type == 'ternary')), 'when using "outpit_type" == "ternary", ' \
+        assert not all((threshold is None, output_type == 'ternary')), 'when using "output_type" == "ternary", ' \
                                                                        'must specify threshold'
 
         super(Rise, self).__init__(normalization_type=normalization_type, **kwargs)
@@ -104,8 +104,8 @@ class Rise(Feature):
 
 class HighOpenRatio(Feature):
 
-    def __init__(self, output_type='categorical', threshold=None, k_next_candle=1, normalization_type=None, **kwargs):
-        assert not all((threshold is None, output_type == 'ternary')), 'when using "outpit_type" == "ternary", ' \
+    def __init__(self, output_type='regression', threshold=None, k_next_candle=1, normalization_type=None, **kwargs):
+        assert not all((threshold is None, output_type == 'ternary')), 'when using "output_type" == "ternary", ' \
                                                                        'must specify threshold'
 
         super(HighOpenRatio, self).__init__(normalization_type=normalization_type, **kwargs)
@@ -120,4 +120,25 @@ class HighOpenRatio(Feature):
         high_list = self._get_basic_feature(data[0], 'high')
         open_list = self._get_basic_feature(data[0], 'open')
         high_open_ratio = high_list / open_list - 1
+        return high_open_ratio[self.k_next_candle:]
+
+
+class CloseOpenRatio(Feature):
+
+    def __init__(self, output_type='regression', threshold=None, k_next_candle=1, normalization_type=None, **kwargs):
+        assert not all((threshold is None, output_type == 'ternary')), 'when using "output_type" == "ternary", ' \
+                                                                       'must specify threshold'
+
+        super(CloseOpenRatio, self).__init__(normalization_type=normalization_type, **kwargs)
+        self.time_delay = -k_next_candle
+        self.num_features = 1 if output_type != 'categorical' else (2 if threshold is None else 3)
+
+        self.output_type = output_type
+        self.threshold = threshold
+        self.k_next_candle = k_next_candle
+
+    def _compute_feature(self, data, feature_list=None):
+        close_list = self._get_basic_feature(data[0], 'close')
+        open_list = self._get_basic_feature(data[0], 'open')
+        high_open_ratio = close_list / open_list - 1
         return high_open_ratio[self.k_next_candle:]
