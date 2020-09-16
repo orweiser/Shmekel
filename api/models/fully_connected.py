@@ -19,11 +19,10 @@ class FullyConnected(Model):
     _input_shape: tuple
     _output_shape: tuple
     regularization_value : float
-    weights_path: str
 
     def init(self, depth=1, width=32, base_activation='relu', skip_connections=False, batch_normalization=False,
              batch_norm_after_activation=True, batch_norm_before_output=False, input_shape=(28, 28),
-             output_shape=(10,), output_activation='softmax', name=None, regularization_value=None, weights_path=None):
+             output_shape=(10,), output_activation='softmax', name=None, regularization_value=None):
         
         self.depth = depth
         self.width = width
