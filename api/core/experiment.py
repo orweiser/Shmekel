@@ -115,6 +115,9 @@ class Experiment:
             backup = False
 
         elif status is 'initialized':
+            experiment_name = self.model_config.get("weights_path")
+            if experiment_name and experiment_name.strip():
+                self.backup_handler.load_last_snapshot_from_other_experiment(self.model, experiment_name)
             self.start()
 
         elif status.startswith('finished'):
