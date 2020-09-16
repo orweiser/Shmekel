@@ -339,7 +339,7 @@ class DefaultLocal(BaseBackupHandler):
         model.load_weights(path)
 
     def load_snapshot_from_path(self, model, path: str):
-        model.load_weights(path)
+        model.load_weights(os.path.join(self.res_dir_absolute_path, path))
 
     def dump_history(self, history: dict, epoch: int):
         if not os.path.exists(os.path.join(self.exp_absolute_path, self.histories_dir_relative_path)):
