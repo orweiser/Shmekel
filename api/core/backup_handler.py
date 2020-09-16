@@ -131,19 +131,18 @@ class BaseBackupHandler(Callback):
         """ returns the name of the snapshots dir. default: "snapshots" """
         return 'snapshots'
 
-    def get_snapshot_path(self, epoch: int, experiment_name: str = None):
+    def get_snapshot_path(self, epoch: int):
         """ get a snapshot path according to epoch_number (counting starts from 1) """
         if epoch < 0:
             epoch = self.experiment.train_config['epochs'] + epoch + 1
 
-        absolute_path = self.exp_absolute_path if experiment_name is None else os.path.join(self.res_dir_absolute_path, experiment_name)
-        return os.path.join(absolute_path, self.snapshots_dir_relative_path,
+        return os.path.join(self.exp_absolute_path, self.snapshots_dir_relative_path,
                             "snapshot_EPOCH.h5".replace('EPOCH', str(epoch)))
 
-    def last_snapshot_epoch(self, experiment_name: str = None) -> int:
+    def last_snapshot_epoch(self) -> int:
         """ get the latest epoch number with saved snapshot. """
         for i in range(self.experiment.train_config['epochs'], 0, -1):
-            if os.path.exists(self.get_snapshot_path(i, experiment_name)):
+            if os.path.exists(self.get_snapshot_path(i)):
                 return i
 
     def dump_snapshot(self, model, epoch: int):
@@ -154,8 +153,8 @@ class BaseBackupHandler(Callback):
         """ method to implement the loading of snapshots """
         raise NotImplementedError()
 
-    def load_last_snapshot_from_other_experiment(self, model, experiment_name: str):
-        """ method to implement the loading of snapshots """
+    def load_snapshot_from_path(self, model, path: str):
+        """ method to implement the loading of snapshots from a given epoch snapshot path"""
         raise NotImplementedError()
 
     """ Handle history files: """
@@ -330,8 +329,8 @@ class DefaultLocal(BaseBackupHandler):
         model.save_weights(path)
 
     @logger.debug_dec
-    def load_snapshot(self, model, epoch: int, experiment_name: str = None):
-        path = self.get_snapshot_path(epoch, experiment_name)
+    def load_snapshot(self, model, epoch: int):
+        path = self.get_snapshot_path(epoch)
 
         if not os.path.exists(path):
             return None
@@ -339,9 +338,8 @@ class DefaultLocal(BaseBackupHandler):
         logger.debug('loading snapshot epoch %d from %s', epoch, path)
         model.load_weights(path)
 
-    def load_last_snapshot_from_other_experiment(self, model, experiment_name: str):
-        self.load_snapshot(model, self.last_snapshot_epoch(experiment_name), experiment_name)
-
+    def load_snapshot_from_path(self, model, path: str):
+        model.load_weights(path)
 
     def dump_history(self, history: dict, epoch: int):
         if not os.path.exists(os.path.join(self.exp_absolute_path, self.histories_dir_relative_path)):
