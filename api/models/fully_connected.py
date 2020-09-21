@@ -1,6 +1,7 @@
 from ..core.model import *
 from keras.layers import Dense, Flatten, Activation, BatchNormalization, Add, Reshape
 from keras import Input
+from keras.regularizers import l1_l2
 import numpy as np
 
 
@@ -17,10 +18,12 @@ class FullyConnected(Model):
     name: str
     _input_shape: tuple
     _output_shape: tuple
+    regularization_value : float
 
     def init(self, depth=1, width=32, base_activation='relu', skip_connections=False, batch_normalization=False,
              batch_norm_after_activation=True, batch_norm_before_output=False, input_shape=(28, 28),
-             output_shape=(10,), output_activation='softmax', name=None):
+             output_shape=(10,), output_activation='softmax', name=None, regularization_value=None):
+        
         self.depth = depth
         self.width = width
         self.base_activation = base_activation
@@ -32,10 +35,16 @@ class FullyConnected(Model):
         self._output_shape = output_shape
         self.output_activation = output_activation
         self.name = name
+        self.regularization_value = regularization_value
 
     def get_input_output_tensors(self):
         def add_layer(input_tensor, is_last_hidden_layer=False):
-            output_tensor = Dense(self.width)(input_tensor)
+            r = self.regularization_value
+            if r is not None:
+                kwargs = dict(kernel_regularizer=l1_l2(r, r), bias_regularizer=l1_l2(r, r))
+            else:
+                kwargs = {}
+            output_tensor = Dense(self.width, **kwargs)(input_tensor)
             if (not self.batch_normalization) or (is_last_hidden_layer and not self.batch_norm_before_output):
                 return Activation(self.base_activation)(output_tensor)
 
