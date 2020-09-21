@@ -17,7 +17,7 @@ def _print_exp_metric(exp, metric):
 def main(paths, metrics=None):
     exps = [get_exp_from_config(load_config(path)) for path in paths]
 
-    metrics = metrics or ['val_acc']
+    metrics = metrics or ['loss']
 
     legend = []
     plt.figure()

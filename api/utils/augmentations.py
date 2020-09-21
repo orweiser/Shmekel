@@ -205,3 +205,11 @@ class ConcatExtraNoiseSamples(BaseAugmentation):
         batch_labels = np.concatenate((batch_labels, extra_label), axis=0)
 
         return batch_inputs, batch_labels
+
+
+class AutoEncoder(BaseAugmentation):
+    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple):
+        return inputs_shape, inputs_shape
+
+    def call(self, batch_inputs, batch_labels):
+        return batch_inputs, batch_inputs
