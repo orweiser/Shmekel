@@ -3,19 +3,22 @@ from api.utils.data_utils import batch_generator
 from Utils.logger import logger
 from keras import optimizers as keras_optimizers
 from api.utils.callbacks import parse_callback, _parse_item
+from keras.callbacks import TensorBoard
+import os
 
 
 class Trainer:
     def __init__(self, experiment=None,
                  optimizer='adam', batch_size=2048, epochs=10,
                  train_augmentations=None, val_augmentations=None,
-                 callbacks=None, include_experiment_callbacks=True, randomize=True,
+                 callbacks=None, tensorboard_callbacks=None, include_experiment_callbacks=True, randomize=True,
                  steps_per_epoch=None, validation_steps=None, **params):
 
         params['epochs'] = epochs
         self.config = {**dict(optimizer=optimizer, batch_size=batch_size, randomize=randomize,
                               train_augmentations=train_augmentations, val_augmentations=val_augmentations,
-                              callbacks=callbacks, include_experiment_callbacks=include_experiment_callbacks,
+                              callbacks=callbacks, tensorboard_callbacks=tensorboard_callbacks,
+                              include_experiment_callbacks=include_experiment_callbacks,
                               steps_per_epoch=steps_per_epoch, validation_steps=validation_steps), **params}
 
         self.experiment = experiment
@@ -27,10 +30,16 @@ class Trainer:
         self.validation_steps = validation_steps
 
         self.batch_size = batch_size
+
         if include_experiment_callbacks:
             self.callbacks = experiment.callbacks + (callbacks or [])
         else:
             self.callbacks = callbacks
+        if tensorboard_callbacks: #  TODO: change experiment.name to a subfolder of the results
+            log_dir = {'log_dir': os.path.join(experiment._backup_handler.exp_absolute_path, 'logs')}
+            tensorboard_callbacks.update(log_dir)
+            self.callbacks.append(TensorBoard(**tensorboard_callbacks))
+
 
         self.callbacks = [parse_callback(c) for c in self.callbacks]
 
@@ -114,5 +123,7 @@ def parse_optimizer(item):
 
     module = getattr(keras_optimizers, opt_name)
     return module(**opt_params)
+
+
 
 
