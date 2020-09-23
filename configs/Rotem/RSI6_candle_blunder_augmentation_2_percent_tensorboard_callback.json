@@ -1,0 +1,54 @@
+{
+    "name": "extra/research_kickstart/RSI6_candle_blunder_augmentation_2_percent_tensorboard_callback.json",
+    "backup_config": {
+        "handler": "DefaultLocal",
+        "history_backup_delta": 1,
+        "save_history_after_training": true,
+        "save_snapshot_after_training": true,
+        "snapshot_backup_delta": 1
+    },
+    "loss_config": {"loss": "categorical_crossentropy"},
+    "metrics_list": ["acc"],
+    "model_config": {
+        "model": "FullyConnected",
+        "input_shape": [5, 11],
+        "output_activation": "softmax",
+        "output_shape": [2],
+        "depth": 3,
+        "width": 128
+    },
+    "train_config": {
+        "batch_size": 1024,
+        "callbacks": null,
+        "epochs": 1000,
+        "include_experiment_callbacks": true,
+        "tensorboard_callbacks": {"histogram_freq": 0, "write_graph": true, "write_images": true},
+        "optimizer": "adam",
+        "randomize": true,
+        "steps_per_epoch": null,
+        "train_augmentations": [["Blunder", {"percentile": 2}]],
+        "val_augmentations": null,
+        "validation_steps": null,
+        "verbose": 2
+    },
+    "train_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": [["RSI", {"range": 3}], ["RSI", {"range": 7}], ["RSI", {"range": 14}], ["RSI", {"range": 21}],
+                        ["RSI", {"range": 28}], ["RSI", {"range": 35}], "high", "low", "open", "close", "volume"],
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 5,
+        "val_mode": false
+    },
+    "val_dataset_config": {
+        "config_path": null,
+        "dataset": "StocksDataset",
+        "feature_list": [["RSI", {"range": 3}], ["RSI", {"range": 7}], ["RSI", {"range": 14}], ["RSI", {"range": 21}],
+                        ["RSI", {"range": 28}], ["RSI", {"range": 35}], "high", "low", "open", "close", "volume"],
+        "output_feature_list": null,
+        "stock_name_list": null,
+        "time_sample_length": 5,
+        "val_mode": true
+    }
+}
