@@ -29,8 +29,8 @@ class AugmentationList:
 
         self.aug_list = [get_augmentation(aug) for aug in augmentations]
 
-        for aug in self.aug_list:
-            self._test_augmentation(aug)
+        # for aug in self.aug_list:
+        #     self._test_augmentation(aug)
 
     def get_output_shapes(self, input_shape: tuple, labels_shape: tuple):
         for aug in self.aug_list:
@@ -203,5 +203,21 @@ class ConcatExtraNoiseSamples(BaseAugmentation):
             batch_labels = batch_labels[:, np.newaxis].T
 
         batch_labels = np.concatenate((batch_labels, extra_label), axis=0)
+
+        return batch_inputs, batch_labels
+
+
+class Blunder(BaseAugmentation):
+    '''Augmentation to create random error at the prediction, for a given percentile of the data'''
+    def __init__(self, percentile: float = 2.0):
+        self.percentile = percentile  # value in the range [0 100]
+
+    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple):
+        return inputs_shape, labels_shape
+
+    def call(self, batch_inputs, batch_labels):
+        rand = np.random.rand(len(batch_labels))
+        batch_labels = np.array([blunder if condition else correct
+            for condition, blunder, correct in zip(rand<self.percentile/100, -batch_labels + 1, batch_labels)])
 
         return batch_inputs, batch_labels
