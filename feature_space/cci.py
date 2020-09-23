@@ -24,5 +24,13 @@ class CCI(Feature):
             ma_abs_val = np.abs(typical_price[i: i+self.range] - ma[i])
             deviation[i] = np.sum(ma_abs_val) / self.range  # range - 1 might be more suitable here
 
-        cci = (typical_price[self.range-1:] - ma)/(0.015*deviation)
+        cci = (typical_price[self.range-1:] - ma)/(0.015*deviation + np.finfo(float).eps)
+        # print('++++++++++++++')
+        # if np.isnan(np.sum(cci)):
+        #     nan = 0
+        #     for i in range(len(cci)):
+        #         if np.isnan(cci[i]):
+        #             nan += 1
+        #
+        #     print(f'found {nan} nan')
         return cci
