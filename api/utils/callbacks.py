@@ -1,5 +1,6 @@
 from keras.callbacks import Callback
 from keras import callbacks as keras_callbacks
+from keras.callbacks import TensorBoard
 
 
 def _parse_item(item):
@@ -15,7 +16,7 @@ def _parse_item(item):
 
 
 def parse_callback(item):
-    if isinstance(item, keras_callbacks.Callback):
+    if isinstance(item, (keras_callbacks.Callback, TensorBoard)):
         return item
 
     c_name, c_params = _parse_item(item)
