@@ -1,3 +1,5 @@
+
+
 class Simulation:
     initial_funds = 100000
 
@@ -36,3 +38,10 @@ class PredictionType:
     rise = "rise"
     high_to_open_ratio = "hor"
     close_to_open_ratio = "cor"
+    low_to_open_ratio = "lor"
+
+class Fake_Prediction:
+    def __init__(self, prediction_type, rise_in_k_candle):
+        self.type = prediction_type
+        self.value = {}
+        self.ks = []

@@ -3,6 +3,7 @@ import os
 from Trader.Core.enums import *
 from Trader.Core.Asset import *
 from Trader.Core.Candle import *
+from Trader.Core.Trade import *
 import pandas as pd
 
 
@@ -15,6 +16,7 @@ class TradeManager:
     def start(self):
         self.get_funds()
         self.load_assets()
+        self.run_assets()
 
     def get_funds(self):
         if self.mode == RunMode.simulate:
@@ -22,12 +24,19 @@ class TradeManager:
 
     def load_assets(self):
         if self.mode == RunMode.simulate:
-            self.assets = load_assets_from_folder(Location.stocks_root)
+            self.assets = load_assets_from_folder(Location.stocks_root, 3)
+
+    def run_assets(self):
+        if self.mode == RunMode.simulate:
+            for asset in self.assets:
+                config = TradeConfig
+                asset.simulate(trade_config=config)
 
 
 
-def load_assets_from_folder(stocks_folder):
+def load_assets_from_folder(stocks_folder,limit=0,runmode = RunMode.simulate):
     assets = []
+    counter = 1
     for dir in os.listdir(stocks_folder):
         sector = dir
         sector_path = stocks_folder+"\\"+sector
@@ -36,8 +45,21 @@ def load_assets_from_folder(stocks_folder):
             name = filename.split('.')[0]
             raw_candles = load_candles(filepath)
             stock = Asset(name, AssetType.stock, sector, raw_candles)
+            #stock.calculate_features()
+            stock.load_predictors(runmode=runmode)
             assets.append(stock)
-            print("added new asset: "+name)
+            print("added new asset: " + name)
+            counter += 1
+            if limit > 0:
+                if counter > limit:
+                    break
+        if limit > 0:
+            if counter > limit:
+                break
+
+        if limit > 0:
+            if counter > limit:
+                break
     return assets
 
 def load_candles(file_path):
@@ -56,4 +78,5 @@ def load_candles(file_path):
                         row['Volume'])
         candles.append(candle)
     return candles
+
 

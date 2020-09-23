@@ -1,6 +1,15 @@
 from Trader.Core.order import *
 
 
+class TradeConfig:
+    min_rise_for_long = 0.75
+    max_rise_for_short = 0.25
+    min_cor_for_long = 0.75
+    max_cor_for_short = -0.75
+    min_abs_hcr_for_peak_short = 0.5
+    min_abs_lcr_for_low_short = 0.5
+
+
 class Trade:
     def __init__(self, entry_price, stop_loss, take_profit, cost_per_share, shares=0):
         self.status = "pending"
