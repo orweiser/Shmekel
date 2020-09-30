@@ -2,6 +2,7 @@ from ..core.model import *
 from keras.layers import Dense, Flatten, Activation, BatchNormalization, Add, Reshape
 from keras import Input
 import numpy as np
+import math
 
 
 class AutoEncoder(Model):
@@ -58,11 +59,12 @@ class AutoEncoder(Model):
             output_layer = input_layer
 
         for d in range(self.depth):
-            layer_width = 10 if d == self.depth / 2 else self.width
+            # TODO - make this generic somehow
+            actual_width = 4 if d == math.floor(self.depth / 2) else self.width
             if self.skip_connections and d:
-                output_layer = Add()([output_layer, add_layer(layer_width, output_layer, is_last_hidden_layer=d == (self.depth - 1))])
+                output_layer = Add()([output_layer, add_layer(actual_width, output_layer, is_last_hidden_layer=d == (self.depth - 1))])
             else:
-                output_layer = add_layer(layer_width, output_layer, is_last_hidden_layer=d == (self.depth - 1))
+                output_layer = add_layer(actual_width, output_layer, is_last_hidden_layer=d == (self.depth - 1))
 
         output_layer = Dense(np.prod(output_shape), activation=self.output_activation)(output_layer)
         if len(output_shape) > 1:
