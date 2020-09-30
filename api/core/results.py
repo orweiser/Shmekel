@@ -27,10 +27,7 @@ class Results:
         plt.show()
         return fig
 
-    def get_best_epoch(self, metric=None):
-        # TODO ???
-        metric = metric or 'val_acc'
-        metric = metric or 'acc'
+    def get_best_epoch(self, metric='acc'):
         assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
 
         metric_history = np.array(self[metric])
@@ -39,10 +36,7 @@ class Results:
         except ValueError:
             return self[1]
 
-    def get_best_epoch_number(self, metric=None):
-        # TODO ???
-        metric = metric or 'val_acc'
-        metric = metric or 'acc'
+    def get_best_epoch_number(self, metric='acc'):
         assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
 
         metric_history = np.array(self[metric])

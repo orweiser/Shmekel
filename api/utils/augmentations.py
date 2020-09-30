@@ -221,3 +221,11 @@ class Blunder(BaseAugmentation):
             for condition, blunder, correct in zip(rand<self.percentile/100, -batch_labels + 1, batch_labels)])
 
         return batch_inputs, batch_labels
+
+
+class AutoEncoder(BaseAugmentation):
+    def get_output_shapes(self, inputs_shape: tuple, labels_shape: tuple):
+        return inputs_shape, inputs_shape
+
+    def call(self, batch_inputs, batch_labels):
+        return batch_inputs, batch_inputs

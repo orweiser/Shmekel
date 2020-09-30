@@ -9,7 +9,7 @@ class SMA(Feature):
         self.normalization_type = normalization_type
         self.time_delay = time_delay
         self.is_numerical = True
-        self.auto_fill = True
+        self.auto_fill = False
 
     def _compute_feature(self, data):
         close = self._get_basic_feature(data[0], 'close')

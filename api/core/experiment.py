@@ -6,6 +6,7 @@ from .results import Results
 from .trainer import Trainer
 from .backup_handler import get_handler
 from Utils.logger import logger
+import os
 import json
 
 
@@ -16,7 +17,7 @@ class Experiment:
     def __init__(self, name='default_exp',
                  model_config=None, loss_config=None,
                  train_dataset_config=None, val_dataset_config=None,
-                 train_config=None, backup_config=None, metrics_list=None):
+                 train_config=None, backup_config=None, metrics_list=None, weights_path=None):
 
         self.model_config = model_config or {'model': 'LSTM'}
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
@@ -25,6 +26,7 @@ class Experiment:
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(handler='DefaultLocal')  # , project='default_project')
         self.metrics_list = metrics_list or ['acc']
+        self.weights_path = weights_path
 
         # todo: have 'project' be a field of experiment instead of backup_handler
         # todo: load existing config by experiment name?
@@ -115,6 +117,8 @@ class Experiment:
             backup = False
 
         elif status is 'initialized':
+            if self.weights_path and self.weights_path.strip():
+                self.backup_handler.load_snapshot_from_path(self.model, self.weights_path)
             self.start()
 
         elif status.startswith('finished'):
@@ -180,8 +184,8 @@ class Experiment:
     @property
     def model(self):
         if not self._model:
-            self.model_config["input_shape"] = self.train_dataset.input_shape
-            self.model_config["output_shape"] = self.train_dataset.output_shape
+            self.model_config.setdefault('input_shape', self.train_dataset.input_shape)
+            self.model_config.setdefault('output_shape', self.train_dataset.output_shape)
             self._model = get_model(**self.model_config)
             self.model_config = self._model.config
 
@@ -312,3 +316,15 @@ class Experiment:
         }
 
         return export_config
+
+    def get_avg_runtime(self):
+        first_time = os.path.getmtime(self.backup_handler.get_history_path(1))
+        second_time = os.path.getmtime(self.backup_handler.get_history_path(2))
+        first_period = second_time - first_time
+        first_time = os.path.getmtime(self.backup_handler.get_history_path(self.results.num_epochs - 1))
+        second_time = os.path.getmtime(self.backup_handler.get_history_path(self.results.num_epochs))
+        second_period = second_time - first_time
+        if first_period * 5 < second_period or second_period * 5 < first_period:
+            return min(first_period, second_period)
+        return (first_period + second_period) * 0.5
+

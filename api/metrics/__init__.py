@@ -48,12 +48,22 @@ def total_sharpness(y_true, y_pred):
     return K.max(y_pred, axis=-1)
 
 
+def root_mean_squared_error(y_true, y_pred):
+    return K.sqrt(K.mean(K.square(y_pred - y_true)))
+
+
+def sign_acc(y_true, y_pred):
+    return (y_true >= 0 and y_pred >= 0) or (y_true < 0 and y_pred < 0)
+
+
 metrics_mapping = {
     'UncertaintySharpness': uncertainty_sharpness,
     'UncertainFraction': uncertain_fraction,
     'CertainPredictionAcc': certain_predictions_acc,
     'CertaintySharpness': certainty_sharpness,
     'TotalSharpness': total_sharpness,
+    "RMSE": root_mean_squared_error,
+    "SignAccuracy": sign_acc,
 }
 
 
