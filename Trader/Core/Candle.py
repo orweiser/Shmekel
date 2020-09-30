@@ -5,7 +5,7 @@ import random
 
 
 class Candle:
-    def __init__(self, datetime, open, high, low, close, volume, prediction=None, previous=None):
+    def __init__(self, datetime, open, high, low, close, volume, sma_10, sma_25, sma_50, rsi_14, rsi_21, prediction=None, previous=None):
         self.datetime = datetime
         self.open = open
         self.high = high
@@ -14,6 +14,11 @@ class Candle:
         self.volume = volume
         self.prediction = prediction
         self.previous = previous
+        self.sma_10 = sma_10
+        self.sma_25 = sma_25
+        self.sma_50 = sma_50
+        self.rsi_14 = rsi_14
+        self.rsi_21 = rsi_21
         self.o2h = (self.high - self.open) / self.open
         self.o2c = (self.close - self.open) / self.open
         self.o2l = (self.low - self.open) / self.open
@@ -35,8 +40,8 @@ class Candle:
         self.prediction = Prediction(fake_input, prediction_type)
 
 
-time = datetime.datetime.now()
-
-myCandle = Candle(time, 95.1, 98.7, 94.6, 97.2, 1000)
-myCandle.fake_predict()
+# time = datetime.datetime.now()
+#
+# myCandle = Candle(time, 95.1, 98.7, 94.6, 97.2, 1000)
+# myCandle.fake_predict()
 
