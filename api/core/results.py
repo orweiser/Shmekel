@@ -27,20 +27,30 @@ class Results:
         plt.show()
         return fig
 
-    def get_best_epoch(self, metric='acc'):
+    def get_best_epoch(self, metric='acc', trend='raise'):
         assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
 
         metric_history = np.array(self[metric])
         try:
-            return self[np.nanargmax(metric_history) + 1]
+            if trend == 'raise':
+                return self[np.nanargmax(metric_history) + 1]
+            elif trend == 'fall':
+                return self[np.nanargmin(metric_history) + 1]
+            else:
+                raise Exception("Invalid value for argument trend. Value should be 'raise' or 'fall'")
         except ValueError:
             return self[1]
 
-    def get_best_epoch_number(self, metric='acc'):
+    def get_best_epoch_number(self, metric='acc',  trend='raise'):
         assert metric and metric in self.metrics_list, 'metric ' + str(metric) + ' not in metrics list'
 
         metric_history = np.array(self[metric])
-        return metric_history.argmax()
+        if trend == 'raise':
+            return metric_history.argmax()
+        elif trend == 'fall':
+            return metric_history.argmin()
+        else:
+            raise Exception("Invalid value for argument trend. Value should be 'raise' or 'fall'")
 
     def summary(self):
         print(self)
