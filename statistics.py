@@ -48,7 +48,7 @@ def get_models_raw_stats(base_dir):
     return models_raw_stats
 
 
-def get_model_stats(models_raw_stats, metrics=None, config_keys=None):
+def get_model_stats(models_raw_stats, metrics=None, metric_trends=None, config_keys=None):
     """
 
     :param config_keys: list of config to account for statistics
@@ -57,6 +57,13 @@ def get_model_stats(models_raw_stats, metrics=None, config_keys=None):
     :return: model statistics
     """
     metrics = ['acc', 'loss', 'val_acc', 'val_loss'] or metrics
+    if ~metric_trends:
+        if metrics == ['acc', 'loss', 'val_acc', 'val_loss']:
+            metric_trends = ['raise', 'fall', 'raise', 'fall']
+        else:
+            metric_trends['raise'] * len(metrics)
+
+
     config_keys = ['num_of_layers', 'num_of_rnn_layers', 'num_of_dense_layers', 'dropout_rate'] or config_keys
 
     # TODO implement for key layers in model -> model config
@@ -72,24 +79,24 @@ def get_model_stats(models_raw_stats, metrics=None, config_keys=None):
             elif key in model['model']:
                 s[key] = model['model'][key]
 
-        for metric in metrics:
-            best_epoch = model['results'].get_best_epoch(metric)
+        for metric, trend in zip(metrics, metric_trends):
+            best_epoch = model['results'].get_best_epoch(metric, trend)
             s["best {metric} num".format(metric=metric)] = best_epoch.epoch_num
             for key, val in best_epoch.scores.items():
                 s["best {metric} {key}".format(metric=metric, key=key)] = val
             s["first_close_to_best_epoch_num {metric}".format(metric=metric)] =\
-                get_first_close_to_best_epoch(model, metric).epoch_num
+                get_first_close_to_best_epoch(model, metric, trend=trend).epoch_num
             s["first_close_to_best_epoch {metric}".format(metric=metric)] =\
-                get_first_close_to_best_epoch(model, metric).scores[metric]
+                get_first_close_to_best_epoch(model, metric, trend=trend).scores[metric]
 
         models_stats = models_stats.append(s)
 
     return models_stats
 
 
-def get_first_close_to_best_epoch(model, metric):
+def get_first_close_to_best_epoch(model, metric, trend):
     results = model['results']
-    best_epoch = results.get_best_epoch(metric)
+    best_epoch = results.get_best_epoch(metric, trend)
     for epoch in results._epoch_list:
         if abs(epoch.scores[metric] - best_epoch.scores[metric]) < 0.03:
             return epoch
