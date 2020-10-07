@@ -60,7 +60,7 @@ class AutoEncoder(Model):
 
         for d in range(self.depth):
             # TODO - make this generic somehow
-            actual_width = 4 if d == math.floor(self.depth / 2) else self.width
+            actual_width = 8 if d == math.floor(self.depth / 2) else self.width
             if self.skip_connections and d:
                 output_layer = Add()([output_layer, add_layer(actual_width, output_layer, is_last_hidden_layer=d == (self.depth - 1))])
             else:
