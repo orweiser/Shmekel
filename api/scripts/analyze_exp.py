@@ -19,30 +19,31 @@ def _get_attribute_from_config(config, attr, sep):
     return config
 
 
-def _print_exp_metric(exp, metric):
+def _print_exp_metric(exp, metric, metric_trend):
     print('\n\n')
     print(exp.name, metric)
-    exp.results.get_best_epoch(metric).print()
+    exp.results.get_best_epoch(metric, metric_trend).print()
 
 
 def get_legend_name(name):
     return name[name.rfind('/')+1: name.rfind('.')]
 
 
-def main(paths, metrics=None, attr=None, sep='-'):
+def main(paths, metrics=None, metrics_trends=None, attr=None, sep='-'):
     exps = [get_exp_from_config(load_config(path)) for path in paths]
 
     metrics = metrics or ['loss']
+    metrics_trends = metrics_trends or ['raise'] * len(metrics)
 
     legend = []
     plt.figure()
     if attr:
-        for metric in metrics:
+        for metric, trend in zip(metrics, metrics_trends):
             x = []
             y = []
             for exp in exps:
                 x.append(_get_attribute_from_config(exp.config, attr, sep=sep))
-                y.append(exp.results.get_best_epoch(metric).scores[metric])
+                y.append(exp.results.get_best_epoch(metric, trend).scores[metric])
             sorted_x = sorted(x)
             sorted_y = []
             for x_val in sorted_x:
@@ -66,8 +67,8 @@ def main(paths, metrics=None, attr=None, sep='-'):
     plt.show()
 
     for exp in exps:
-        for metric in metrics:
-            _print_exp_metric(exp, metric)
+        for metric, trend in zip(metrics, metrics_trends):
+            _print_exp_metric(exp, metric, trend)
 
 
 # specific for depth/width variation, and val_acc/runtime metrics
@@ -107,9 +108,10 @@ if __name__ == '__main__':
 
     parser.add_argument('config_paths', nargs='+')
     parser.add_argument('--metrics', nargs='*', type=str, help='metrics to plot')
+    parser.add_argument('--metrics_trends', nargs='*', type=str, help='metrics expected trend')
     parser.add_argument('--attr', type=str, help='plot best epoch metrics by attribute')
     parser.add_argument('--sep', type=str, default='-', help='separator of keys. default is  "-"')
     args = parser.parse_args()
 
     params = {}
-    main(args.config_paths, metrics=args.metrics, attr=args.attr, sep=args.sep)
+    main(args.config_paths, metrics=args.metrics, metrics_trends=args.metrics_trends, attr=args.attr, sep=args.sep)
