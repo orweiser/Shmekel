@@ -23,6 +23,7 @@ mapping = {
     'close': Close,
     'volume': Volume,
     'candle': Candle,
+    'altcandle': AltCandle,
     'datetuple': DateTuple,
     'rawcandle': RawCandle,
     'rise': Rise,
