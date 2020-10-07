@@ -35,7 +35,7 @@ class Trainer:
             self.callbacks = experiment.callbacks + (callbacks or [])
         else:
             self.callbacks = callbacks
-        if tensorboard_callbacks: #  TODO: change experiment.name to a subfolder of the results
+        if tensorboard_callbacks:
             log_dir = {'log_dir': os.path.join(experiment._backup_handler.exp_absolute_path, 'logs')}
             tensorboard_callbacks.update(log_dir)
             self.callbacks.append(TensorBoard(**tensorboard_callbacks))
