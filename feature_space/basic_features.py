@@ -44,7 +44,7 @@ class AltCandle(Feature):
 
     def _compute_feature(self, data, feature_list=None, ):
         if self.with_volume:
-            for i in [0, 1, 3]:
+            for i in [0, 2, 3]:
                 data[0][:, i] = np.divide(data[0][:, i], data[0][:, 2])
             return data[0][self.time_delay:]
 
@@ -53,7 +53,7 @@ class AltCandle(Feature):
         a = a[ind]
 
         a = np.swapaxes(a, 0, self._feature_axis)
-        for i in [0, 1, 3]:
+        for i in [0, 2, 3]:
             a[0][:, i] = np.divide(a[0][:, i], a[0][:, 2])
         return a[self.time_delay:]
 
