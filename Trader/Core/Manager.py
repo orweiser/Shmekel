@@ -24,7 +24,7 @@ class TradeManager:
 
     def load_assets(self):
         if self.mode == RunMode.simulate:
-            self.assets = load_assets_from_folder(Location.stocks_root, 3)
+            self.assets = load_assets_from_folder(Location.stocks_root, 10)
 
     def run_assets(self):
         if self.mode == RunMode.simulate:

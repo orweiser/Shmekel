@@ -1,8 +1,8 @@
-
-
 class Simulation:
     initial_funds = 100000
-
+    cost_per_share_ratio = 0.001
+    cost_per_share_min = 0.05
+    share_count_default = 100
 
 class Location:
     models_dir = "D:\\shmekels\\downloads\\models"
@@ -40,7 +40,8 @@ class PredictionType:
     close_to_open_ratio = "cor"
     low_to_open_ratio = "lor"
 
-class Fake_Prediction:
+
+class FakePrediction:
     def __init__(self, prediction_type, rise_in_k_candle):
         self.type = prediction_type
         self.value = {}

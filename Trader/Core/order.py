@@ -1,4 +1,5 @@
 from Trader.Core.enums import OrderStatus, OrderType, RunMode
+from Trader.Core.Candle import *
 
 
 class Order:
@@ -6,6 +7,9 @@ class Order:
         self.type = order_type
         self.status = OrderStatus.pending
 
+    def CheckStatus(self,candle):
+        raise Exception("no implementation for Order->Run")
+
     def run(self):
-        self.status = OrderStatus.running
+        #self.status = OrderStatus.running
         raise Exception("no implementation for Order->Run")
