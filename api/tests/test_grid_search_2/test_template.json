@@ -1,0 +1,19 @@
+{
+    "name": "var1=__Var1__ ; var2=__Var2__ ; var3=__Var3__",
+    "var1": "__Var1__",
+    "list": ["__Var1__", "__Var2__", "__Var3__"],
+    "deep": {
+        "something": [
+            10,
+            20,
+            "__Var1__",
+            {
+                "another": 160,
+                "another2": "__Var3__"
+            }
+        ]
+    },
+    "__Var1__": [1, 2, 3],
+    "__Var2__": [4, "abc"],
+    "__Var3__": ["a", "b", "c"]
+}
