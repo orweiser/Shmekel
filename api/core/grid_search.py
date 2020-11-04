@@ -6,6 +6,8 @@ from api.core import get_exp_from_config, load_config
 from Utils.logger import logger
 import matplotlib.pyplot as plt
 import numpy as np
+from itertools import product
+from copy import deepcopy
 
 
 class GridSearch:
@@ -65,7 +67,7 @@ class GridSearch:
             keys = json.loads(x)
             keys = [str(v) for v in keys]
 
-            values = [lambda x: format % tuple([x[key] for key in keys])]
+            values = [lambda x: (format % tuple([x[key] for key in keys])).replace('"', '')]
 
         else:
             var, *values = line.split(':')
@@ -97,6 +99,22 @@ class GridSearch:
         combs = [{key: options[i] for i, (key, options) in zip(ind, overrides)} for ind in indices]
         return combs
 
+    def generate_configs(self):
+        template_path = self.template_path
+
+        template, overrides = self.read_template(template_path)
+        combs = self.overrides_to_combs(overrides)
+
+        function = type(lambda: None)
+        for comb in combs:
+            for key, val in comb.items():
+                if isinstance(val, function):
+                    comb[key] = val(comb)
+
+        for comb in combs:
+            s = self.get_final_config_string(comb, template)
+            yield json.loads(s)
+
     def create_config_files(self, template_path=None, configs_dir=None):
         template_path = template_path or self.template_path
         configs_dir = configs_dir or self.configs_dir
@@ -115,19 +133,23 @@ class GridSearch:
 
         paths = []
         for comb in combs:
-            s = template
-            for key, val in comb.items():
-                s = s.replace(key, val)
+            s = self.get_final_config_string(comb, template)
 
-            for key, val in [('False', 'false'), ('True', 'true'), ('None', 'null')]:
-                s = s.replace(key, val)
-
-            path = os.path.join(configs_dir, comb['__Name__'] + '.json')
+            path = os.path.join(configs_dir, comb['__Name__'] + '.json').replace('"', '')
             with open(path, 'w') as f:
                 f.write(s)
             paths.append(path)
 
         return paths
+
+    @staticmethod
+    def get_final_config_string(comb, template):
+        s = template
+        for key, val in comb.items():
+            s = s.replace(key, val)
+        for key, val in [('False', 'false'), ('True', 'true'), ('None', 'null')]:
+            s = s.replace(key, val)
+        return s
 
     def get_all_combs(self, parse_lambdas=True):
         template_path = self.template_path
@@ -294,145 +316,196 @@ class GridSearch:
 
 
 class GridSearch2:
-    def __init__(self, configs_dir):
-        self.configs_dir = configs_dir
+    def __init__(self, template_path):
+        self.template_path = template_path
+        self._configs_iterator = JsonGrid(template_path, infer_name=True)
 
-    def iter_exps(self, configs_dir=None):
-        configs_dir = configs_dir or self.configs_dir
-
-        for f in os.listdir(configs_dir):
-            if not f.endswith('.json'):
-                continue
-
-            path = os.path.join(configs_dir, f)
-
-            config = load_config(path)
-
-            identifiers = config.pop('identifiers')
-
-            exp = get_exp_from_config(config)
-            exp.identifiers = identifiers
-            yield exp
+        if len(self._configs_iterator) > 10000:
+            logger.warning('Large Grid Search. Working in memory efficient mode')
+        else:
+            self._configs_iterator = list(self._configs_iterator)
 
     def __iter__(self):
-        return self.iter_exps()
+        for config in self._configs_iterator:
+            yield get_exp_from_config(config)
 
-    def __iter_fixed_contained(self, mode, fixed_values: dict):
-        assert mode in ['fixed', 'contained']
+    def __len__(self):
+        return len(self._configs_iterator)
 
-        def is_to_skip(val1, val2):
-            if mode == 'fixed':
-                return val1 != val2
-            else:
-                return val1 not in val2
-
+    def run(self):
         for exp in self:
-            to_continue = False
-            for key, val in fixed_values.items():
-                if is_to_skip(exp.identifiers[key], val):
-                    to_continue = True
-                    break
+            exp.run()
 
-            if to_continue:
-                continue
 
-            else:
-                yield exp
+class JsonGrid:
+    """
+    this class takes a json template file as input
+    and creates a grid of parsed json (native python)
+    according to the template configuration
 
-    def iter_fixed(self, fixed_values: dict):
-        for x in self.__iter_fixed_contained(mode='fixed', fixed_values=fixed_values):
-            yield x
+    Note:
+        input file is assumed to represent a dictionary
 
-    def iter_contained(self, fixed_values: dict):
-        for x in self.__iter_fixed_contained(mode='contained', fixed_values=fixed_values):
-            yield x
+    Variables:
+        This framework allows you to define variables
+        in your json file. variables are defined with
+        all of their possible values for the grid.
 
-    def iter_modulo(self, mod=4, rem=0):
-        for i, x in enumerate(self.iter_exps()):
-            if i % mod == rem:
-                yield x
+        all variables are a key-value pair such that:
+            1. key starts and ends with "__"
+            2. value is actually a list of possible values
+            3. all variables are defined in the top level of the json file
 
-    def plot_a_slice(self, fixed_values: dict, metric='val_acc', title=None):
-        fig = plt.figure()
-        legend = []
-        for exp in self.iter_fixed(fixed_values=fixed_values):
-            if not exp.results:
-                logger.error('trying to plot an experiment with no result[%s]. Skipping', exp.name)
-                continue
+        for example, if:
+            "__X__": [1, 2, 3]
+            "__Y__": [4, 5]
+        then we'll get a 3 by 2 grid with all the combinations of
+        values for __X__ and __Y__
 
-            legend.append(exp.name)
-            plt.plot(exp.results[metric])
+        Variables can be used anywhere in the json file
 
-        plt.grid('on')
-        plt.xlabel('# Epochs')
-        plt.ylabel(metric)
-        if title:
-            plt.title(title)
-        plt.legend(legend)
+    Example:
+        {
+            "combination": ["__X__", "__Y__"],
+            "__X__": [1, 2, 3],
+            "__Y__": [4, 5]
+        }
 
-        return fig
+        will yield the following 6 dictionaries:
+            {"combination": [1, 4]}
+            {"combination": [1, 5]}
+            {"combination": [2, 4]}
+            {"combination": [2, 5]}
+            {"combination": [3, 4]}
+            {"combination": [3, 5]}
 
-    def plot_parameter_slices(self, param, slices=None, metric='val_acc', figs_dir=None):
-        if figs_dir:
-            if not os.path.exists(figs_dir):
-                os.makedirs(figs_dir)
+    """
+    def __init__(self, template_path, infer_name=True):
+        self._template_path = template_path
 
-        minimal = {}
-        for e in self:      # maybe obsolete when using from plot all parameter slices
-            for key, val in e.identifiers.items():
-                minimal.setdefault(key, set()).add(val)
+        self.content = None
+        self.variables = None
+        self.variable_to_appearances_mapping = None
+        self.infer_name = infer_name
 
-        slices = slices or minimal[param]
+        self._build()
 
-        new_slices = []
-        for s in slices:
-            try:
-                s = str(s)
-                new_slices.append(json.loads(s))
-            except json.decoder.JSONDecodeError:
-                new_slices.append(s)
+    def __len__(self):
+        lengths = [len(var) for var in self.variables.values()]
+        return int(np.prod(lengths))
 
-        for val in new_slices:
-            title = 'Slice - %s (%s)' % (param, str(val))
-            fig = self.plot_a_slice({param: val}, metric=metric, title=title)
+    def generate_combinations(self):
+        def iter_options(_options):
+            assert isinstance(_options, list)
+            yield from _options
 
-            if figs_dir:
-                fig.savefig(os.path.join(figs_dir, title + '.png'))
+        variable_names, variable_options_list = zip(*map(tuple, self.variables.items()))
+        iterators = map(iter_options, variable_options_list)
 
-    def plot_all_parameters_slices(self, metric='val_acc', figs_dir=None):
-        minimal = {}
-        for e in self:
-            for key, val in e.identifiers.items():
-                minimal.setdefault(key, set()).add(val)
+        for values in product(*iterators):
+            yield {name: val for name, val in zip(variable_names, values)}
 
-        for param in minimal.keys():
-            self.plot_parameter_slices(param, metric=metric, figs_dir=figs_dir)
+    def comb_to_config(self, comb):
+        config = deepcopy(self.content)
 
-    def print_slice_information(self, compare, slices=None, fixed_values={}, metric='val_acc', file=None):
+        # insert standalone variables
+        for variable, value in comb.items():
+            for keys in self.variable_to_appearances_mapping.get(variable, []):
+                this_config = config
 
-        if slices is None:
-            slices = {}
-            for e in self.iter_fixed(fixed_values):
-                for key, val in e.identifiers.items():
-                    slices.setdefault(key, set()).add(val)
+                for key in keys[:-1]:
+                    try:
+                        this_config = this_config[key]
+                    except:
+                        print('')
+                key = keys[-1]
+                this_config[key] = value
 
-        slices = slices[compare]
-        new_slices = []
-        for s in slices:
-            try:
-                s = str(s)
-                new_slices.append(json.loads(s))
-            except json.decoder.JSONDecodeError:
-                new_slices.append(s)
+        # insert in-string variables
+        config_string = json.dumps(config)
+        for variable, value in comb.items():
+            config_string = config_string.replace(variable, str(value))
+        config = json.loads(config_string)
 
-        for val in new_slices:
-            curr_slice = []
-            fixed_values[compare] = val
-            for exp in self.iter_fixed(fixed_values):
-                if exp.history:
-                    curr_slice.append(max(exp.results[metric]))
-            best = max(curr_slice)
-            size = len(curr_slice)
-            avg = np.mean(curr_slice)
-            print('Slice - %s (%s):' % (compare, str(val)))
-            print('total nets: %d;  best: %d;   avg: %d' % (size, best, avg))
+        return config
+
+    def generate_configs(self):
+        yield from map(self.comb_to_config, self.generate_combinations())
+
+    __iter__ = generate_configs
+
+    def _load(self):
+        with open(self._template_path) as f:
+            full_template = json.load(f)
+
+        variables = {key: val for key, val in full_template.items() if self._is_variable(key)}
+        content = {key: val for key, val in full_template.items() if not self._is_variable(key)}
+
+        return content, variables
+
+    def _build(self):
+        self.content, self.variables = self._load()
+
+        if self.infer_name and 'name' not in self.content:
+            suffix = self.generate_name_suffix(self.variables)
+            path = self.get_relative_template_path()
+            self.content['name'] = os.path.join(path, suffix)
+
+        self.variable_to_appearances_mapping = self.find_variables_appearances(self.content, self.variables)
+
+    def get_relative_template_path(self):
+        path = self._template_path
+
+        head = True
+        path_parts = []
+        while head:
+            head, tail = os.path.split(path)
+            path_parts.append(tail)
+            path = head
+        path_parts = list(reversed(path_parts))
+
+        assert 'configs' in path_parts, '"template_path" must be inside the "configs" dir'
+        path_parts = path_parts[(path_parts.index('configs') + 1):]
+
+        return os.path.join(*path_parts)
+
+    @staticmethod
+    def generate_name_suffix(variables, big_sep='--', small_sep='_'):
+        def get_initials(_stripped_var):
+            capitals = [c for c in _stripped_var if c == c.upper()]
+            return ''.join(capitals)
+
+        def var2name(_var):
+            initials = get_initials(_stripped_var=_var.strip('__'))
+            return small_sep.join((initials, _var))
+
+        return big_sep.join(var2name(var) for var in variables)
+
+    @staticmethod
+    def _is_variable(name):
+        return name.startswith('__') and name.endswith('__')
+
+    @classmethod
+    def _generate_variable_keys(cls, item):
+        if isinstance(item, dict):
+            iterator = item.items()
+        elif isinstance(item, list):
+            iterator = enumerate(item)
+        else:
+            raise RuntimeError()
+
+        for key, val in iterator:
+            if isinstance(val, str) and cls._is_variable(val):
+                yield (key, val)
+
+            elif isinstance(val, (dict, list)):
+                for keys in cls._generate_variable_keys(val):
+                    yield (key,) + keys
+
+    @classmethod
+    def find_variables_appearances(cls, content, variables):
+        mapping = {}
+        for keys in cls._generate_variable_keys(content):
+            if keys[-1] in variables:
+                mapping.setdefault(keys[-1], []).append(keys[:-1])
+        return mapping
