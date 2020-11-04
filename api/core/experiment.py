@@ -16,7 +16,7 @@ class Experiment:
     def __init__(self, name='default_exp',
                  model_config=None, loss_config=None,
                  train_dataset_config=None, val_dataset_config=None,
-                 train_config=None, backup_config=None, metrics_list=None):
+                 train_config=None, backup_config=None, metrics_list=None, weights_path=None):
 
         self.model_config = model_config or {'model': 'LSTM'}
         self.loss_config = loss_config or {'loss': 'categorical_crossentropy'}
@@ -25,6 +25,7 @@ class Experiment:
         self.train_config = train_config or {}
         self.backup_config = backup_config or dict(handler='DefaultLocal')  # , project='default_project')
         self.metrics_list = metrics_list or ['acc']
+        self.weights_path = weights_path
 
         # todo: have 'project' be a field of experiment instead of backup_handler
         # todo: load existing config by experiment name?
@@ -115,6 +116,8 @@ class Experiment:
             backup = False
 
         elif status is 'initialized':
+            if self.weights_path and self.weights_path.strip():
+                self.backup_handler.load_snapshot_from_path(self.model, self.weights_path)
             self.start()
 
         elif status.startswith('finished'):

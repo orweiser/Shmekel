@@ -23,6 +23,7 @@ class FullyConnected(Model):
     def init(self, depth=1, width=32, base_activation='relu', skip_connections=False, batch_normalization=False,
              batch_norm_after_activation=True, batch_norm_before_output=False, input_shape=(28, 28),
              output_shape=(10,), output_activation='softmax', name=None, regularization_value=None):
+        
         self.depth = depth
         self.width = width
         self.base_activation = base_activation
